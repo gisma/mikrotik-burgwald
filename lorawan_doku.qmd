@@ -37,25 +37,25 @@ Hier folgt eine basale Anleitung für den Betrieb eines MikroTik-LoRaWAN-Gateway
 
 * In **WinBox → New Terminal** ausführen:
 
-  ```bash
+```bash
   /import file-name=gisma_base2.rsc
-  ```
+```
 
 ## Funktion testen
 
 * WLAN/DHCP:
 
-  ```bash
+```bash
   /interface wireless monitor wlan1 once
   /ip dhcp-client print detail
   /ping 8.8.8.8 count=4
-  ```
+```
 * LoRa (falls enthalten):
 
-  ```bash
+```bash
   /lora print detail
   /tool sniffer quick port=1700
-  ```
+```
 
 
 ## Grundlagen MikroTik-Konnektivität, MAC-Zugriff und Hotspot-Einstellungen
@@ -104,12 +104,14 @@ Hier folgt eine basale Anleitung für den Betrieb eines MikroTik-LoRaWAN-Gateway
 - Danach in WinBox statt über **MAC** über die **IP** verbinden (stabiler, schneller).
 
 ### Tests (Terminal, minimal)
+
 ```bash
 /interface wireless monitor wlan1 once
 /ip dhcp-client print detail
 /ping 8.8.8.8 count=4
 /ip route print
 /ip dns print
+```
 
 
 👉 Damit ist die Konfiguration in einem Rutsch aufgespielt.
@@ -255,29 +257,29 @@ Befehle zum Scannen/Überwachen des WLANs und zum Prüfen der IP‑Konfiguration
 
 * WLAN-Scan:
 
-  ```bash
+```bash
   /interface wireless scan wlan1
-  ```
+```
 * Monitor des Clients (Status, Kanal, Rauschpegel):
-
-  ```bash
+```bash
   /interface wireless monitor wlan1
-  ```
+```
 * DHCP-Client-Status:
 
-  ```bash
+```bash
   /ip dhcp-client print detail
-  ```
+```
+
 * Routing:
 
-  ```bash
+```bash
   /ip route print
-  ```
+```
 * Konnektivitätstest:
 
-  ```bash
+```bash
   /ping 8.8.8.8
-  ```
+```
 
 ### Bridge/Ports
 
@@ -294,14 +296,14 @@ Prüft LoRa‑Gateway‑Parameter (EUI, Server, Plan) und ob Forwarder‑Traffic
 
 * Status/EUI/Server/Plan:
 
-  ```bash
+```bash
   /lora print detail
-  ```
+```
 * UDP-Forwarding sichtbar?
 
-  ```bash
+```bash
   /tool sniffer quick port=1700
-  ```
+```
 
 ### Export/Sicherung
 
@@ -309,14 +311,14 @@ Exportiert die Konfiguration textuell (Backup der Einstellungen) bzw. erstellt e
 
 * Terse-Export (menschenlesbar):
 
-  ```bash
+```bash
   /export terse
-  ```
+```
 * Binary-Backup (voll):
 
-  ```bash
+```bash
   /system backup save name=running.backup
-  ```
+```
 
 ---
 
@@ -341,9 +343,10 @@ Geräte anlegen (OTAA‑Daten), Decoder aktivieren/prüfen und Live‑Daten kont
 * **Decoder** sind **aktiv** (Application-Ebene bzw. Device-Override).
 * Kontrolle unter **End device → Live data**: Uplinks sichtbar, `decoded_payload` gefüllt.
 
----
 
-:::{.callout-info title="Datenablage – einfache Wege ohne eigenen Server" collapse="true"}
+
+:::{.callout-note title="Datenablage – einfache Wege ohne eigenen Server" collapse="true"}
+
 
 ## Datenablage – einfache Wege ohne eigenen Server
 

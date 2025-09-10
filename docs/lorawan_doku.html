@@ -99,8 +99,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script>
+<script src="site_libs/quarto-diagram/mermaid.min.js"></script>
+<script src="site_libs/quarto-diagram/mermaid-init.js"></script>
+<link href="site_libs/quarto-diagram/mermaid.css" rel="stylesheet">
 
 
+<link rel="stylesheet" href="css/styles.css">
 </head>
 
 <body class="nav-sidebar docked nav-fixed">
@@ -211,44 +215,51 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#wlan-client-gui-weg-winbox" id="toc-wlan-client-gui-weg-winbox" class="nav-link" data-scroll-target="#wlan-client-gui-weg-winbox"><span class="header-section-number">1.4.4</span> WLAN-Client (GUI-Weg, WinBox)</a></li>
   <li><a href="#kontrolle-umstieg-auf-ip-zugriff" id="toc-kontrolle-umstieg-auf-ip-zugriff" class="nav-link" data-scroll-target="#kontrolle-umstieg-auf-ip-zugriff"><span class="header-section-number">1.4.5</span> Kontrolle &amp; Umstieg auf IP-Zugriff</a></li>
   <li><a href="#tests-terminal-minimal" id="toc-tests-terminal-minimal" class="nav-link" data-scroll-target="#tests-terminal-minimal"><span class="header-section-number">1.4.6</span> Tests (Terminal, minimal)</a></li>
-  <li><a href="#mikrotik-als-wlan-client" id="toc-mikrotik-als-wlan-client" class="nav-link" data-scroll-target="#mikrotik-als-wlan-client"><span class="header-section-number">1.4.7</span> MikroTik als WLAN-Client</a></li>
-  <li><a href="#bridge-bridgelocal" id="toc-bridge-bridgelocal" class="nav-link" data-scroll-target="#bridge-bridgelocal"><span class="header-section-number">1.4.8</span> Bridge (bridgeLocal)</a></li>
-  <li><a href="#alte-reste" id="toc-alte-reste" class="nav-link" data-scroll-target="#alte-reste"><span class="header-section-number">1.4.9</span> „Alte Reste“</a></li>
-  <li><a href="#sensorendecoder-ohne-details" id="toc-sensorendecoder-ohne-details" class="nav-link" data-scroll-target="#sensorendecoder-ohne-details"><span class="header-section-number">1.4.10</span> Sensoren/Decoder (ohne Details)</a></li>
   </ul></li>
-  <li><a href="#mikrotik-soll-konfiguration-wlan-bridge-lora" id="toc-mikrotik-soll-konfiguration-wlan-bridge-lora" class="nav-link" data-scroll-target="#mikrotik-soll-konfiguration-wlan-bridge-lora"><span class="header-section-number">1.5</span> MikroTik – Soll-Konfiguration (WLAN &amp; Bridge &amp; LoRa)</a>
+  </ul></li>
+  <li><a href="#langversion" id="toc-langversion" class="nav-link" data-scroll-target="#langversion"><span class="header-section-number">2</span> Langversion</a>
   <ul class="collapse">
-  <li><a href="#wlan-security" id="toc-wlan-security" class="nav-link" data-scroll-target="#wlan-security"><span class="header-section-number">1.5.1</span> WLAN-Security</a></li>
-  <li><a href="#wlan-als-client-pseudobridge" id="toc-wlan-als-client-pseudobridge" class="nav-link" data-scroll-target="#wlan-als-client-pseudobridge"><span class="header-section-number">1.5.2</span> WLAN als Client (Pseudobridge)</a></li>
-  <li><a href="#bridge-ports" id="toc-bridge-ports" class="nav-link" data-scroll-target="#bridge-ports"><span class="header-section-number">1.5.3</span> Bridge + Ports</a></li>
-  <li><a href="#ip-bezug-dns" id="toc-ip-bezug-dns" class="nav-link" data-scroll-target="#ip-bezug-dns"><span class="header-section-number">1.5.4</span> IP-Bezug &amp; DNS</a></li>
-  <li><a href="#lora-ttn-eu1-semtech-udp-eu-868" id="toc-lora-ttn-eu1-semtech-udp-eu-868" class="nav-link" data-scroll-target="#lora-ttn-eu1-semtech-udp-eu-868"><span class="header-section-number">1.5.5</span> LoRa – TTN EU1 (Semtech UDP) &amp; EU-868</a></li>
-  </ul></li>
-  <li><a href="#winboxterminal-diagnoseleitfaden" id="toc-winboxterminal-diagnoseleitfaden" class="nav-link" data-scroll-target="#winboxterminal-diagnoseleitfaden"><span class="header-section-number">1.6</span> WinBox/Terminal – Diagnoseleitfaden</a>
+  <li><a href="#topologie-und-begriffe" id="toc-topologie-und-begriffe" class="nav-link" data-scroll-target="#topologie-und-begriffe"><span class="header-section-number">2.1</span> Topologie und Begriffe</a>
   <ul class="collapse">
-  <li><a href="#wlan-ip" id="toc-wlan-ip" class="nav-link" data-scroll-target="#wlan-ip"><span class="header-section-number">1.6.1</span> WLAN &amp; IP</a></li>
-  <li><a href="#bridgeports" id="toc-bridgeports" class="nav-link" data-scroll-target="#bridgeports"><span class="header-section-number">1.6.2</span> Bridge/Ports</a></li>
-  <li><a href="#lora-gateway" id="toc-lora-gateway" class="nav-link" data-scroll-target="#lora-gateway"><span class="header-section-number">1.6.3</span> LoRa-Gateway</a></li>
-  <li><a href="#exportsicherung" id="toc-exportsicherung" class="nav-link" data-scroll-target="#exportsicherung"><span class="header-section-number">1.6.4</span> Export/Sicherung</a></li>
+  <li><a href="#gesamtbild" id="toc-gesamtbild" class="nav-link" data-scroll-target="#gesamtbild"><span class="header-section-number">2.1.1</span> Gesamtbild</a></li>
+  <li><a href="#mikrotik-als-wlan-client" id="toc-mikrotik-als-wlan-client" class="nav-link" data-scroll-target="#mikrotik-als-wlan-client"><span class="header-section-number">2.1.2</span> MikroTik als WLAN-Client</a></li>
+  <li><a href="#bridge-bridgelocal" id="toc-bridge-bridgelocal" class="nav-link" data-scroll-target="#bridge-bridgelocal"><span class="header-section-number">2.1.3</span> Bridge (bridgeLocal)</a></li>
+  <li><a href="#alte-reste" id="toc-alte-reste" class="nav-link" data-scroll-target="#alte-reste"><span class="header-section-number">2.1.4</span> „Alte Reste“</a></li>
+  <li><a href="#sensorendecoder-ohne-details" id="toc-sensorendecoder-ohne-details" class="nav-link" data-scroll-target="#sensorendecoder-ohne-details"><span class="header-section-number">2.1.5</span> Sensoren/Decoder (ohne Details)</a></li>
   </ul></li>
-  <li><a href="#ttn-konsole-gateway-application-geräte" id="toc-ttn-konsole-gateway-application-geräte" class="nav-link" data-scroll-target="#ttn-konsole-gateway-application-geräte"><span class="header-section-number">1.7</span> TTN-Konsole – Gateway, Application, Geräte</a>
+  <li><a href="#mikrotik-soll-konfiguration-wlan-bridge-lora" id="toc-mikrotik-soll-konfiguration-wlan-bridge-lora" class="nav-link" data-scroll-target="#mikrotik-soll-konfiguration-wlan-bridge-lora"><span class="header-section-number">2.2</span> MikroTik – Soll-Konfiguration (WLAN &amp; Bridge &amp; LoRa)</a>
   <ul class="collapse">
-  <li><a href="#gateway" id="toc-gateway" class="nav-link" data-scroll-target="#gateway"><span class="header-section-number">1.7.1</span> Gateway</a></li>
-  <li><a href="#application-geräte-otaa" id="toc-application-geräte-otaa" class="nav-link" data-scroll-target="#application-geräte-otaa"><span class="header-section-number">1.7.2</span> Application &amp; Geräte (OTAA)</a></li>
+  <li><a href="#wlan-security" id="toc-wlan-security" class="nav-link" data-scroll-target="#wlan-security"><span class="header-section-number">2.2.1</span> WLAN-Security</a></li>
+  <li><a href="#wlan-als-client-pseudobridge" id="toc-wlan-als-client-pseudobridge" class="nav-link" data-scroll-target="#wlan-als-client-pseudobridge"><span class="header-section-number">2.2.2</span> WLAN als Client (Pseudobridge)</a></li>
+  <li><a href="#bridge-ports" id="toc-bridge-ports" class="nav-link" data-scroll-target="#bridge-ports"><span class="header-section-number">2.2.3</span> Bridge + Ports</a></li>
+  <li><a href="#ip-bezug-dns" id="toc-ip-bezug-dns" class="nav-link" data-scroll-target="#ip-bezug-dns"><span class="header-section-number">2.2.4</span> IP-Bezug &amp; DNS</a></li>
+  <li><a href="#lora-ttn-eu1-semtech-udp-eu-868" id="toc-lora-ttn-eu1-semtech-udp-eu-868" class="nav-link" data-scroll-target="#lora-ttn-eu1-semtech-udp-eu-868"><span class="header-section-number">2.2.5</span> LoRa – TTN EU1 (Semtech UDP) &amp; EU-868</a></li>
   </ul></li>
-  <li><a href="#betriebshilfen-auto-heal-checks" id="toc-betriebshilfen-auto-heal-checks" class="nav-link" data-scroll-target="#betriebshilfen-auto-heal-checks"><span class="header-section-number">1.10</span> Betriebshilfen (Auto-Heal, Checks)</a>
+  <li><a href="#winboxterminal-diagnoseleitfaden" id="toc-winboxterminal-diagnoseleitfaden" class="nav-link" data-scroll-target="#winboxterminal-diagnoseleitfaden"><span class="header-section-number">2.3</span> WinBox/Terminal – Diagnoseleitfaden</a>
   <ul class="collapse">
-  <li><a href="#netwatch-wlan-neu-verbinden-bei-ausfall" id="toc-netwatch-wlan-neu-verbinden-bei-ausfall" class="nav-link" data-scroll-target="#netwatch-wlan-neu-verbinden-bei-ausfall"><span class="header-section-number">1.10.1</span> Netwatch (WLAN neu verbinden bei Ausfall)</a></li>
-  <li><a href="#ntp-zeitzone-logs-mit-korrekter-uhrzeit" id="toc-ntp-zeitzone-logs-mit-korrekter-uhrzeit" class="nav-link" data-scroll-target="#ntp-zeitzone-logs-mit-korrekter-uhrzeit"><span class="header-section-number">1.10.2</span> NTP &amp; Zeitzone (Logs mit korrekter Uhrzeit)</a></li>
+  <li><a href="#wlan-ip" id="toc-wlan-ip" class="nav-link" data-scroll-target="#wlan-ip"><span class="header-section-number">2.3.1</span> WLAN &amp; IP</a></li>
+  <li><a href="#bridgeports" id="toc-bridgeports" class="nav-link" data-scroll-target="#bridgeports"><span class="header-section-number">2.3.2</span> Bridge/Ports</a></li>
+  <li><a href="#lora-gateway" id="toc-lora-gateway" class="nav-link" data-scroll-target="#lora-gateway"><span class="header-section-number">2.3.3</span> LoRa-Gateway</a></li>
+  <li><a href="#exportsicherung" id="toc-exportsicherung" class="nav-link" data-scroll-target="#exportsicherung"><span class="header-section-number">2.3.4</span> Export/Sicherung</a></li>
   </ul></li>
-  <li><a href="#sensecap-besonderheiten-ohne-decoder-code" id="toc-sensecap-besonderheiten-ohne-decoder-code" class="nav-link" data-scroll-target="#sensecap-besonderheiten-ohne-decoder-code"><span class="header-section-number">1.11</span> SenseCAP-Besonderheiten (ohne Decoder-Code)</a></li>
-  <li><a href="#dragino-ps-lb-dds-75lb-ohne-decoder-code" id="toc-dragino-ps-lb-dds-75lb-ohne-decoder-code" class="nav-link" data-scroll-target="#dragino-ps-lb-dds-75lb-ohne-decoder-code"><span class="header-section-number">1.12</span> Dragino PS-LB &amp; DDS-75LB (ohne Decoder-Code)</a></li>
-  <li><a href="#faqs-troubleshooting" id="toc-faqs-troubleshooting" class="nav-link" data-scroll-target="#faqs-troubleshooting"><span class="header-section-number">1.13</span> FAQs &amp; Troubleshooting</a>
+  <li><a href="#ttn-konsole-gateway-application-geräte" id="toc-ttn-konsole-gateway-application-geräte" class="nav-link" data-scroll-target="#ttn-konsole-gateway-application-geräte"><span class="header-section-number">2.4</span> TTN-Konsole – Gateway, Application, Geräte</a>
   <ul class="collapse">
-  <li><a href="#to-do-leitfaden" id="toc-to-do-leitfaden" class="nav-link" data-scroll-target="#to-do-leitfaden"><span class="header-section-number">1.13.1</span> To-Do-Leitfaden</a></li>
+  <li><a href="#gateway" id="toc-gateway" class="nav-link" data-scroll-target="#gateway"><span class="header-section-number">2.4.1</span> Gateway</a></li>
+  <li><a href="#application-geräte-otaa" id="toc-application-geräte-otaa" class="nav-link" data-scroll-target="#application-geräte-otaa"><span class="header-section-number">2.4.2</span> Application &amp; Geräte (OTAA)</a></li>
   </ul></li>
-  <li><a href="#anmerkungen" id="toc-anmerkungen" class="nav-link" data-scroll-target="#anmerkungen"><span class="header-section-number">1.14</span> <strong>Anmerkungen</strong></a></li>
-  <li><a href="#downloads-handbücher" id="toc-downloads-handbücher" class="nav-link" data-scroll-target="#downloads-handbücher"><span class="header-section-number">1.15</span> Downloads &amp; Handbücher</a></li>
+  <li><a href="#betriebshilfen-auto-heal-checks" id="toc-betriebshilfen-auto-heal-checks" class="nav-link" data-scroll-target="#betriebshilfen-auto-heal-checks"><span class="header-section-number">2.7</span> Betriebshilfen (Auto-Heal, Checks)</a>
+  <ul class="collapse">
+  <li><a href="#netwatch-wlan-neu-verbinden-bei-ausfall" id="toc-netwatch-wlan-neu-verbinden-bei-ausfall" class="nav-link" data-scroll-target="#netwatch-wlan-neu-verbinden-bei-ausfall"><span class="header-section-number">2.7.1</span> Netwatch (WLAN neu verbinden bei Ausfall)</a></li>
+  <li><a href="#ntp-zeitzone-logs-mit-korrekter-uhrzeit" id="toc-ntp-zeitzone-logs-mit-korrekter-uhrzeit" class="nav-link" data-scroll-target="#ntp-zeitzone-logs-mit-korrekter-uhrzeit"><span class="header-section-number">2.7.2</span> NTP &amp; Zeitzone (Logs mit korrekter Uhrzeit)</a></li>
+  </ul></li>
+  <li><a href="#sensecap-besonderheiten-ohne-decoder-code" id="toc-sensecap-besonderheiten-ohne-decoder-code" class="nav-link" data-scroll-target="#sensecap-besonderheiten-ohne-decoder-code"><span class="header-section-number">2.8</span> SenseCAP-Besonderheiten (ohne Decoder-Code)</a></li>
+  <li><a href="#dragino-ps-lb-dds-75lb-ohne-decoder-code" id="toc-dragino-ps-lb-dds-75lb-ohne-decoder-code" class="nav-link" data-scroll-target="#dragino-ps-lb-dds-75lb-ohne-decoder-code"><span class="header-section-number">2.9</span> Dragino PS-LB &amp; DDS-75LB (ohne Decoder-Code)</a></li>
+  <li><a href="#faqs-troubleshooting" id="toc-faqs-troubleshooting" class="nav-link" data-scroll-target="#faqs-troubleshooting"><span class="header-section-number">2.10</span> FAQs &amp; Troubleshooting</a>
+  <ul class="collapse">
+  <li><a href="#to-do-leitfaden" id="toc-to-do-leitfaden" class="nav-link" data-scroll-target="#to-do-leitfaden"><span class="header-section-number">2.10.1</span> To-Do-Leitfaden</a></li>
+  </ul></li>
+  <li><a href="#anmerkungen" id="toc-anmerkungen" class="nav-link" data-scroll-target="#anmerkungen"><span class="header-section-number">2.11</span> <strong>Anmerkungen</strong></a></li>
+  <li><a href="#downloads-handbücher" id="toc-downloads-handbücher" class="nav-link" data-scroll-target="#downloads-handbücher"><span class="header-section-number">2.12</span> Downloads &amp; Handbücher</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -295,21 +306,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="script-importieren" class="level2" data-number="1.2">
 <h2 data-number="1.2" class="anchored" data-anchor-id="script-importieren"><span class="header-section-number">1.2</span> Script importieren</h2>
 <ul>
-<li><p>In <strong>WinBox → New Terminal</strong> ausführen:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">/import</span> file-name=gisma_base2.rsc</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li>In <strong>WinBox → New Terminal</strong> ausführen:</li>
 </ul>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>  <span class="ex">/import</span> file-name=gisma_base2.rsc</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="funktion-testen" class="level2" data-number="1.3">
 <h2 data-number="1.3" class="anchored" data-anchor-id="funktion-testen"><span class="header-section-number">1.3</span> Funktion testen</h2>
 <ul>
-<li><p>WLAN/DHCP:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">/interface</span> wireless monitor wlan1 once</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">/ip</span> dhcp-client print detail</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="ex">/ping</span> 8.8.8.8 count=4</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
-<li><p>LoRa (falls enthalten):</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">/lora</span> print detail</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">/tool</span> sniffer quick port=1700</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li>WLAN/DHCP:</li>
 </ul>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>  <span class="ex">/interface</span> wireless monitor wlan1 once</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="ex">/ip</span> dhcp-client print detail</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="ex">/ping</span> 8.8.8.8 count=4</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li>LoRa (falls enthalten):</li>
+</ul>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>  <span class="ex">/lora</span> print detail</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="ex">/tool</span> sniffer quick port=1700</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="grundlagen-mikrotik-konnektivität-mac-zugriff-und-hotspot-einstellungen" class="level2" data-number="1.4">
 <h2 data-number="1.4" class="anchored" data-anchor-id="grundlagen-mikrotik-konnektivität-mac-zugriff-und-hotspot-einstellungen"><span class="header-section-number">1.4</span> Grundlagen MikroTik-Konnektivität, MAC-Zugriff und Hotspot-Einstellungen</h2>
@@ -393,59 +406,67 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="ex">/ip</span> dhcp-client print detail</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="ex">/ping</span> 8.8.8.8 count=4</span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="ex">/ip</span> route print</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="ex">/ip</span> dns print</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="ex">👉</span> Damit ist die Konfiguration in einem Rutsch aufgespielt.</span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Langversion</span></span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="co">## Topologie und Begriffe</span></span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="ex">Kurzüberblick</span> über alle Bausteine <span class="er">(</span><span class="ex">Sensoren,</span> Gateway, Netzwerk, TTN, Decoder<span class="kw">)</span> <span class="ex">und</span> wie sie zusammenspielen. Begriffe werden so eingeführt, dass die folgenden Schritte leichter nachvollziehbar sind.</span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="co">### Gesamtbild</span></span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="ex">Eine</span> End-to-End-Skizze vom Sensor <span class="er">(</span><span class="ex">LoRaWAN</span><span class="kw">)</span> <span class="ex">bis</span> zur Datennutzung <span class="er">(</span><span class="ex">Speicher/Visualisierung</span><span class="kw">)</span><span class="bu">.</span> Hilft, die Rolle jeder Komponente zu verstehen.</span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="kw">```</span><span class="ex">{mermaid,</span> fig-align=<span class="st">"center"</span>, fig-width=4, fig-height=3}</span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="ex">%%{init:</span> {<span class="st">'themeVariables'</span>: { <span class="st">'fontSize'</span>: <span class="st">'12px'</span> }}}%%</span>
-<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a><span class="ex">flowchart</span> TB</span>
-<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>  <span class="va">A</span><span class="op">[</span><span class="st">"Sensor&lt;br/&gt;(LoRaWAN, EU868)"</span><span class="op">]</span></span>
-<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>  <span class="va">B</span><span class="op">[</span><span class="st">"LoRa-Gateway&lt;br/&gt;MikroTik RBwAPR-2nD"</span><span class="op">]</span></span>
-<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>  <span class="va">C</span><span class="op">[</span><span class="st">"WLAN-Hotspot&lt;br/&gt;(Internet)"</span><span class="op">]</span></span>
-<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>  <span class="va">D</span><span class="op">[</span><span class="st">"TTN (EU1)"</span><span class="op">]</span></span>
-<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>  <span class="va">E</span><span class="op">[</span><span class="st">"Decoder&lt;br/&gt;(in TTN Application)"</span><span class="op">]</span></span>
-<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>  <span class="va">F</span><span class="op">[</span><span class="st">"Ablage / Visualisierung&lt;br/&gt;(Storage / MQTT / DB / Grafana / No-Code)"</span><span class="op">]</span></span>
-<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>  <span class="ex">A</span> <span class="at">--</span><span class="op">&gt;</span> B <span class="at">--</span><span class="op">&gt;</span> C <span class="at">--</span><span class="op">&gt;</span> D <span class="at">--</span><span class="op">&gt;</span> E <span class="at">--</span><span class="op">&gt;</span> F</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="ex">/ip</span> dns print</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>👉 Damit ist die Konfiguration in einem Rutsch aufgespielt.</p>
 </section>
-<section id="mikrotik-als-wlan-client" class="level3" data-number="1.4.7">
-<h3 data-number="1.4.7" class="anchored" data-anchor-id="mikrotik-als-wlan-client"><span class="header-section-number">1.4.7</span> MikroTik als WLAN-Client</h3>
+</section>
+</section>
+<section id="langversion" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> Langversion</h1>
+<section id="topologie-und-begriffe" class="level2" data-number="2.1">
+<h2 data-number="2.1" class="anchored" data-anchor-id="topologie-und-begriffe"><span class="header-section-number">2.1</span> Topologie und Begriffe</h2>
+<p>Kurzüberblick über alle Bausteine (Sensoren, Gateway, Netzwerk, TTN, Decoder) und wie sie zusammenspielen. Begriffe werden so eingeführt, dass die folgenden Schritte leichter nachvollziehbar sind.</p>
+<section id="gesamtbild" class="level3" data-number="2.1.1">
+<h3 data-number="2.1.1" class="anchored" data-anchor-id="gesamtbild"><span class="header-section-number">2.1.1</span> Gesamtbild</h3>
+<p>Eine End-to-End-Skizze vom Sensor (LoRaWAN) bis zur Datennutzung (Speicher/Visualisierung). Hilft, die Rolle jeder Komponente zu verstehen.</p>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'themeVariables': { 'fontSize': '12px' }}}%%
+flowchart TB
+  A["Sensor&lt;br/&gt;(LoRaWAN, EU868)"]
+  B["LoRa-Gateway&lt;br/&gt;MikroTik RBwAPR-2nD"]
+  C["WLAN-Hotspot&lt;br/&gt;(Internet)"]
+  D["TTN (EU1)"]
+  E["Decoder&lt;br/&gt;(in TTN Application)"]
+  F["Ablage / Visualisierung&lt;br/&gt;(Storage / MQTT / DB / Grafana / No-Code)"]
+  A --&gt; B --&gt; C --&gt; D --&gt; E --&gt; F
+
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+</section>
+<section id="mikrotik-als-wlan-client" class="level3" data-number="2.1.2">
+<h3 data-number="2.1.2" class="anchored" data-anchor-id="mikrotik-als-wlan-client"><span class="header-section-number">2.1.2</span> MikroTik als WLAN-Client</h3>
 <p>Der MikroTik wird als WLAN-Station betrieben, nicht als Access Point. So hängt er sich in ein vorhandenes WLAN ein und leitet LoRaWAN-Pakete ins Internet.</p>
 <ul>
 <li>Der MikroTik arbeitet <strong>nicht</strong> als Access Point, sondern als <strong>Station</strong> im WLAN (vergleichbar mit einem Laptop).</li>
 <li>Der Modus <strong>station-pseudobridge</strong> sorgt dafür, dass WLAN und Ethernet im selben Layer-2-Segment erscheinen (Broadcast-Domain geteilt).</li>
 </ul>
 </section>
-<section id="bridge-bridgelocal" class="level3" data-number="1.4.8">
-<h3 data-number="1.4.8" class="anchored" data-anchor-id="bridge-bridgelocal"><span class="header-section-number">1.4.8</span> Bridge (bridgeLocal)</h3>
+<section id="bridge-bridgelocal" class="level3" data-number="2.1.3">
+<h3 data-number="2.1.3" class="anchored" data-anchor-id="bridge-bridgelocal"><span class="header-section-number">2.1.3</span> Bridge (bridgeLocal)</h3>
 <p>Eine Layer‑2‑Bridge, die <code>wlan1</code> und <code>ether1</code> zu einem logischen Switch verbindet. Der DHCP-Client sitzt auf der Bridge, damit die IP für beide Ports gilt.</p>
 <ul>
 <li>Die <strong>Bridge</strong> bündelt Interfaces zu einem logischen Switch (hier: <code>wlan1</code> + <code>ether1</code>).</li>
 <li><strong>DHCP-Client</strong> hängt auf der Bridge und bezieht die IP vom Hotspot.</li>
 </ul>
 </section>
-<section id="alte-reste" class="level3" data-number="1.4.9">
-<h3 data-number="1.4.9" class="anchored" data-anchor-id="alte-reste"><span class="header-section-number">1.4.9</span> „Alte Reste“</h3>
+<section id="alte-reste" class="level3" data-number="2.1.4">
+<h3 data-number="2.1.4" class="anchored" data-anchor-id="alte-reste"><span class="header-section-number">2.1.4</span> „Alte Reste“</h3>
 <p>Werkseinstellungen/QuickSet legen oft Regeln an, die im Client-Betrieb stören. Dieser Abschnitt erklärt, was entfernt bzw. nicht benötigt wird.</p>
 <ul>
 <li>Werkseinstellungen/QuickSet hinterlassen oft DHCP-Server/NAT/Firewall-Regeln, die im Client-Betrieb stören können.</li>
 <li>Nach Reset wird nur das <strong>Nötige</strong> konfiguriert (WLAN-Client, Bridge, DHCP-Client, DNS).</li>
 </ul>
 </section>
-<section id="sensorendecoder-ohne-details" class="level3" data-number="1.4.10">
-<h3 data-number="1.4.10" class="anchored" data-anchor-id="sensorendecoder-ohne-details"><span class="header-section-number">1.4.10</span> Sensoren/Decoder (ohne Details)</h3>
+<section id="sensorendecoder-ohne-details" class="level3" data-number="2.1.5">
+<h3 data-number="2.1.5" class="anchored" data-anchor-id="sensorendecoder-ohne-details"><span class="header-section-number">2.1.5</span> Sensoren/Decoder (ohne Details)</h3>
 <p>Überblick, welche Geräte eingebunden werden und wo deren Decoder liegen (TTN Application oder per Device-Override).</p>
 <ul>
 <li><strong>Dragino PS-LB</strong> und <strong>Dragino DDS-75LB</strong> werden identisch (OTAA) aufgenommen; <strong>Decoder unterscheiden sich</strong>, sind aber <strong>in der TTN-Application bereits aktiv</strong>.</li>
@@ -455,14 +476,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <hr>
 </section>
 </section>
-<section id="mikrotik-soll-konfiguration-wlan-bridge-lora" class="level2" data-number="1.5">
-<h2 data-number="1.5" class="anchored" data-anchor-id="mikrotik-soll-konfiguration-wlan-bridge-lora"><span class="header-section-number">1.5</span> MikroTik – Soll-Konfiguration (WLAN &amp; Bridge &amp; LoRa)</h2>
+<section id="mikrotik-soll-konfiguration-wlan-bridge-lora" class="level2" data-number="2.2">
+<h2 data-number="2.2" class="anchored" data-anchor-id="mikrotik-soll-konfiguration-wlan-bridge-lora"><span class="header-section-number">2.2</span> MikroTik – Soll-Konfiguration (WLAN &amp; Bridge &amp; LoRa)</h2>
 <p>Schritt‑für‑Schritt‑Konfiguration des MikroTik: WLAN-Client, Bridge, IP/DNS und LoRa‑Gateway‑Weiterleitung zu TTN EU1.</p>
 <blockquote class="blockquote">
 <p>Die folgenden Snippets setzen die bekannte funktionierende Basis um (WLAN-Client auf SSID „GISMA-NET“, WPA2-PSK, Pseudobridge, TTN EU1/UDP, EU-868).</p>
 </blockquote>
-<section id="wlan-security" class="level3" data-number="1.5.1">
-<h3 data-number="1.5.1" class="anchored" data-anchor-id="wlan-security"><span class="header-section-number">1.5.1</span> WLAN-Security</h3>
+<section id="wlan-security" class="level3" data-number="2.2.1">
+<h3 data-number="2.2.1" class="anchored" data-anchor-id="wlan-security"><span class="header-section-number">2.2.1</span> WLAN-Security</h3>
 <p>Sicherheitsprofil für WPA/WPA2‑PSK. Hinterlegt Schlüssel und Cipher.</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">/interface</span> wireless security-profiles set [find default=yes] <span class="dt">\</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    mode=dynamic-keys <span class="dt">\</span></span>
@@ -473,8 +494,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    wpa-pre-shared-key=36171669 <span class="dt">\</span></span>
 <span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    wpa2-pre-shared-key=36171669</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
-<section id="wlan-als-client-pseudobridge" class="level3" data-number="1.5.2">
-<h3 data-number="1.5.2" class="anchored" data-anchor-id="wlan-als-client-pseudobridge"><span class="header-section-number">1.5.2</span> WLAN als Client (Pseudobridge)</h3>
+<section id="wlan-als-client-pseudobridge" class="level3" data-number="2.2.2">
+<h3 data-number="2.2.2" class="anchored" data-anchor-id="wlan-als-client-pseudobridge"><span class="header-section-number">2.2.2</span> WLAN als Client (Pseudobridge)</h3>
 <p>Versetzt <code>wlan1</code> in den Station‑Modus mit Pseudobridge, um im gleichen Layer‑2 wie der Hotspot zu sein.</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">/interface</span> wireless set [find default-name=wlan1] <span class="dt">\</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    band=2ghz-b/g/n <span class="dt">\</span></span>
@@ -484,21 +505,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    frequency=auto <span class="dt">\</span></span>
 <span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    disabled=no</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
-<section id="bridge-ports" class="level3" data-number="1.5.3">
-<h3 data-number="1.5.3" class="anchored" data-anchor-id="bridge-ports"><span class="header-section-number">1.5.3</span> Bridge + Ports</h3>
+<section id="bridge-ports" class="level3" data-number="2.2.3">
+<h3 data-number="2.2.3" class="anchored" data-anchor-id="bridge-ports"><span class="header-section-number">2.2.3</span> Bridge + Ports</h3>
 <p>Erstellt <code>bridgeLocal</code> und fügt <code>wlan1</code> und <code>ether1</code> als Ports hinzu.</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">/interface</span> bridge add name=bridgeLocal</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="ex">/interface</span> bridge port add bridge=bridgeLocal interface=wlan1</span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="ex">/interface</span> bridge port add bridge=bridgeLocal interface=ether1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
-<section id="ip-bezug-dns" class="level3" data-number="1.5.4">
-<h3 data-number="1.5.4" class="anchored" data-anchor-id="ip-bezug-dns"><span class="header-section-number">1.5.4</span> IP-Bezug &amp; DNS</h3>
+<section id="ip-bezug-dns" class="level3" data-number="2.2.4">
+<h3 data-number="2.2.4" class="anchored" data-anchor-id="ip-bezug-dns"><span class="header-section-number">2.2.4</span> IP-Bezug &amp; DNS</h3>
 <p>Aktiviert einen DHCP‑Client auf der Bridge und setzt Resolver für DNS.</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">/ip</span> dhcp-client add interface=bridgeLocal disabled=no</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="ex">/ip</span> dns set allow-remote-requests=yes servers=8.8.8.8,1.1.1.1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
-<section id="lora-ttn-eu1-semtech-udp-eu-868" class="level3" data-number="1.5.5">
-<h3 data-number="1.5.5" class="anchored" data-anchor-id="lora-ttn-eu1-semtech-udp-eu-868"><span class="header-section-number">1.5.5</span> LoRa – TTN EU1 (Semtech UDP) &amp; EU-868</h3>
+<section id="lora-ttn-eu1-semtech-udp-eu-868" class="level3" data-number="2.2.5">
+<h3 data-number="2.2.5" class="anchored" data-anchor-id="lora-ttn-eu1-semtech-udp-eu-868"><span class="header-section-number">2.2.5</span> LoRa – TTN EU1 (Semtech UDP) &amp; EU-868</h3>
 <p>Aktiviert das eingebaute LoRa‑Gateway, stellt EU‑868 ein und konfiguriert den Semtech‑UDP‑Forwarder zu TTN EU1.</p>
 <div class="sourceCode" id="cb9"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">/lora</span> disable 0</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="ex">/lora</span> set 0 servers=<span class="st">"TTN V3 (eu1)"</span> channel-plan=eu-868 <span class="dt">\</span></span>
@@ -511,58 +532,70 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <hr>
 </section>
 </section>
-<section id="winboxterminal-diagnoseleitfaden" class="level2" data-number="1.6">
-<h2 data-number="1.6" class="anchored" data-anchor-id="winboxterminal-diagnoseleitfaden"><span class="header-section-number">1.6</span> WinBox/Terminal – Diagnoseleitfaden</h2>
+<section id="winboxterminal-diagnoseleitfaden" class="level2" data-number="2.3">
+<h2 data-number="2.3" class="anchored" data-anchor-id="winboxterminal-diagnoseleitfaden"><span class="header-section-number">2.3</span> WinBox/Terminal – Diagnoseleitfaden</h2>
 <p>Sammlung typischer Diagnose‑Befehle, um WLAN, IP‑Vergabe, Routing und LoRa‑Weiterleitung zu prüfen.</p>
-<section id="wlan-ip" class="level3" data-number="1.6.1">
-<h3 data-number="1.6.1" class="anchored" data-anchor-id="wlan-ip"><span class="header-section-number">1.6.1</span> WLAN &amp; IP</h3>
+<section id="wlan-ip" class="level3" data-number="2.3.1">
+<h3 data-number="2.3.1" class="anchored" data-anchor-id="wlan-ip"><span class="header-section-number">2.3.1</span> WLAN &amp; IP</h3>
 <p>Befehle zum Scannen/Überwachen des WLANs und zum Prüfen der IP‑Konfiguration/Konnektivität.</p>
 <ul>
-<li><p>WLAN-Scan:</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="ex">/interface</span> wireless scan wlan1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
-<li><p>Monitor des Clients (Status, Kanal, Rauschpegel):</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="ex">/interface</span> wireless monitor wlan1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
-<li><p>DHCP-Client-Status:</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="ex">/ip</span> dhcp-client print detail</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
-<li><p>Routing:</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="ex">/ip</span> route print</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
-<li><p>Konnektivitätstest:</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="ex">/ping</span> 8.8.8.8</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li>WLAN-Scan:</li>
 </ul>
+<div class="sourceCode" id="cb11"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>  <span class="ex">/interface</span> wireless scan wlan1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li>Monitor des Clients (Status, Kanal, Rauschpegel):</li>
+</ul>
+<div class="sourceCode" id="cb12"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>  <span class="ex">/interface</span> wireless monitor wlan1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li>DHCP-Client-Status:</li>
+</ul>
+<div class="sourceCode" id="cb13"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>  <span class="ex">/ip</span> dhcp-client print detail</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li>Routing:</li>
+</ul>
+<div class="sourceCode" id="cb14"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>  <span class="ex">/ip</span> route print</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li>Konnektivitätstest:</li>
+</ul>
+<div class="sourceCode" id="cb15"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>  <span class="ex">/ping</span> 8.8.8.8</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
-<section id="bridgeports" class="level3" data-number="1.6.2">
-<h3 data-number="1.6.2" class="anchored" data-anchor-id="bridgeports"><span class="header-section-number">1.6.2</span> Bridge/Ports</h3>
+<section id="bridgeports" class="level3" data-number="2.3.2">
+<h3 data-number="2.3.2" class="anchored" data-anchor-id="bridgeports"><span class="header-section-number">2.3.2</span> Bridge/Ports</h3>
 <p>Druckt Bridge und Port‑Zugehörigkeiten, um Fehlverdrahtungen auszuschließen.</p>
 <div class="sourceCode" id="cb16"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="ex">/interface</span> bridge print</span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="ex">/interface</span> bridge port print</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
-<section id="lora-gateway" class="level3" data-number="1.6.3">
-<h3 data-number="1.6.3" class="anchored" data-anchor-id="lora-gateway"><span class="header-section-number">1.6.3</span> LoRa-Gateway</h3>
+<section id="lora-gateway" class="level3" data-number="2.3.3">
+<h3 data-number="2.3.3" class="anchored" data-anchor-id="lora-gateway"><span class="header-section-number">2.3.3</span> LoRa-Gateway</h3>
 <p>Prüft LoRa‑Gateway‑Parameter (EUI, Server, Plan) und ob Forwarder‑Traffic sichtbar ist.</p>
 <ul>
-<li><p>Status/EUI/Server/Plan:</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="ex">/lora</span> print detail</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
-<li><p>UDP-Forwarding sichtbar?</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="ex">/tool</span> sniffer quick port=1700</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li>Status/EUI/Server/Plan:</li>
 </ul>
+<div class="sourceCode" id="cb17"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>  <span class="ex">/lora</span> print detail</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li>UDP-Forwarding sichtbar?</li>
+</ul>
+<div class="sourceCode" id="cb18"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>  <span class="ex">/tool</span> sniffer quick port=1700</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
-<section id="exportsicherung" class="level3" data-number="1.6.4">
-<h3 data-number="1.6.4" class="anchored" data-anchor-id="exportsicherung"><span class="header-section-number">1.6.4</span> Export/Sicherung</h3>
+<section id="exportsicherung" class="level3" data-number="2.3.4">
+<h3 data-number="2.3.4" class="anchored" data-anchor-id="exportsicherung"><span class="header-section-number">2.3.4</span> Export/Sicherung</h3>
 <p>Exportiert die Konfiguration textuell (Backup der Einstellungen) bzw. erstellt ein binäres Voll‑Backup.</p>
 <ul>
-<li><p>Terse-Export (menschenlesbar):</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="ex">/export</span> terse</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
-<li><p>Binary-Backup (voll):</p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="ex">/system</span> backup save name=running.backup</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li>Terse-Export (menschenlesbar):</li>
 </ul>
+<div class="sourceCode" id="cb19"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>  <span class="ex">/export</span> terse</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li>Binary-Backup (voll):</li>
+</ul>
+<div class="sourceCode" id="cb20"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>  <span class="ex">/system</span> backup save name=running.backup</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <hr>
 </section>
 </section>
-<section id="ttn-konsole-gateway-application-geräte" class="level2" data-number="1.7">
-<h2 data-number="1.7" class="anchored" data-anchor-id="ttn-konsole-gateway-application-geräte"><span class="header-section-number">1.7</span> TTN-Konsole – Gateway, Application, Geräte</h2>
+<section id="ttn-konsole-gateway-application-geräte" class="level2" data-number="2.4">
+<h2 data-number="2.4" class="anchored" data-anchor-id="ttn-konsole-gateway-application-geräte"><span class="header-section-number">2.4</span> TTN-Konsole – Gateway, Application, Geräte</h2>
 <p>Schritte in der TTN‑Konsole: Gateway registrieren, Application anlegen, Geräte per OTAA hinzufügen und Decoder prüfen.</p>
-<section id="gateway" class="level3" data-number="1.7.1">
-<h3 data-number="1.7.1" class="anchored" data-anchor-id="gateway"><span class="header-section-number">1.7.1</span> Gateway</h3>
+<section id="gateway" class="level3" data-number="2.4.1">
+<h3 data-number="2.4.1" class="anchored" data-anchor-id="gateway"><span class="header-section-number">2.4.1</span> Gateway</h3>
 <p>Registrierung des Gateways in TTN inkl. Cluster und Frequency‑Plan.</p>
 <ul>
 <li>Registrierung mit <strong>Gateway-EUI</strong> (siehe <code>/lora print detail</code>).</li>
@@ -570,8 +603,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><strong>Frequency Plan</strong>: EU_863_870_TTN.</li>
 </ul>
 </section>
-<section id="application-geräte-otaa" class="level3" data-number="1.7.2">
-<h3 data-number="1.7.2" class="anchored" data-anchor-id="application-geräte-otaa"><span class="header-section-number">1.7.2</span> Application &amp; Geräte (OTAA)</h3>
+<section id="application-geräte-otaa" class="level3" data-number="2.4.2">
+<h3 data-number="2.4.2" class="anchored"><span class="header-section-number">2.4.2</span> Application &amp; Geräte (OTAA)</h3>
 <p>Geräte anlegen (OTAA‑Daten), Decoder aktivieren/prüfen und Live‑Daten kontrollieren.</p>
 <ul>
 <li>Application (z. B. <code>gisma-hydro-testbed</code>) vorhanden.</li>
@@ -579,15 +612,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><strong>Decoder</strong> sind <strong>aktiv</strong> (Application-Ebene bzw. Device-Override).</li>
 <li>Kontrolle unter <strong>End device → Live data</strong>: Uplinks sichtbar, <code>decoded_payload</code> gefüllt.</li>
 </ul>
-<hr>
-</section>
-</section>
-<div class="callout-info" title="Datenablage – einfache Wege ohne eigenen Server" data-collapse="true">
-<section id="datenablage-einfache-wege-ohne-eigenen-server" class="level2" data-number="1.8">
-<h2 data-number="1.8" class="anchored" data-anchor-id="datenablage-einfache-wege-ohne-eigenen-server"><span class="header-section-number">1.8</span> Datenablage – einfache Wege ohne eigenen Server</h2>
+<div class="callout callout-style-default callout-note callout-titled" title="Datenablage – einfache Wege ohne eigenen Server">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Datenablage – einfache Wege ohne eigenen Server
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<section id="datenablage-einfache-wege-ohne-eigenen-server" class="level2" data-number="2.5">
+<h2 data-number="2.5" class="anchored" data-anchor-id="datenablage-einfache-wege-ohne-eigenen-server"><span class="header-section-number">2.5</span> Datenablage – einfache Wege ohne eigenen Server</h2>
 <p>Drei niedrigschwellige Optionen, um Daten ohne eigene Server‑Software zu speichern (Storage, MQTT→Datei, Webhooks).</p>
-<section id="tts-storage-eingebaut-kein-server-nötig" class="level3" data-number="1.8.1">
-<h3 data-number="1.8.1" class="anchored" data-anchor-id="tts-storage-eingebaut-kein-server-nötig"><span class="header-section-number">1.8.1</span> TTS-Storage (eingebaut, “kein Server nötig”)</h3>
+<section id="tts-storage-eingebaut-kein-server-nötig" class="level3" data-number="2.5.1">
+<h3 data-number="2.5.1" class="anchored" data-anchor-id="tts-storage-eingebaut-kein-server-nötig"><span class="header-section-number">2.5.1</span> TTS-Storage (eingebaut, “kein Server nötig”)</h3>
 <p>TTN‑interner Speicher mit einfachem HTTP‑Abruf (NDJSON). Ideal für erste Tests/Archivierung.</p>
 <p><strong>Aktivierung:</strong> Application → <strong>Integrations → Storage</strong> → Enable.</p>
 <p><strong>Abruf (NDJSON):</strong></p>
@@ -609,8 +650,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a><span class="st">'</span> uplinks.ndjson <span class="op">&gt;</span> uplinks.csv</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p><strong>Hinweis:</strong> Speicherfrist je nach Tarif begrenzt → regelmäßig abholen.</p>
 </section>
-<section id="mqtt-dateicsv-ohne-programmierung" class="level3" data-number="1.8.2">
-<h3 data-number="1.8.2" class="anchored" data-anchor-id="mqtt-dateicsv-ohne-programmierung"><span class="header-section-number">1.8.2</span> MQTT → Datei/CSV (ohne Programmierung)</h3>
+<section id="mqtt-dateicsv-ohne-programmierung" class="level3" data-number="2.5.2">
+<h3 data-number="2.5.2" class="anchored" data-anchor-id="mqtt-dateicsv-ohne-programmierung"><span class="header-section-number">2.5.2</span> MQTT → Datei/CSV (ohne Programmierung)</h3>
 <p>Abonnieren des TTN‑MQTT‑Feeds und direkte Umwandlung in CSV mit <code>jq</code>.</p>
 <p><strong>Abonnieren:</strong></p>
 <div class="sourceCode" id="cb23"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="va">APP_ID</span><span class="op">=</span><span class="st">"gisma-hydro-testbed"</span></span>
@@ -630,8 +671,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a><span class="st">  | @csv</span></span>
 <span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a><span class="st">'</span> <span class="op">&gt;&gt;</span> live.csv</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
-<section id="no-code-via-webhooks" class="level3" data-number="1.8.3">
-<h3 data-number="1.8.3" class="anchored" data-anchor-id="no-code-via-webhooks"><span class="header-section-number">1.8.3</span> No-Code via Webhooks</h3>
+<section id="no-code-via-webhooks" class="level3" data-number="2.5.3">
+<h3 data-number="2.5.3" class="anchored" data-anchor-id="no-code-via-webhooks"><span class="header-section-number">2.5.3</span> No-Code via Webhooks</h3>
 <p>Weiterleitung der Uplinks per HTTP an Dienste wie Make.com, n8n oder Zapier, die ohne Programmierung in Tabellen/DBs schreiben.</p>
 <ul>
 <li>Application → <strong>Integrations → Webhooks → Add</strong> → „Custom“ oder Vorlage.</li>
@@ -641,11 +682,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <hr>
 </section>
 </section>
-<section id="dauerbetrieb-robuste-pipelines-mqttdb-grafana" class="level2" data-number="1.9">
-<h2 data-number="1.9" class="anchored" data-anchor-id="dauerbetrieb-robuste-pipelines-mqttdb-grafana"><span class="header-section-number">1.9</span> Dauerbetrieb – robuste Pipelines (MQTT→DB, Grafana)</h2>
+<section id="dauerbetrieb-robuste-pipelines-mqttdb-grafana" class="level2" data-number="2.6">
+<h2 data-number="2.6" class="anchored" data-anchor-id="dauerbetrieb-robuste-pipelines-mqttdb-grafana"><span class="header-section-number">2.6</span> Dauerbetrieb – robuste Pipelines (MQTT→DB, Grafana)</h2>
 <p>Produktionsreife Wege, um kontinuierlich Daten zu sammeln, in eine Zeitreihendatenbank zu schreiben und mit Grafana zu visualisieren.</p>
-<section id="minimal-python-mqttcsvjson" class="level3" data-number="1.9.1">
-<h3 data-number="1.9.1" class="anchored" data-anchor-id="minimal-python-mqttcsvjson"><span class="header-section-number">1.9.1</span> Minimal-Python (MQTT→CSV/JSON)</h3>
+<section id="minimal-python-mqttcsvjson" class="level3" data-number="2.6.1">
+<h3 data-number="2.6.1" class="anchored" data-anchor-id="minimal-python-mqttcsvjson"><span class="header-section-number">2.6.1</span> Minimal-Python (MQTT→CSV/JSON)</h3>
 <p>Kleines Python‑Skript mit <code>paho-mqtt</code>, das Uplinks liest und als CSV/JSON speichert.</p>
 <div class="sourceCode" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># mqtt_to_csv.py</span></span>
 <span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> ssl, json, csv</span>
@@ -680,8 +721,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="sourceCode" id="cb26"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install paho-mqtt</span>
 <span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> mqtt_to_csv.py</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
-<section id="influxdb-v2-grafana-docker-variante" class="level3" data-number="1.9.2">
-<h3 data-number="1.9.2" class="anchored" data-anchor-id="influxdb-v2-grafana-docker-variante"><span class="header-section-number">1.9.2</span> InfluxDB v2 + Grafana (Docker-Variante)</h3>
+<section id="influxdb-v2-grafana-docker-variante" class="level3" data-number="2.6.2">
+<h3 data-number="2.6.2" class="anchored" data-anchor-id="influxdb-v2-grafana-docker-variante"><span class="header-section-number">2.6.2</span> InfluxDB v2 + Grafana (Docker-Variante)</h3>
 <p>Stack aus InfluxDB (Zeitreihendatenbank), Telegraf (Ingest/Parsing) und Grafana (Dashboards) als Docker‑Compose.</p>
 <p><strong>docker-compose.yml (Beispiel, lokal)</strong></p>
 <div class="sourceCode" id="cb27"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">version</span><span class="kw">:</span><span class="at"> </span><span class="st">"3.8"</span></span>
@@ -742,27 +783,31 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 </section>
 </div>
+</div>
+</div>
 <hr>
-<section id="betriebshilfen-auto-heal-checks" class="level2" data-number="1.10">
-<h2 data-number="1.10" class="anchored" data-anchor-id="betriebshilfen-auto-heal-checks"><span class="header-section-number">1.10</span> Betriebshilfen (Auto-Heal, Checks)</h2>
+</section>
+</section>
+<section id="betriebshilfen-auto-heal-checks" class="level2" data-number="2.7">
+<h2 data-number="2.7" class="anchored" data-anchor-id="betriebshilfen-auto-heal-checks"><span class="header-section-number">2.7</span> Betriebshilfen (Auto-Heal, Checks)</h2>
 <p>Zusatzfunktionen für stabilen Dauerbetrieb: automatischer WLAN‑Reconnect und korrekte Systemzeit.</p>
-<section id="netwatch-wlan-neu-verbinden-bei-ausfall" class="level3" data-number="1.10.1">
-<h3 data-number="1.10.1" class="anchored" data-anchor-id="netwatch-wlan-neu-verbinden-bei-ausfall"><span class="header-section-number">1.10.1</span> Netwatch (WLAN neu verbinden bei Ausfall)</h3>
+<section id="netwatch-wlan-neu-verbinden-bei-ausfall" class="level3" data-number="2.7.1">
+<h3 data-number="2.7.1" class="anchored" data-anchor-id="netwatch-wlan-neu-verbinden-bei-ausfall"><span class="header-section-number">2.7.1</span> Netwatch (WLAN neu verbinden bei Ausfall)</h3>
 <p>Überwacht einen Zielhost und startet <code>wlan1</code> neu, wenn keine Verbindung besteht.</p>
 <div class="sourceCode" id="cb29"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="ex">/tool</span> netwatch add host=8.8.8.8 interval=60s timeout=5s <span class="dt">\</span></span>
 <span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>    up-script=<span class="st">""</span> <span class="dt">\</span></span>
 <span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>    down-script=<span class="st">"/interface wireless disable wlan1; :delay 2s; /interface wireless enable wlan1"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
-<section id="ntp-zeitzone-logs-mit-korrekter-uhrzeit" class="level3" data-number="1.10.2">
-<h3 data-number="1.10.2" class="anchored" data-anchor-id="ntp-zeitzone-logs-mit-korrekter-uhrzeit"><span class="header-section-number">1.10.2</span> NTP &amp; Zeitzone (Logs mit korrekter Uhrzeit)</h3>
+<section id="ntp-zeitzone-logs-mit-korrekter-uhrzeit" class="level3" data-number="2.7.2">
+<h3 data-number="2.7.2" class="anchored" data-anchor-id="ntp-zeitzone-logs-mit-korrekter-uhrzeit"><span class="header-section-number">2.7.2</span> NTP &amp; Zeitzone (Logs mit korrekter Uhrzeit)</h3>
 <p>Stellt Zeitzone und NTP‑Server ein, damit Logs/Zeitstempel stimmen.</p>
 <div class="sourceCode" id="cb30"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="ex">/system</span> clock set time-zone-name=Europe/Berlin</span>
 <span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="ex">/system</span> ntp client set enabled=yes primary-ntp=1.1.1.1 secondary-ntp=8.8.8.8</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <hr>
 </section>
 </section>
-<section id="sensecap-besonderheiten-ohne-decoder-code" class="level2" data-number="1.11">
-<h2 data-number="1.11" class="anchored" data-anchor-id="sensecap-besonderheiten-ohne-decoder-code"><span class="header-section-number">1.11</span> SenseCAP-Besonderheiten (ohne Decoder-Code)</h2>
+<section id="sensecap-besonderheiten-ohne-decoder-code" class="level2" data-number="2.8">
+<h2 data-number="2.8" class="anchored" data-anchor-id="sensecap-besonderheiten-ohne-decoder-code"><span class="header-section-number">2.8</span> SenseCAP-Besonderheiten (ohne Decoder-Code)</h2>
 <p>Hinweise zu Pairing, FPorts und Decoder‑Einsatz für den SenseCAP S2120.</p>
 <ul>
 <li><strong>Pairing/BT-PIN:</strong> häufig <code>000000</code>.</li>
@@ -773,8 +818,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ul>
 <hr>
 </section>
-<section id="dragino-ps-lb-dds-75lb-ohne-decoder-code" class="level2" data-number="1.12">
-<h2 data-number="1.12" class="anchored" data-anchor-id="dragino-ps-lb-dds-75lb-ohne-decoder-code"><span class="header-section-number">1.12</span> Dragino PS-LB &amp; DDS-75LB (ohne Decoder-Code)</h2>
+<section id="dragino-ps-lb-dds-75lb-ohne-decoder-code" class="level2" data-number="2.9">
+<h2 data-number="2.9" class="anchored" data-anchor-id="dragino-ps-lb-dds-75lb-ohne-decoder-code"><span class="header-section-number">2.9</span> Dragino PS-LB &amp; DDS-75LB (ohne Decoder-Code)</h2>
 <p>Kurzanleitung für die Aufnahme per OTAA und Decoder‑Kontrolle der Dragino‑Geräte.</p>
 <ul>
 <li>Beide über OTAA identisch aufnehmen (DevEUI/JoinEUI/AppKey).</li>
@@ -784,8 +829,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ul>
 <hr>
 </section>
-<section id="faqs-troubleshooting" class="level2" data-number="1.13">
-<h2 data-number="1.13" class="anchored" data-anchor-id="faqs-troubleshooting"><span class="header-section-number">1.13</span> FAQs &amp; Troubleshooting</h2>
+<section id="faqs-troubleshooting" class="level2" data-number="2.10">
+<h2 data-number="2.10" class="anchored" data-anchor-id="faqs-troubleshooting"><span class="header-section-number">2.10</span> FAQs &amp; Troubleshooting</h2>
 <p>Kurze Checkliste typischer Fehlerbilder und ihrer Ursachen.</p>
 <ul>
 <li><p><strong>Uplinks kommen nicht in TTN an:</strong> <code>/lora print detail</code> (Enabled?), <code>/tool sniffer quick port=1700</code> (UDP-Traffic?), <code>/ip dhcp-client print</code> (IP bekommen?), <code>/ping 8.8.8.8</code>.</p></li>
@@ -794,8 +839,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><p><strong>Speicherung/Visualisierung fehlt:</strong> Storage aktivieren <strong>oder</strong> MQTT→CSV/DB/Grafana implementieren (siehe Kapitel 5 &amp; 6).</p></li>
 </ul>
 <hr>
-<section id="to-do-leitfaden" class="level3" data-number="1.13.1">
-<h3 data-number="1.13.1" class="anchored" data-anchor-id="to-do-leitfaden"><span class="header-section-number">1.13.1</span> To-Do-Leitfaden</h3>
+<section id="to-do-leitfaden" class="level3" data-number="2.10.1">
+<h3 data-number="2.10.1" class="anchored" data-anchor-id="to-do-leitfaden"><span class="header-section-number">2.10.1</span> To-Do-Leitfaden</h3>
 <p>Minimalliste, um schnell von „Gerät online“ zu „Daten gesichert und sichtbar“ zu kommen.</p>
 <ol type="1">
 <li><strong>TTN Storage aktivieren</strong> und per <strong>HTTP + jq</strong> regelmäßig ziehen (Archiv/CSV).</li>
@@ -806,8 +851,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <hr>
 </section>
 </section>
-<section id="anmerkungen" class="level2" data-number="1.14">
-<h2 data-number="1.14" class="anchored" data-anchor-id="anmerkungen"><span class="header-section-number">1.14</span> <strong>Anmerkungen</strong></h2>
+<section id="anmerkungen" class="level2" data-number="2.11">
+<h2 data-number="2.11" class="anchored" data-anchor-id="anmerkungen"><span class="header-section-number">2.11</span> <strong>Anmerkungen</strong></h2>
 <p>Ergänzende Hinweise zur Konfiguration und zum Betrieb (EU‑868, Semtech‑UDP, Datenpfade) in kompakter Form.</p>
 <ul>
 <li>Die <strong>Decoder für PS-LB, DDS-75LB und SenseCAP S2120</strong> sind in der TTN-Application <strong>hinterlegt und aktiv</strong>.</li>
@@ -815,8 +860,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>Daten können über <strong>Storage/MQTT/Webhook</strong> ohne eigenen Server gespeichert und mit <strong>Grafana</strong> visualisiert werden.</li>
 </ul>
 </section>
-<section id="downloads-handbücher" class="level2" data-number="1.15">
-<h2 data-number="1.15" class="anchored" data-anchor-id="downloads-handbücher"><span class="header-section-number">1.15</span> Downloads &amp; Handbücher</h2>
+<section id="downloads-handbücher" class="level2" data-number="2.12">
+<h2 data-number="2.12" class="anchored" data-anchor-id="downloads-handbücher"><span class="header-section-number">2.12</span> Downloads &amp; Handbücher</h2>
 <ul>
 <li><p><a href="https://mikrotik.com/download"><strong>WinBox Download (MikroTik)</strong></a><br>
 Offizielle Seite zum Herunterladen von WinBox (Windows/Linux mit Wine).</p></li>
@@ -935,7 +980,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   }
     var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
     var mailtoRegex = new RegExp(/^mailto:/);
-      var filterRegex = new RegExp("https:\/\/gisma\.github\.io\/mikrotik-burgwald");
+      var filterRegex = new RegExp("^(?:http:|https:)\/\/www\.quarto\.org\/custom");
     var isInternal = (href) => {
         return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
     }
@@ -949,6 +994,13 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
         if (link.dataset.originalHref !== undefined) {
           link.href = link.dataset.originalHref;
         }
+          // target, if specified
+          link.setAttribute("target", "_blank");
+          if (link.getAttribute("rel") === null) {
+            link.setAttribute("rel", "noopener");
+          }
+          // default icon
+          link.classList.add("external");
       }
     }
   function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
