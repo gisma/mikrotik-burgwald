@@ -200,9 +200,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul>
   <li><a href="#kurzanleitung" id="toc-kurzanleitung" class="nav-link active" data-scroll-target="#kurzanleitung"><span class="header-section-number">1</span> Kurzanleitung</a>
   <ul class="collapse">
-  <li><a href="#script-hochladen" id="toc-script-hochladen" class="nav-link" data-scroll-target="#script-hochladen"><span class="header-section-number">1.1</span> 1) Script hochladen</a></li>
-  <li><a href="#script-importieren" id="toc-script-importieren" class="nav-link" data-scroll-target="#script-importieren"><span class="header-section-number">1.2</span> 2) Script importieren</a></li>
-  <li><a href="#funktion-testen" id="toc-funktion-testen" class="nav-link" data-scroll-target="#funktion-testen"><span class="header-section-number">1.3</span> 3) Funktion testen</a></li>
+  <li><a href="#script-hochladen" id="toc-script-hochladen" class="nav-link" data-scroll-target="#script-hochladen"><span class="header-section-number">1.1</span> Script hochladen</a></li>
+  <li><a href="#script-importieren" id="toc-script-importieren" class="nav-link" data-scroll-target="#script-importieren"><span class="header-section-number">1.2</span> Script importieren</a></li>
+  <li><a href="#funktion-testen" id="toc-funktion-testen" class="nav-link" data-scroll-target="#funktion-testen"><span class="header-section-number">1.3</span> Funktion testen</a></li>
   <li><a href="#grundlagen-mikrotik-konnektivität-mac-zugriff-und-hotspot-einstellungen" id="toc-grundlagen-mikrotik-konnektivität-mac-zugriff-und-hotspot-einstellungen" class="nav-link" data-scroll-target="#grundlagen-mikrotik-konnektivität-mac-zugriff-und-hotspot-einstellungen"><span class="header-section-number">1.4</span> Grundlagen MikroTik-Konnektivität, MAC-Zugriff und Hotspot-Einstellungen</a>
   <ul class="collapse">
   <li><a href="#hardware-aufbau" id="toc-hardware-aufbau" class="nav-link" data-scroll-target="#hardware-aufbau"><span class="header-section-number">1.4.1</span> 1) Hardware-Aufbau</a></li>
@@ -298,20 +298,20 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="kurzanleitung" class="level1" data-number="1">
 <h1 data-number="1"><span class="header-section-number">1</span> Kurzanleitung</h1>
 <section id="script-hochladen" class="level2" data-number="1.1">
-<h2 data-number="1.1" class="anchored" data-anchor-id="script-hochladen"><span class="header-section-number">1.1</span> 1) Script hochladen</h2>
+<h2 data-number="1.1" class="anchored" data-anchor-id="script-hochladen"><span class="header-section-number">1.1</span> Script hochladen</h2>
 <ul>
 <li>In <strong>WinBox → Files</strong>: <a href="src/gisma_base2.rsc">Setup-Datei <code>gisma_base2.rsc</code></a> einfach per Drag&amp;Drop auf das Gerät laden. <a href="https://mikrotik.com/download"><strong>WinBox Download (MikroTik)</strong></a></li>
 </ul>
 </section>
 <section id="script-importieren" class="level2" data-number="1.2">
-<h2 data-number="1.2" class="anchored" data-anchor-id="script-importieren"><span class="header-section-number">1.2</span> 2) Script importieren</h2>
+<h2 data-number="1.2" class="anchored" data-anchor-id="script-importieren"><span class="header-section-number">1.2</span> Script importieren</h2>
 <ul>
 <li><p>In <strong>WinBox → New Terminal</strong> ausführen:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">/import</span> file-name=gisma_base2.rsc</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
 </ul>
 </section>
 <section id="funktion-testen" class="level2" data-number="1.3">
-<h2 data-number="1.3" class="anchored" data-anchor-id="funktion-testen"><span class="header-section-number">1.3</span> 3) Funktion testen</h2>
+<h2 data-number="1.3" class="anchored" data-anchor-id="funktion-testen"><span class="header-section-number">1.3</span> Funktion testen</h2>
 <ul>
 <li><p>WLAN/DHCP:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">/interface</span> wireless monitor wlan1 once</span>

@@ -15,8 +15,8 @@
     "objectID": "lorawan_doku.html#script-hochladen",
     "href": "lorawan_doku.html#script-hochladen",
     "title": "LoraWan Doku",
-    "section": "1.1 1) Script hochladen",
-    "text": "1.1 1) Script hochladen\n\nIn WinBox → Files: Setup-Datei gisma_base2.rsc einfach per Drag&Drop auf das Gerät laden. WinBox Download (MikroTik)",
+    "section": "1.1 Script hochladen",
+    "text": "1.1 Script hochladen\n\nIn WinBox → Files: Setup-Datei gisma_base2.rsc einfach per Drag&Drop auf das Gerät laden. WinBox Download (MikroTik)",
     "crumbs": [
       "Home",
       "LoRaWAN",
@@ -27,8 +27,8 @@
     "objectID": "lorawan_doku.html#script-importieren",
     "href": "lorawan_doku.html#script-importieren",
     "title": "LoraWan Doku",
-    "section": "1.2 2) Script importieren",
-    "text": "1.2 2) Script importieren\n\nIn WinBox → New Terminal ausführen:\n/import file-name=gisma_base2.rsc",
+    "section": "1.2 Script importieren",
+    "text": "1.2 Script importieren\n\nIn WinBox → New Terminal ausführen:\n/import file-name=gisma_base2.rsc",
     "crumbs": [
       "Home",
       "LoRaWAN",
@@ -39,8 +39,8 @@
     "objectID": "lorawan_doku.html#funktion-testen",
     "href": "lorawan_doku.html#funktion-testen",
     "title": "LoraWan Doku",
-    "section": "1.3 3) Funktion testen",
-    "text": "1.3 3) Funktion testen\n\nWLAN/DHCP:\n/interface wireless monitor wlan1 once\n/ip dhcp-client print detail\n/ping 8.8.8.8 count=4\nLoRa (falls enthalten):\n/lora print detail\n/tool sniffer quick port=1700",
+    "section": "1.3 Funktion testen",
+    "text": "1.3 Funktion testen\n\nWLAN/DHCP:\n/interface wireless monitor wlan1 once\n/ip dhcp-client print detail\n/ping 8.8.8.8 count=4\nLoRa (falls enthalten):\n/lora print detail\n/tool sniffer quick port=1700",
     "crumbs": [
       "Home",
       "LoRaWAN",
