@@ -8,6 +8,7 @@ project:
     - lorawan_doku.qmd
 
 website:
+  site-url: https://gisma.github.io/mikrotik-burgwald
   title: "LoRaWAN Doku"
   search:
     location: sidebar     # Suchfeld in der Sidebar
