@@ -60,18 +60,18 @@ Hier folgt eine basale Anleitung für den Betrieb eines MikroTik-LoRaWAN-Gateway
 
 ## Grundlagen MikroTik-Konnektivität, MAC-Zugriff und Hotspot-Einstellungen
 
-### 1) Hardware-Aufbau
+### Hardware-Aufbau
 - MikroTik RBwAPR-2nD mit Netzteil/PoE versorgen.
 - Ethernet vom **PC/Laptop** an **ether1** des MikroTik stecken.
 - Optional: LoRa-Antenne montieren und fest verschrauben.
 
-### 2) Erstverbindung per WinBox (Layer-2 / MAC)
+### Erstverbindung per WinBox (Layer-2 / MAC)
 - WinBox starten → **Neighbors**: RBwAPR sollte automatisch erscheinen.
 - Verbinden über **MAC Address** (funktioniert ohne IP).
 - Login: ab Werk `admin` (ggf. ohne Passwort) → bei erster Anmeldung Passwort setzen.
 - Bei älteren QuickSet-Resten: **System → Reset Configuration** (ohne Default-Skripte), danach erneut per MAC verbinden.
 
-### 3) Hotspot-/WLAN-Voraussetzungen
+### Hotspot-/WLAN-Voraussetzungen
 - **Band**: 2,4 GHz (802.11b/g/n). Station-Pseudobridge ist bei 5 GHz oft nicht zuverlässig.
 - **Sicherheitsmodus**: WPA2-PSK (empfohlen), Kennwort ohne Sonderfälle.
 - **SSID**: sichtbar, statischer Name (keine Auto-Umschaltung).
@@ -81,7 +81,7 @@ Hier folgt eine basale Anleitung für den Betrieb eines MikroTik-LoRaWAN-Gateway
 - **DHCP** am Hotspot: aktiv, ausreichend Adressbereich (z. B. 192.168.1.100–200).
 - **Internet-Durchleitung** (NAT) im Hotspot aktiv lassen.
 
-### 4) WLAN-Client (GUI-Weg, WinBox)
+### WLAN-Client (GUI-Weg, WinBox)
 1. **Wireless → Security Profiles**  
    - WPA2-PSK mit Kennwort anlegen/ändern.
 2. **Wireless → wlan1**  
@@ -98,12 +98,12 @@ Hier folgt eine basale Anleitung für den Betrieb eines MikroTik-LoRaWAN-Gateway
 5. **DNS** (optional)  
    - **IP → DNS**: Public Resolver (z. B. `8.8.8.8`, `1.1.1.1`), „Allow Remote Requests“ aktivieren.
 
-### 5) Kontrolle & Umstieg auf IP-Zugriff
+### Kontrolle & Umstieg auf IP-Zugriff
 - **IP-Bezug prüfen**: **IP → DHCP Client** zeigt „bound“ mit zugewiesener IP.
 - **Routing/Internet** testen: **New Terminal** → `/ping 8.8.8.8 count=4`
 - Danach in WinBox statt über **MAC** über die **IP** verbinden (stabiler, schneller).
 
-### 6) Tests (Terminal, minimal)
+### Tests (Terminal, minimal)
 ```bash
 /interface wireless monitor wlan1 once
 /ip dhcp-client print detail
@@ -343,6 +343,8 @@ Geräte anlegen (OTAA‑Daten), Decoder aktivieren/prüfen und Live‑Daten kont
 
 ---
 
+:::{.callout-info title="Datenablage – einfache Wege ohne eigenen Server" collapse="true"}
+
 ## Datenablage – einfache Wege ohne eigenen Server
 
 Drei niedrigschwellige Optionen, um Daten ohne eigene Server‑Software zu speichern (Storage, MQTT→Datei, Webhooks).
@@ -534,6 +536,8 @@ Visualisierungsschicht. In Grafana die InfluxDB‑Datenquelle setzen und Panels 
 * Datenquelle **InfluxDB v2** auf `http://influxdb:8086`, Org/Bucket/Token setzen.
 * Dashboard erstellen; z. B. Messungen `pressure_cmH2O`, `distance_cm`, `battery`, `temperature` (abhängig von Decoderfeldern in `decoded_payload`).
 * Alternativ: **TTN → InfluxDB Cloud** per **Webhook-Vorlage** (Konsole → Integrations → Webhooks → InfluxDB Cloud).
+
+:::
 
 ---
 

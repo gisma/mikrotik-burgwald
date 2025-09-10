@@ -205,12 +205,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#funktion-testen" id="toc-funktion-testen" class="nav-link" data-scroll-target="#funktion-testen"><span class="header-section-number">1.3</span> Funktion testen</a></li>
   <li><a href="#grundlagen-mikrotik-konnektivität-mac-zugriff-und-hotspot-einstellungen" id="toc-grundlagen-mikrotik-konnektivität-mac-zugriff-und-hotspot-einstellungen" class="nav-link" data-scroll-target="#grundlagen-mikrotik-konnektivität-mac-zugriff-und-hotspot-einstellungen"><span class="header-section-number">1.4</span> Grundlagen MikroTik-Konnektivität, MAC-Zugriff und Hotspot-Einstellungen</a>
   <ul class="collapse">
-  <li><a href="#hardware-aufbau" id="toc-hardware-aufbau" class="nav-link" data-scroll-target="#hardware-aufbau"><span class="header-section-number">1.4.1</span> 1) Hardware-Aufbau</a></li>
-  <li><a href="#erstverbindung-per-winbox-layer-2-mac" id="toc-erstverbindung-per-winbox-layer-2-mac" class="nav-link" data-scroll-target="#erstverbindung-per-winbox-layer-2-mac"><span class="header-section-number">1.4.2</span> 2) Erstverbindung per WinBox (Layer-2 / MAC)</a></li>
-  <li><a href="#hotspot-wlan-voraussetzungen" id="toc-hotspot-wlan-voraussetzungen" class="nav-link" data-scroll-target="#hotspot-wlan-voraussetzungen"><span class="header-section-number">1.4.3</span> 3) Hotspot-/WLAN-Voraussetzungen</a></li>
-  <li><a href="#wlan-client-gui-weg-winbox" id="toc-wlan-client-gui-weg-winbox" class="nav-link" data-scroll-target="#wlan-client-gui-weg-winbox"><span class="header-section-number">1.4.4</span> 4) WLAN-Client (GUI-Weg, WinBox)</a></li>
-  <li><a href="#kontrolle-umstieg-auf-ip-zugriff" id="toc-kontrolle-umstieg-auf-ip-zugriff" class="nav-link" data-scroll-target="#kontrolle-umstieg-auf-ip-zugriff"><span class="header-section-number">1.4.5</span> 5) Kontrolle &amp; Umstieg auf IP-Zugriff</a></li>
-  <li><a href="#tests-terminal-minimal" id="toc-tests-terminal-minimal" class="nav-link" data-scroll-target="#tests-terminal-minimal"><span class="header-section-number">1.4.6</span> 6) Tests (Terminal, minimal)</a></li>
+  <li><a href="#hardware-aufbau" id="toc-hardware-aufbau" class="nav-link" data-scroll-target="#hardware-aufbau"><span class="header-section-number">1.4.1</span> Hardware-Aufbau</a></li>
+  <li><a href="#erstverbindung-per-winbox-layer-2-mac" id="toc-erstverbindung-per-winbox-layer-2-mac" class="nav-link" data-scroll-target="#erstverbindung-per-winbox-layer-2-mac"><span class="header-section-number">1.4.2</span> Erstverbindung per WinBox (Layer-2 / MAC)</a></li>
+  <li><a href="#hotspot-wlan-voraussetzungen" id="toc-hotspot-wlan-voraussetzungen" class="nav-link" data-scroll-target="#hotspot-wlan-voraussetzungen"><span class="header-section-number">1.4.3</span> Hotspot-/WLAN-Voraussetzungen</a></li>
+  <li><a href="#wlan-client-gui-weg-winbox" id="toc-wlan-client-gui-weg-winbox" class="nav-link" data-scroll-target="#wlan-client-gui-weg-winbox"><span class="header-section-number">1.4.4</span> WLAN-Client (GUI-Weg, WinBox)</a></li>
+  <li><a href="#kontrolle-umstieg-auf-ip-zugriff" id="toc-kontrolle-umstieg-auf-ip-zugriff" class="nav-link" data-scroll-target="#kontrolle-umstieg-auf-ip-zugriff"><span class="header-section-number">1.4.5</span> Kontrolle &amp; Umstieg auf IP-Zugriff</a></li>
+  <li><a href="#tests-terminal-minimal" id="toc-tests-terminal-minimal" class="nav-link" data-scroll-target="#tests-terminal-minimal"><span class="header-section-number">1.4.6</span> Tests (Terminal, minimal)</a></li>
   <li><a href="#mikrotik-als-wlan-client" id="toc-mikrotik-als-wlan-client" class="nav-link" data-scroll-target="#mikrotik-als-wlan-client"><span class="header-section-number">1.4.7</span> MikroTik als WLAN-Client</a></li>
   <li><a href="#bridge-bridgelocal" id="toc-bridge-bridgelocal" class="nav-link" data-scroll-target="#bridge-bridgelocal"><span class="header-section-number">1.4.8</span> Bridge (bridgeLocal)</a></li>
   <li><a href="#alte-reste" id="toc-alte-reste" class="nav-link" data-scroll-target="#alte-reste"><span class="header-section-number">1.4.9</span> „Alte Reste“</a></li>
@@ -235,17 +235,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul class="collapse">
   <li><a href="#gateway" id="toc-gateway" class="nav-link" data-scroll-target="#gateway"><span class="header-section-number">1.7.1</span> Gateway</a></li>
   <li><a href="#application-geräte-otaa" id="toc-application-geräte-otaa" class="nav-link" data-scroll-target="#application-geräte-otaa"><span class="header-section-number">1.7.2</span> Application &amp; Geräte (OTAA)</a></li>
-  </ul></li>
-  <li><a href="#datenablage-einfache-wege-ohne-eigenen-server" id="toc-datenablage-einfache-wege-ohne-eigenen-server" class="nav-link" data-scroll-target="#datenablage-einfache-wege-ohne-eigenen-server"><span class="header-section-number">1.8</span> Datenablage – einfache Wege ohne eigenen Server</a>
-  <ul class="collapse">
-  <li><a href="#tts-storage-eingebaut-kein-server-nötig" id="toc-tts-storage-eingebaut-kein-server-nötig" class="nav-link" data-scroll-target="#tts-storage-eingebaut-kein-server-nötig"><span class="header-section-number">1.8.1</span> TTS-Storage (eingebaut, “kein Server nötig”)</a></li>
-  <li><a href="#mqtt-dateicsv-ohne-programmierung" id="toc-mqtt-dateicsv-ohne-programmierung" class="nav-link" data-scroll-target="#mqtt-dateicsv-ohne-programmierung"><span class="header-section-number">1.8.2</span> MQTT → Datei/CSV (ohne Programmierung)</a></li>
-  <li><a href="#no-code-via-webhooks" id="toc-no-code-via-webhooks" class="nav-link" data-scroll-target="#no-code-via-webhooks"><span class="header-section-number">1.8.3</span> No-Code via Webhooks</a></li>
-  </ul></li>
-  <li><a href="#dauerbetrieb-robuste-pipelines-mqttdb-grafana" id="toc-dauerbetrieb-robuste-pipelines-mqttdb-grafana" class="nav-link" data-scroll-target="#dauerbetrieb-robuste-pipelines-mqttdb-grafana"><span class="header-section-number">1.9</span> Dauerbetrieb – robuste Pipelines (MQTT→DB, Grafana)</a>
-  <ul class="collapse">
-  <li><a href="#minimal-python-mqttcsvjson" id="toc-minimal-python-mqttcsvjson" class="nav-link" data-scroll-target="#minimal-python-mqttcsvjson"><span class="header-section-number">1.9.1</span> Minimal-Python (MQTT→CSV/JSON)</a></li>
-  <li><a href="#influxdb-v2-grafana-docker-variante" id="toc-influxdb-v2-grafana-docker-variante" class="nav-link" data-scroll-target="#influxdb-v2-grafana-docker-variante"><span class="header-section-number">1.9.2</span> InfluxDB v2 + Grafana (Docker-Variante)</a></li>
   </ul></li>
   <li><a href="#betriebshilfen-auto-heal-checks" id="toc-betriebshilfen-auto-heal-checks" class="nav-link" data-scroll-target="#betriebshilfen-auto-heal-checks"><span class="header-section-number">1.10</span> Betriebshilfen (Auto-Heal, Checks)</a>
   <ul class="collapse">
@@ -325,7 +314,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="grundlagen-mikrotik-konnektivität-mac-zugriff-und-hotspot-einstellungen" class="level2" data-number="1.4">
 <h2 data-number="1.4" class="anchored" data-anchor-id="grundlagen-mikrotik-konnektivität-mac-zugriff-und-hotspot-einstellungen"><span class="header-section-number">1.4</span> Grundlagen MikroTik-Konnektivität, MAC-Zugriff und Hotspot-Einstellungen</h2>
 <section id="hardware-aufbau" class="level3" data-number="1.4.1">
-<h3 data-number="1.4.1" class="anchored" data-anchor-id="hardware-aufbau"><span class="header-section-number">1.4.1</span> 1) Hardware-Aufbau</h3>
+<h3 data-number="1.4.1" class="anchored" data-anchor-id="hardware-aufbau"><span class="header-section-number">1.4.1</span> Hardware-Aufbau</h3>
 <ul>
 <li>MikroTik RBwAPR-2nD mit Netzteil/PoE versorgen.</li>
 <li>Ethernet vom <strong>PC/Laptop</strong> an <strong>ether1</strong> des MikroTik stecken.</li>
@@ -333,7 +322,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ul>
 </section>
 <section id="erstverbindung-per-winbox-layer-2-mac" class="level3" data-number="1.4.2">
-<h3 data-number="1.4.2" class="anchored" data-anchor-id="erstverbindung-per-winbox-layer-2-mac"><span class="header-section-number">1.4.2</span> 2) Erstverbindung per WinBox (Layer-2 / MAC)</h3>
+<h3 data-number="1.4.2" class="anchored" data-anchor-id="erstverbindung-per-winbox-layer-2-mac"><span class="header-section-number">1.4.2</span> Erstverbindung per WinBox (Layer-2 / MAC)</h3>
 <ul>
 <li>WinBox starten → <strong>Neighbors</strong>: RBwAPR sollte automatisch erscheinen.</li>
 <li>Verbinden über <strong>MAC Address</strong> (funktioniert ohne IP).</li>
@@ -342,7 +331,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ul>
 </section>
 <section id="hotspot-wlan-voraussetzungen" class="level3" data-number="1.4.3">
-<h3 data-number="1.4.3" class="anchored" data-anchor-id="hotspot-wlan-voraussetzungen"><span class="header-section-number">1.4.3</span> 3) Hotspot-/WLAN-Voraussetzungen</h3>
+<h3 data-number="1.4.3" class="anchored" data-anchor-id="hotspot-wlan-voraussetzungen"><span class="header-section-number">1.4.3</span> Hotspot-/WLAN-Voraussetzungen</h3>
 <ul>
 <li><strong>Band</strong>: 2,4 GHz (802.11b/g/n). Station-Pseudobridge ist bei 5 GHz oft nicht zuverlässig.</li>
 <li><strong>Sicherheitsmodus</strong>: WPA2-PSK (empfohlen), Kennwort ohne Sonderfälle.</li>
@@ -355,7 +344,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ul>
 </section>
 <section id="wlan-client-gui-weg-winbox" class="level3" data-number="1.4.4">
-<h3 data-number="1.4.4" class="anchored" data-anchor-id="wlan-client-gui-weg-winbox"><span class="header-section-number">1.4.4</span> 4) WLAN-Client (GUI-Weg, WinBox)</h3>
+<h3 data-number="1.4.4" class="anchored" data-anchor-id="wlan-client-gui-weg-winbox"><span class="header-section-number">1.4.4</span> WLAN-Client (GUI-Weg, WinBox)</h3>
 <ol type="1">
 <li><strong>Wireless → Security Profiles</strong>
 <ul>
@@ -391,7 +380,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ol>
 </section>
 <section id="kontrolle-umstieg-auf-ip-zugriff" class="level3" data-number="1.4.5">
-<h3 data-number="1.4.5" class="anchored" data-anchor-id="kontrolle-umstieg-auf-ip-zugriff"><span class="header-section-number">1.4.5</span> 5) Kontrolle &amp; Umstieg auf IP-Zugriff</h3>
+<h3 data-number="1.4.5" class="anchored" data-anchor-id="kontrolle-umstieg-auf-ip-zugriff"><span class="header-section-number">1.4.5</span> Kontrolle &amp; Umstieg auf IP-Zugriff</h3>
 <ul>
 <li><strong>IP-Bezug prüfen</strong>: <strong>IP → DHCP Client</strong> zeigt „bound“ mit zugewiesener IP.</li>
 <li><strong>Routing/Internet</strong> testen: <strong>New Terminal</strong> → <code>/ping 8.8.8.8 count=4</code></li>
@@ -399,7 +388,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ul>
 </section>
 <section id="tests-terminal-minimal" class="level3" data-number="1.4.6">
-<h3 data-number="1.4.6" class="anchored" data-anchor-id="tests-terminal-minimal"><span class="header-section-number">1.4.6</span> 6) Tests (Terminal, minimal)</h3>
+<h3 data-number="1.4.6" class="anchored" data-anchor-id="tests-terminal-minimal"><span class="header-section-number">1.4.6</span> Tests (Terminal, minimal)</h3>
 <div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">/interface</span> wireless monitor wlan1 once</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="ex">/ip</span> dhcp-client print detail</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="ex">/ping</span> 8.8.8.8 count=4</span>
@@ -593,6 +582,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <hr>
 </section>
 </section>
+<div class="callout-info" title="Datenablage – einfache Wege ohne eigenen Server" data-collapse="true">
 <section id="datenablage-einfache-wege-ohne-eigenen-server" class="level2" data-number="1.8">
 <h2 data-number="1.8" class="anchored" data-anchor-id="datenablage-einfache-wege-ohne-eigenen-server"><span class="header-section-number">1.8</span> Datenablage – einfache Wege ohne eigenen Server</h2>
 <p>Drei niedrigschwellige Optionen, um Daten ohne eigene Server‑Software zu speichern (Storage, MQTT→Datei, Webhooks).</p>
@@ -749,9 +739,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>Dashboard erstellen; z. B. Messungen <code>pressure_cmH2O</code>, <code>distance_cm</code>, <code>battery</code>, <code>temperature</code> (abhängig von Decoderfeldern in <code>decoded_payload</code>).</li>
 <li>Alternativ: <strong>TTN → InfluxDB Cloud</strong> per <strong>Webhook-Vorlage</strong> (Konsole → Integrations → Webhooks → InfluxDB Cloud).</li>
 </ul>
+</section>
+</section>
+</div>
 <hr>
-</section>
-</section>
 <section id="betriebshilfen-auto-heal-checks" class="level2" data-number="1.10">
 <h2 data-number="1.10" class="anchored" data-anchor-id="betriebshilfen-auto-heal-checks"><span class="header-section-number">1.10</span> Betriebshilfen (Auto-Heal, Checks)</h2>
 <p>Zusatzfunktionen für stabilen Dauerbetrieb: automatischer WLAN‑Reconnect und korrekte Systemzeit.</p>
