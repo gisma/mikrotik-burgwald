@@ -1,0 +1,49 @@
+# _quarto.yml — Website mit Sidebar-Navigation
+
+project:
+  type: website
+  output-dir: docs
+  render:
+    - index.qmd
+    - lorawan_doku.qmd
+
+website:
+  title: "LoRaWAN Doku"
+  search:
+    location: sidebar     # Suchfeld in der Sidebar
+    type: textbox
+  navbar:                 # optional ganz weglassen, wenn Sidebar reicht
+    left:
+      - text: "Home"
+        href: index.qmd
+  sidebar:
+    pinned: true          # Sidebar ist permanent sichtbar
+    align: center
+    style: "docked"       # "docked" (links) oder "floating"
+    collapse-level: 1     # ab Ebene 2 einklappen
+    contents:
+      - section: "Welcome"
+        contents:
+          - index.qmd
+      - section: "LoRaWAN"
+        contents:
+          - text: "Anleitung"
+            href: lorawan_doku.qmd
+
+format:
+  html:
+    theme: lumen
+    toc: true             # Seiteninterne Überschriften rechts/oben je nach Theme
+    toc-depth: 3
+    number-sections: true
+    code-copy: true
+    code-overflow: wrap
+    highlight-style: github
+
+execute:
+  freeze: true
+
+diagram:
+  mermaid:
+    engine: kroki
+    kroki-url: https://kroki.io
