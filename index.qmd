@@ -1,7 +1,8 @@
 ---
-title: "LoRaWAN Doku"
+title: "Hydro-Messnetz Burgwald"
 ---
 
-Willkommen. → Siehe die **LoRaWAN-Anleitung**:
+Im Burgwald in Hessen wird ein hydrologisches Echtzeit-Monitoringeingerichtet, das kontinuierlich Daten zu Niederschlag, Bodenfeuchte, Grundwasser und Abfluss liefert. Sensoren erfassen die relevanten Größen und übertragen sie per Funk oder Mobilfunk in zentrale Datenbanken. So können Veränderungen in Moor- und Quellbereichen zeitnah erkannt und für Wasserhaushaltsanalysen genutzt werden.
+Diese Webseite dient der technischen und inhaltlichen Dokumentation des Monitorings und stellt perspektivisch auch die erhobenen Datensätze für Forschung, Praxis und Öffentlichkeit zur Verfügung.
 
-- [LoRaWAN Doku](lorawan_doku.qmd)
+

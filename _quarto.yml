@@ -9,7 +9,7 @@ project:
 
 website:
   site-url: https://gisma.github.io/mikrotik-burgwald
-  title: "LoRaWAN Doku"
+  title: "Hydro-Messnetz Burgwald"
   search:
     location: sidebar     # Suchfeld in der Sidebar
     type: textbox
@@ -23,7 +23,7 @@ website:
     style: "docked"       # "docked" (links) oder "floating"
     collapse-level: 1     # ab Ebene 2 einklappen
     contents:
-      - section: "Welcome"
+      - section: "Über..."
         contents:
           - index.qmd
       - section: "LoRaWAN"
