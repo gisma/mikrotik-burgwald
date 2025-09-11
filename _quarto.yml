@@ -7,6 +7,7 @@ project:
     - index.qmd
     - data/index.qmd
     - lorawan_doku.qmd
+    - live-data.qmd
   resources:
     - "data/**"             # kopiert alle Dateien in data/ mit ins Output
 
@@ -33,12 +34,10 @@ website:
         contents:
           - text: "Anleitung"
             href: lorawan_doku.qmd
-          - text: "Daten Vorschau"
-            href: data.html
       - section: "Daten Vorschau"
         contents:
           - text: "Live Daten"
-            href: data.html  
+            href: data/live-data.html  
           - text: "Daten Repository"
             href: data/
 

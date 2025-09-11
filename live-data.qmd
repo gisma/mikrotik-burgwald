@@ -1,0 +1,11 @@
+---
+title: "Daten (Python-Ausgabe)"
+format: html
+---
+
+```{r}
+# Datei aus dem Quell-Repo einbetten (nicht docs/) 
+getwd()
+htmltools::includeHTML("data.html")
+
+```
