@@ -2,40 +2,51 @@ name: Build & Publish Quarto (R/knitr)
 
 on:
   push:
-    branches: [ main ]   # ggf. anpassen
-  workflow_dispatch:
+    branches:
+      - '**'                 # auf allen Branches triggern
+    paths:
+      - '**.qmd'
+      - '**.md'
+      - '_quarto.yml'
+      - 'data/**'
+      - 'docs/**'            # falls du etwas statisches direkt in docs änderst
+      - '.github/workflows/quarto-render.yml'
+  workflow_dispatch:          # manuell startbar im Actions-Tab
+
+permissions:
+  contents: write             # zum Committen nach /docs
 
 jobs:
   build:
-    runs-on: ubuntu-22.04   # <— NICHT 24.04
+    runs-on: ubuntu-22.04
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - uses: quarto-dev/quarto-actions/setup@v2
+      - name: Setup Quarto
+        uses: quarto-dev/quarto-actions/setup@v2
 
-      - uses: r-lib/actions/setup-r@v2
+      - name: Setup R
+        uses: r-lib/actions/setup-r@v2
         with:
-          r-version: 'release'          # alternativ: '4.4.1'
+          r-version: 'release'
           use-public-rspm: true
 
       - name: Install R packages
         run: |
           Rscript -e 'install.packages(c("knitr","rmarkdown"), repos="https://cloud.r-project.org")'
 
-      - name: Render site
+      - name: Render Quarto site to docs/
+        env:
+          QUARTO_PRINT_STACKTRACE: "1"
         run: |
           quarto render
 
-      - name: Publish to docs/
-        run: |
-          rm -rf docs && mkdir -p docs
-          cp -r _site/* docs/
-
-      - name: Commit rendered site
+      - name: Commit rendered site (docs/)
         run: |
           git config user.name  "quarto-bot"
           git config user.email "quarto-bot@example.com"
           git add docs
-          git commit -m "Publish rendered site" || true
+          git commit -m "Publish rendered site" || echo "no changes"
           git push
