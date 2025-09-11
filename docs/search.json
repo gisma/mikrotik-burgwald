@@ -214,5 +214,19 @@
       "Über...",
       "Hydro-Messnetz Burgwald"
     ]
+  },
+  {
+    "objectID": "data/index.html",
+    "href": "data/index.html",
+    "title": "Daten",
+    "section": "",
+    "text": "from pathlib import Path from datetime import datetime, timezone import pandas as pd\n\nOrdner dieses Dokuments\nroot = Path(file).resolve().parent\ndef naturalsize(n: int) -&gt; str: # einfache, paketfreie Größenformatierung (binär) units = [“B”,“KiB”,“MiB”,“GiB”,“TiB”] i = 0 f = float(n) while f &gt;= 1024 and i &lt; len(units) - 1: f /= 1024.0 i += 1 return f”{f:.1f} {units[i]}”\nrows = [] for p in sorted(root.glob(“*“)): if p.name ==”index.qmd”: continue if p.is_file(): rows.append({ “Datei”: f”{p.name}“,”Größe”: naturalsize(p.stat().st_size), “Geändert (UTC)”: datetime.fromtimestamp(p.stat().st_mtime, tz=timezone.utc)\n.strftime(“%Y-%m-%d %H:%M:%SZ”) })\ndf = pd.DataFrame(rows) print(“(Keine Dateien gefunden)” if df.empty else df.to_markdown(index=False))"
+  },
+  {
+    "objectID": "data/index.html#ordner-dieses-dokuments",
+    "href": "data/index.html#ordner-dieses-dokuments",
+    "title": "Daten",
+    "section": "",
+    "text": "root &lt;- file.path(here::here(),\"data\")\n\nnaturalsize &lt;- function(bytes) {\n  units &lt;- c(\"B\",\"KiB\",\"MiB\",\"GiB\",\"TiB\")\n  i &lt;- 1; sz &lt;- as.numeric(bytes)\n  while (sz &gt;= 1024 && i &lt; length(units)) { sz &lt;- sz/1024; i &lt;- i+1 }\n  sprintf(\"%.1f %s\", sz, units[i])\n}\n\nfiles &lt;- list.files(root, all.files = FALSE, full.names = TRUE, no.. = TRUE)\nfiles &lt;- files[basename(files) != \"index.qmd\" & file.exists(files) & !dir.exists(files)]\n\nif (length(files) == 0) {\n  cat(\"(Keine Dateien gefunden)\")\n} else {\n  info &lt;- file.info(files)\n  df &lt;- data.frame(\n    Datei = sprintf(\"[%s](%s)\", basename(files), basename(files)),\n    Größe = vapply(info$size, naturalsize, character(1)),\n    `Geändert (UTC)` = format(as.POSIXct(info$mtime, tz = \"UTC\"), \"%Y-%m-%d %H:%M:%SZ\"),\n    check.names = FALSE\n  )\n  knitr::kable(df, format = \"html\", table.attr = 'class=\"table table-sm\"')\n}\n\n\n\n\nDatei\nGröße\nGeändert (UTC)\n\n\n\n\n[burgwald-ps-lb-01_raw.ndjson](burgwald-ps-lb-01_raw.ndjson)\n114.1 KiB\n2025-09-11 08:01:49Z\n\n\n[burgwald-ps-lb-01.parquet](burgwald-ps-lb-01.parquet)\n5.9 KiB\n2025-09-11 08:01:49Z\n\n\n[burgwald-sensecap-01_raw.ndjson](burgwald-sensecap-01_raw.ndjson)\n928.7 KiB\n2025-09-11 08:01:49Z\n\n\n[burgwald-sensecap-01.parquet](burgwald-sensecap-01.parquet)\n23.9 KiB\n2025-09-11 08:01:49Z\n\n\n[dds75-lb-001_raw.ndjson](dds75-lb-001_raw.ndjson)\n167.0 KiB\n2025-09-11 08:01:49Z\n\n\n[dds75-lb-001.parquet](dds75-lb-001.parquet)\n6.1 KiB\n2025-09-11 08:01:49Z\n\n\n[dds75-lb-02_raw.ndjson](dds75-lb-02_raw.ndjson)\n70.2 KiB\n2025-09-11 07:55:45Z\n\n\n[dds75-lb-02.parquet](dds75-lb-02.parquet)\n5.1 KiB\n2025-09-11 08:01:49Z\n\n\n[dds75-lb-03_raw.ndjson](dds75-lb-03_raw.ndjson)\n68.3 KiB\n2025-09-11 08:01:49Z\n\n\n[dds75-lb-03.parquet](dds75-lb-03.parquet)\n5.0 KiB\n2025-09-11 08:01:49Z\n\n\n[dds75-lb-04_raw.ndjson](dds75-lb-04_raw.ndjson)\n69.9 KiB\n2025-09-11 07:55:45Z\n\n\n[dds75-lb-04.parquet](dds75-lb-04.parquet)\n5.1 KiB\n2025-09-11 08:01:49Z\n\n\n[dds75-lb-05_raw.ndjson](dds75-lb-05_raw.ndjson)\n67.4 KiB\n2025-09-11 07:55:45Z\n\n\n[dds75-lb-05.parquet](dds75-lb-05.parquet)\n5.3 KiB\n2025-09-11 08:01:49Z\n\n\n[dds75-lb-06_raw.ndjson](dds75-lb-06_raw.ndjson)\n64.9 KiB\n2025-09-11 07:55:45Z\n\n\n[dds75-lb-06.parquet](dds75-lb-06.parquet)\n4.8 KiB\n2025-09-11 08:01:49Z\n\n\n[dds75-lb-07_raw.ndjson](dds75-lb-07_raw.ndjson)\n70.2 KiB\n2025-09-11 08:01:49Z\n\n\n[dds75-lb-07.parquet](dds75-lb-07.parquet)\n5.2 KiB\n2025-09-11 08:01:49Z\n\n\n[index.quarto_ipynb](index.quarto_ipynb)\n1.9 KiB\n2025-09-11 08:40:30Z\n\n\n[index.rmarkdown](index.rmarkdown)\n1.0 KiB\n2025-09-11 08:55:55Z"
   }
 ]

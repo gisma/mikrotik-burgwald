@@ -5,7 +5,10 @@ project:
   output-dir: docs
   render:
     - index.qmd
+    - data/index.qmd
     - lorawan_doku.qmd
+  resources:
+    - "data/**"             # kopiert alle Dateien in data/ mit ins Output
 
 website:
   site-url: https://gisma.github.io/mikrotik-burgwald
@@ -32,7 +35,12 @@ website:
             href: lorawan_doku.qmd
           - text: "Daten Vorschau"
             href: data.html
-       
+      - section: "Daten Vorschau"
+        contents:
+          - text: "Live Daten"
+            href: data.html  
+          - text: "Daten Repository"
+            href: data/
 
 format:
   html:
