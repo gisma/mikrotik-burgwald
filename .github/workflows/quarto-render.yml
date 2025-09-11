@@ -61,7 +61,7 @@ jobs:
 
       - name: Install R packages
         run: |
-          Rscript -e 'install.packages(c("knitr","rmarkdown","htmltools"), repos="https://cloud.r-project.org")'
+          Rscript -e 'install.packages(c("knitr","rmarkdown","here","htmltools"), repos="https://cloud.r-project.org")'
 
       - name: Render site
         run: quarto render --no-cache
