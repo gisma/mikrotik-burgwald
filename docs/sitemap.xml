@@ -2,6 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://gisma.github.io/mikrotik-burgwald/lorawan_doku.html</loc>
+<<<<<<< HEAD
     <lastmod>2025-09-10T08:22:42.236Z</lastmod>
   </url>
   <url>
@@ -11,5 +12,16 @@
   <url>
     <loc>https://gisma.github.io/mikrotik-burgwald/data/index.html</loc>
     <lastmod>2025-09-11T11:28:55.170Z</lastmod>
+=======
+    <lastmod>2025-09-11T11:26:13.931Z</lastmod>
+  </url>
+  <url>
+    <loc>https://gisma.github.io/mikrotik-burgwald/index.html</loc>
+    <lastmod>2025-09-11T11:26:13.931Z</lastmod>
+  </url>
+  <url>
+    <loc>https://gisma.github.io/mikrotik-burgwald/data/index.html</loc>
+    <lastmod>2025-09-11T11:26:13.895Z</lastmod>
+>>>>>>> b1abfff2990e1716f8325aabf6fcb667804419da
   </url>
 </urlset>

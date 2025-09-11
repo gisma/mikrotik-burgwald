@@ -9,7 +9,10 @@ execute:
 
 ```{r}
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> b1abfff2990e1716f8325aabf6fcb667804419da
 BASE_URL <- " https://gisma.github.io/mikrotik-burgwald/data"
 
 
@@ -41,6 +44,7 @@ if (length(files) == 0) {
   )
   knitr::kable(df, format = "html", table.attr = 'class="table table-sm"')
 }
+<<<<<<< HEAD
 
 describe_file <- function(name) {
   n <- tolower(name)
@@ -68,3 +72,5 @@ df <- data.frame(
   Beschreibung = vapply(names, describe_file, character(1)),
   check.names = FALSE
 )
+=======
+>>>>>>> b1abfff2990e1716f8325aabf6fcb667804419da
