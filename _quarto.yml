@@ -37,7 +37,7 @@ website:
       - section: "Daten Vorschau"
         contents:
           - text: "Live Daten"
-            href: data/live-data.html  
+            href: live-data.html  
           - text: "Daten Repository"
             href: data/
 
