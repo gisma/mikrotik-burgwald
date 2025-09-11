@@ -43,10 +43,9 @@ jobs:
       - name: Ensure placeholder if missing
         run: |
           mkdir -p data
-          test -f data/data.html || cat > data/data.html <<'HTML'
-          <!doctype html><meta charset="utf-8">
-          <p>(Noch keine Daten verfügbar. Die TTN-Pipeline erzeugt diese Seite beim nächsten Lauf.)</p>
-          HTML
+          if [ ! -f data/data.html ]; then
+            echo '<!doctype html><meta charset="utf-8"><p>(Noch keine Daten verfügbar. Die TTN-Pipeline erzeugt diese Seite beim nächsten Lauf.)</p>' > data/data.html
+          fi
 
       # --- Quarto vorbereiten ---
       - name: Setup Quarto
