@@ -1,6 +1,6 @@
-name: TTN one device → Pages
+name: TTN all devices → Pages
 on:
-  schedule: [{ cron: "*/15 * * * *" }]  # alle 15 Minuten
+  schedule: [{ cron: "*/15 * * * *" }]   # alle 15 Minuten
   workflow_dispatch:
 
 permissions:
@@ -17,19 +17,29 @@ jobs:
           python -m pip install --upgrade pip
           pip install requests pandas plotly pyarrow
 
-      - name: Pull one device & build dashboard
+      - name: Pull all devices & build dashboard
         env:
-          TTN_APP_ID: gisma-hydro-testbed     # ← anpassen
-          TTN_REGION: eu1                      # ← anpassen
+          TTN_APP_ID: gisma-hydro-testbed
+          TTN_REGION: eu1
           TTN_API_KEY: ${{ secrets.TTN_API_KEY }}
-          DEVICE_ID: burgwald-sensecap-01           # ← anpassen
+          # Leerzeichen-getrennte Liste deiner Geräte:
+          DEVICES: >
+            burgwald-sensecap-01
+            dds75-lb-001
+            burgwald-ps-lb-01
+            dds75-lb-02
+            dds75-lb-03
+            dds75-lb-04
+            dds75-lb-05
+            dds75-lb-06
+            dds75-lb-07
         run: |
-          python scripts/one_device_build.py
+          python scripts/pull_all_devices.py
 
-      - name: Commit /docs
+      - name: Commit /docs and /data
         run: |
           git config user.name  "ttn-bot"
           git config user.email "ttn-bot@example.com"
           git add docs/ data/
-          git commit -m "update one-device dashboard $(date -u +%FT%TZ)" || echo "no changes"
+          git commit -m "update all-devices $(date -u +%FT%TZ)" || echo "no changes"
           git push
