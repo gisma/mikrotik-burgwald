@@ -1,4 +1,4 @@
-name: Build & Publish Quarto (R/knitr)
+name: Build & Publish Quarto
 
 on:
   push:
@@ -9,41 +9,34 @@ on:
       - "data/**"
     paths-ignore:
       - ".github/**"
-      - "docs/**"   # verhindert Render-Loop
+      - "docs/**"
   workflow_dispatch:
-  # Automatisch nach erfolgreichem TTN-Workflow neu rendern
-  workflow_run:
-    workflows: [ "TTN all devices → Pages" ]  # exakter Name!
-    types: [ completed ]
 
 permissions:
   contents: write
 
-# Kollisionen vermeiden, falls Runs dicht hintereinander starten
 concurrency:
   group: quarto-render
   cancel-in-progress: true
 
 jobs:
   build:
-    # Nur laufen, wenn normaler Push ODER der TTN-Workflow SUCCESS hatte
-    if: >
-      github.event_name != 'workflow_run' ||
-      (github.event_name == 'workflow_run' &&
-       github.event.workflow_run.conclusion == 'success')
-
     runs-on: ubuntu-22.04
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Setup Quarto
-        uses: quarto-dev/quarto-actions/setup@v2
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
-          tinytex: false
+          python-version: "3.11"
+
+      - name: Install Python deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests pandas plotly
 
       - name: Setup R
         uses: r-lib/actions/setup-r@v2
@@ -51,21 +44,20 @@ jobs:
           r-version: "release"
           use-public-rspm: true
 
-      - name: Install R packages (knitr, rmarkdown, here)
-        run: |
-          Rscript -e 'install.packages(c("knitr","rmarkdown","here"), repos="https://cloud.r-project.org")'
-
-      - name: Sanity check: Quarto + R
-        run: |
-          quarto check r
-          Rscript -e 'sessionInfo()'
+      - name: Setup Quarto
+        uses: quarto-dev/quarto-actions/setup@v2
+        with:
+          tinytex: false
 
       - name: Render Quarto
         env:
-          BASE_URL: "https://gisma.github.io/mikrotik-burgwald/data"
+          # falls in data/index.qmd benötigt
+          TTN_APP_ID:    ${{ secrets.TTN_APP_ID }}
+          TTN_REGION:    ${{ vars.TTN_REGION }}
+          TTN_API_KEY:   ${{ secrets.TTN_API_KEY }}
+          DEVICES:       ${{ vars.TTN_DEVICES }}
+          TTN_AFTER_DAYS: ${{ vars.TTN_AFTER_DAYS }}
         run: |
-          # Falls dein Projekt NICHT in docs/ rendert, entferne --output-dir
-          # oder stelle es im _quarto.yml ein.
           quarto render
 
       - name: Commit rendered site (docs/)
