@@ -26,7 +26,7 @@ DATA  = pathlib.Path("data"); DATA.mkdir(exist_ok=True, parents=True)
 
 # ── Fenster: Sandbox 24h; in Cloud ggf. erhöhen ──────────────────────────────
 AFTER = (datetime.now(timezone.utc) - timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
-HDRS  = {"Authorization": f"Bearer {KEY}", "Accept": "text/event-stream"}
+HDRS  = {"Authorization": f"Bearer {KEY}", "Accept": "application/json"}
 
 # ── PULL je Device (robust: Timestamps/Raw persist) ───────────────────────────
 def device_pull(dev: str) -> pd.DataFrame:
