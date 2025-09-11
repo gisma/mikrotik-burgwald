@@ -8,14 +8,10 @@ execute:
 ---
 
 ```{r}
+# Basis-URL deiner GitHub Pages (ohne führendes Leerzeichen!)
+BASE_URL <- "https://gisma.github.io/mikrotik-burgwald/data"
 
-<<<<<<< HEAD
-
-=======
->>>>>>> b1abfff2990e1716f8325aabf6fcb667804419da
-BASE_URL <- " https://gisma.github.io/mikrotik-burgwald/data"
-
-
+# Datenordner (benötigt Paket 'here')
 root <- file.path(here::here(), "data")
 
 naturalsize <- function(bytes) {
@@ -25,27 +21,7 @@ naturalsize <- function(bytes) {
   sprintf("%.1f %s", sz, units[i])
 }
 
-files <- list.files(root, all.files = FALSE, full.names = TRUE, no.. = TRUE)
-files <- files[basename(files) != "index.qmd" & file.exists(files) & !dir.exists(files)]
-
-if (length(files) == 0) {
-  cat("(Keine Dateien gefunden)")
-} else {
-  info <- file.info(files)
-  # Namen und absoluter URL (URL-encodiert)
-  names <- basename(files)
-  urls  <- paste0(BASE_URL, "/", utils::URLencode(names, reserved = TRUE))
-
-  df <- data.frame(
-    Datei = sprintf("[%s](%s)", names, urls),
-    Größe = vapply(info$size, naturalsize, character(1)),
-    `Geändert (UTC)` = format(as.POSIXct(info$mtime, tz = "UTC"), "%Y-%m-%d %H:%M:%SZ"),
-    check.names = FALSE
-  )
-  knitr::kable(df, format = "html", table.attr = 'class="table table-sm"')
-}
-<<<<<<< HEAD
-
+# Beschreibung je Dateiname/Endung
 describe_file <- function(name) {
   n <- tolower(name)
   ext <- sub("^.*\\.", "", n)
@@ -64,13 +40,36 @@ describe_file <- function(name) {
   return("Datenablage des Messnetzes (Format je nach Gerät/Export).")
 }
 
-# … beim Erstellen der Tabelle:
-df <- data.frame(
-  Datei = sprintf("[%s](%s)", names, urls),
-  Größe = vapply(info$size, naturalsize, character(1)),
-  `Geändert (UTC)` = format(as.POSIXct(info$mtime, tz = "UTC"), "%Y-%m-%d %H:%M:%SZ"),
-  Beschreibung = vapply(names, describe_file, character(1)),
-  check.names = FALSE
-)
-=======
->>>>>>> b1abfff2990e1716f8325aabf6fcb667804419da
+# kleines HTML-Escaping für Linktext
+html_escape <- function(x) {
+  x <- gsub("&","&amp;",x,fixed=TRUE)
+  x <- gsub("<","&lt;", x,fixed=TRUE)
+  x <- gsub(">","&gt;", x,fixed=TRUE)
+  x <- gsub('"',"&quot;",x,fixed=TRUE)
+  x
+}
+
+files <- list.files(root, all.files = FALSE, full.names = TRUE, no.. = TRUE)
+files <- files[basename(files) != "index.qmd" & file.exists(files) & !dir.exists(files)]
+
+if (length(files) == 0) {
+  cat("(Keine Dateien gefunden)")
+} else {
+  info  <- file.info(files)
+  names <- basename(files)
+  urls  <- paste0(BASE_URL, "/", utils::URLencode(names, reserved = TRUE))
+  links <- sprintf('<a href="%s">%s</a>', urls, html_escape(names))
+
+  df <- data.frame(
+    Datei = links,
+    Größe = vapply(info$size, naturalsize, character(1)),
+    `Geändert (UTC)` = format(as.POSIXct(info$mtime, tz="UTC"), "%Y-%m-%d %H:%M:%SZ"),
+    Beschreibung = vapply(names, describe_file, character(1)),
+    check.names = FALSE
+  )
+
+  # Wichtig: escape = FALSE, damit die <a>-Links nicht maskiert werden
+  knitr::kable(df, format="html", table.attr='class="table table-sm"', escape=FALSE)
+}
+```
+
