@@ -11,3 +11,8 @@ _freeze/
 docs/_freeze/
 _freeze/
 docs/_freeze/
+# generated site/data artifacts
+docs/data/*.parquet
+docs/data/*_raw.ndjson
+docs/data/data.html
+docs/data/index.html
