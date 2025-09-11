@@ -58,7 +58,8 @@ format:
     highlight-style: github
 
 execute:
-  freeze: true
+  freeze: false
+  cache: false
 
 diagram:
   mermaid:
