@@ -1,0 +1,35 @@
+name: TTN one device → Pages
+on:
+  schedule: [{ cron: "*/15 * * * *" }]  # alle 15 Minuten
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests pandas plotly pyarrow
+
+      - name: Pull one device & build dashboard
+        env:
+          TTN_APP_ID: gisma-hydro-testbed     # ← anpassen
+          TTN_REGION: eu1                      # ← anpassen
+          TTN_API_KEY: ${{ secrets.TTN_API_KEY }}
+          DEVICE_ID: dds75-lb-07           # ← anpassen
+        run: |
+          python scripts/one_device_build.py
+
+      - name: Commit /docs
+        run: |
+          git config user.name  "ttn-bot"
+          git config user.email "ttn-bot@example.com"
+          git add docs/ data/
+          git commit -m "update one-device dashboard $(date -u +%FT%TZ)" || echo "no changes"
+          git push
