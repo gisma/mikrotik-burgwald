@@ -4,10 +4,7 @@ project:
   type: website
   output-dir: docs
   render:
-    - index.qmd
-    - index_data.qmd
-    - lorawan_doku.qmd
-    - live-data.qmd
+    - "*.qmd"
   resources:
     - "data/**"             # kopiert alle Dateien in data/ mit ins Output
 
@@ -38,9 +35,9 @@ website:
       - section: "Daten Vorschau"
         contents:
           - text: "Live Daten"
-            href: live-data.html  
+            href: live-data.qmd 
           - text: "Daten Repository"
-            href: data/
+            href: index_data.qmd
 
 format:
   html:
