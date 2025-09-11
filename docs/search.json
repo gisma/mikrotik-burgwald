@@ -1,31 +1,5 @@
 [
   {
-    "objectID": "index_data.html",
-    "href": "index_data.html",
-    "title": "Daten Repo",
-    "section": "",
-    "text": "NDJSON und Parquet sind beides Datenformate, die sich gut ergänzen:\n\nNDJSON (Newline Delimited JSON) speichert Ereignisse zeilenweise als JSON-Objekte. → Ideal für Streaming und APIs, weil jede Zeile ein eigenständiger Datensatz ist, der sofort verarbeitet werden kann. → Lässt sich mit Tools wie jq, pandas.read_json(lines=True) oder jsonlite::stream_in() direkt auswerten.\nParquet ist ein spaltenorientiertes, binäres Format für große Datenmengen. → Optimiert für Analysen und Abfragen, sehr platzsparend und schnell. → Standard in Big-Data-Systemen (Spark, Hadoop, BigQuery, DuckDB, GDAL/GeoParquet).\n\nTypischer Workflow: NDJSON für die rohe, zeilenweise Speicherung eingehender Sensordaten → später in Parquet für effiziente Archivierung und Analyse konvertieren.\n\n\n\nDDS75-LB (dds75-lb-*.parquet): Zeitreihen eines Ultraschall-Pegelsensors mit distance_cm (bzw. Distance_mm), temperature (DS18B20), battery sowie optionalen Flags (interrupt_flag, sensor_flag).\nPS-LB (burgwald-ps-lb-*.parquet): Zeitreihen eines 4–20-mA/Pressure-Sensors mit water_cm bzw. pressure_kpa/_mpa, zusätzlich idc_input_ma, vdc_input_v, battery und digitalen Eingangsflags.\nSenseCAP Wetterstation (burgwald-sensecap-*.parquet): Zeitreihen mit temperature, humidity, pressure_hpa, illumination sowie ggf. uv_index, wind_speed, wind_dir, rainfall.\n\n\nLade Datenliste …"
-  },
-  {
-    "objectID": "index_data.html#allgmeine-formate-im-repo",
-    "href": "index_data.html#allgmeine-formate-im-repo",
-    "title": "Daten Repo",
-    "section": "",
-    "text": "NDJSON und Parquet sind beides Datenformate, die sich gut ergänzen:\n\nNDJSON (Newline Delimited JSON) speichert Ereignisse zeilenweise als JSON-Objekte. → Ideal für Streaming und APIs, weil jede Zeile ein eigenständiger Datensatz ist, der sofort verarbeitet werden kann. → Lässt sich mit Tools wie jq, pandas.read_json(lines=True) oder jsonlite::stream_in() direkt auswerten.\nParquet ist ein spaltenorientiertes, binäres Format für große Datenmengen. → Optimiert für Analysen und Abfragen, sehr platzsparend und schnell. → Standard in Big-Data-Systemen (Spark, Hadoop, BigQuery, DuckDB, GDAL/GeoParquet).\n\nTypischer Workflow: NDJSON für die rohe, zeilenweise Speicherung eingehender Sensordaten → später in Parquet für effiziente Archivierung und Analyse konvertieren.\n\n\n\nDDS75-LB (dds75-lb-*.parquet): Zeitreihen eines Ultraschall-Pegelsensors mit distance_cm (bzw. Distance_mm), temperature (DS18B20), battery sowie optionalen Flags (interrupt_flag, sensor_flag).\nPS-LB (burgwald-ps-lb-*.parquet): Zeitreihen eines 4–20-mA/Pressure-Sensors mit water_cm bzw. pressure_kpa/_mpa, zusätzlich idc_input_ma, vdc_input_v, battery und digitalen Eingangsflags.\nSenseCAP Wetterstation (burgwald-sensecap-*.parquet): Zeitreihen mit temperature, humidity, pressure_hpa, illumination sowie ggf. uv_index, wind_speed, wind_dir, rainfall.\n\n\nLade Datenliste …"
-  },
-  {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "Hydro-Messnetz Burgwald",
-    "section": "",
-    "text": "Im Burgwald in Hessen wird ein hydrologisches Echtzeit-Monitoring eingerichtet, das kontinuierlich Daten zu Niederschlag, Bodenfeuchte, Grundwasser und Abfluss liefert. Sensoren erfassen die relevanten Größen und übertragen sie per Funk oder Mobilfunk in zentrale Datenbanken. So können Veränderungen in Moor- und Quellbereichen zeitnah erkannt und für Wasserhaushaltsanalysen genutzt werden. Diese Webseite dient der technischen und inhaltlichen Dokumentation des Monitorings und stellt perspektivisch auch die erhobenen Datensätze für Forschung, Praxis und Öffentlichkeit zur Verfügung.",
-    "crumbs": [
-      "Home",
-      "Über...",
-      "Hydro-Messnetz Burgwald"
-    ]
-  },
-  {
     "objectID": "lorawan_doku.html",
     "href": "lorawan_doku.html",
     "title": "LoraWan Doku",
@@ -227,6 +201,49 @@
       "Home",
       "LoRaWAN",
       "Anleitung"
+    ]
+  },
+  {
+    "objectID": "index_data.html",
+    "href": "index_data.html",
+    "title": "Daten Repo",
+    "section": "",
+    "text": "NDJSON und Parquet sind beides Datenformate, die sich gut ergänzen:\n\nNDJSON (Newline Delimited JSON) speichert Ereignisse zeilenweise als JSON-Objekte. → Ideal für Streaming und APIs, weil jede Zeile ein eigenständiger Datensatz ist, der sofort verarbeitet werden kann. → Lässt sich mit Tools wie jq, pandas.read_json(lines=True) oder jsonlite::stream_in() direkt auswerten.\nParquet ist ein spaltenorientiertes, binäres Format für große Datenmengen. → Optimiert für Analysen und Abfragen, sehr platzsparend und schnell. → Standard in Big-Data-Systemen (Spark, Hadoop, BigQuery, DuckDB, GDAL/GeoParquet).\n\nTypischer Workflow: NDJSON für die rohe, zeilenweise Speicherung eingehender Sensordaten → später in Parquet für effiziente Archivierung und Analyse konvertieren.\n\n\n\nDDS75-LB (dds75-lb-*.parquet): Zeitreihen eines Ultraschall-Pegelsensors mit distance_cm (bzw. Distance_mm), temperature (DS18B20), battery sowie optionalen Flags (interrupt_flag, sensor_flag).\nPS-LB (burgwald-ps-lb-*.parquet): Zeitreihen eines 4–20-mA/Pressure-Sensors mit water_cm bzw. pressure_kpa/_mpa, zusätzlich idc_input_ma, vdc_input_v, battery und digitalen Eingangsflags.\nSenseCAP Wetterstation (burgwald-sensecap-*.parquet): Zeitreihen mit temperature, humidity, pressure_hpa, illumination sowie ggf. uv_index, wind_speed, wind_dir, rainfall.\n\n\nLade Datenliste …",
+    "crumbs": [
+      "Home",
+      "Daten Vorschau",
+      "Daten Repository"
+    ]
+  },
+  {
+    "objectID": "index_data.html#allgmeine-formate-im-repo",
+    "href": "index_data.html#allgmeine-formate-im-repo",
+    "title": "Daten Repo",
+    "section": "",
+    "text": "NDJSON und Parquet sind beides Datenformate, die sich gut ergänzen:\n\nNDJSON (Newline Delimited JSON) speichert Ereignisse zeilenweise als JSON-Objekte. → Ideal für Streaming und APIs, weil jede Zeile ein eigenständiger Datensatz ist, der sofort verarbeitet werden kann. → Lässt sich mit Tools wie jq, pandas.read_json(lines=True) oder jsonlite::stream_in() direkt auswerten.\nParquet ist ein spaltenorientiertes, binäres Format für große Datenmengen. → Optimiert für Analysen und Abfragen, sehr platzsparend und schnell. → Standard in Big-Data-Systemen (Spark, Hadoop, BigQuery, DuckDB, GDAL/GeoParquet).\n\nTypischer Workflow: NDJSON für die rohe, zeilenweise Speicherung eingehender Sensordaten → später in Parquet für effiziente Archivierung und Analyse konvertieren.\n\n\n\nDDS75-LB (dds75-lb-*.parquet): Zeitreihen eines Ultraschall-Pegelsensors mit distance_cm (bzw. Distance_mm), temperature (DS18B20), battery sowie optionalen Flags (interrupt_flag, sensor_flag).\nPS-LB (burgwald-ps-lb-*.parquet): Zeitreihen eines 4–20-mA/Pressure-Sensors mit water_cm bzw. pressure_kpa/_mpa, zusätzlich idc_input_ma, vdc_input_v, battery und digitalen Eingangsflags.\nSenseCAP Wetterstation (burgwald-sensecap-*.parquet): Zeitreihen mit temperature, humidity, pressure_hpa, illumination sowie ggf. uv_index, wind_speed, wind_dir, rainfall.\n\n\nLade Datenliste …",
+    "crumbs": [
+      "Home",
+      "Daten Vorschau",
+      "Daten Repository"
+    ]
+  },
+  {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "Hydro-Messnetz Burgwald",
+    "section": "",
+    "text": "Im Burgwald in Hessen wird ein hydrologisches Echtzeit-Monitoring eingerichtet, das kontinuierlich Daten zu Niederschlag, Bodenfeuchte, Grundwasser und Abfluss liefert. Sensoren erfassen die relevanten Größen und übertragen sie per Funk oder Mobilfunk in zentrale Datenbanken. So können Veränderungen in Moor- und Quellbereichen zeitnah erkannt und für Wasserhaushaltsanalysen genutzt werden. Diese Webseite dient der technischen und inhaltlichen Dokumentation des Monitorings und stellt perspektivisch auch die erhobenen Datensätze für Forschung, Praxis und Öffentlichkeit zur Verfügung."
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Hydro-Messnetz Burgwald",
+    "section": "",
+    "text": "Im Burgwald in Hessen wird ein hydrologisches Echtzeit-Monitoring eingerichtet, das kontinuierlich Daten zu Niederschlag, Bodenfeuchte, Grundwasser und Abfluss liefert. Sensoren erfassen die relevanten Größen und übertragen sie per Funk oder Mobilfunk in zentrale Datenbanken. So können Veränderungen in Moor- und Quellbereichen zeitnah erkannt und für Wasserhaushaltsanalysen genutzt werden. Diese Webseite dient der technischen und inhaltlichen Dokumentation des Monitorings und stellt perspektivisch auch die erhobenen Datensätze für Forschung, Praxis und Öffentlichkeit zur Verfügung.",
+    "crumbs": [
+      "Home",
+      "Über...",
+      "Hydro-Messnetz Burgwald"
     ]
   }
 ]
