@@ -6,6 +6,5 @@ format: html
 ```{r}
 # Datei aus dem Quell-Repo einbetten (nicht docs/) 
 getwd()
-htmltools::includeHTML("https://gisma.github.io/mikrotik-burgwald/data/data.html")
-
+htmltools::includeHTML("data/data.html")
 ```
