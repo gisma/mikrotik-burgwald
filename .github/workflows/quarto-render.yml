@@ -1,87 +1,75 @@
-name: Build and Publish Quarto
+name: Quarto Render
 
 on:
   push:
-    branches: [ "main" ]
-    paths:
-      - "**.qmd"
-      - "_quarto.yml"
-      - "data/**"
-      - "scripts/**"
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: "0 * * * *"   # optional: stündlich rendern
   workflow_dispatch:
 
 permissions:
   contents: write
 
-concurrency:
-  group: quarto-render
-  cancel-in-progress: true
-
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v4
 
-      # --- Python (für dein TTN-Skript) ---
+      # --- Python vorbereiten & Daten ziehen ---
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: '3.11'
 
       - name: Install Python deps
         run: |
           python -m pip install --upgrade pip
-          pip install requests pandas plotly
+          pip install requests pandas plotly pyarrow
 
-      # --- R + Pakete für knitr/rmarkdown ---
-      - name: Setup R
-        uses: r-lib/actions/setup-r@v2
-        with:
-          r-version: "release"
-          use-public-rspm: true
+      - name: Python: Daten-Seite erzeugen
+        env:
+          TTN_APP_ID:   ${{ secrets.TTN_APP_ID }}
+          TTN_REGION:   ${{ secrets.TTN_REGION }}
+          TTN_API_KEY:  ${{ secrets.TTN_API_KEY }}
+          DEVICES:      ${{ secrets.DEVICES }}
+        run: |
+          mkdir -p data
+          python scripts/pull_all_devices.py
 
-      - name: Install R dependencies
-        uses: r-lib/actions/setup-r-dependencies@v2
-        with:
-          extra-packages: |
-            any::knitr
-            any::rmarkdown
-            any::here
+      - name: Ensure placeholder if missing
+        run: |
+          mkdir -p data
+          test -f data/data.html || cat > data/data.html <<'HTML'
+          <!doctype html><meta charset="utf-8">
+          <p>(Noch keine Daten verfügbar. Die TTN-Pipeline erzeugt diese Seite beim nächsten Lauf.)</p>
+          HTML
 
-      # --- Quarto ---
+      # --- Quarto vorbereiten ---
       - name: Setup Quarto
         uses: quarto-dev/quarto-actions/setup@v2
-        with:
-          tinytex: false
 
-      # --- Devices automatisch ermitteln ---
-      - name: Detect devices from data/
-        id: devices
-        run: |
-          DEVICES=$(ls data/*.parquet 2>/dev/null | xargs -n1 basename | sed 's/\.parquet$//' | tr '\n' ' ')
-          echo "DEVICES=$DEVICES" >> $GITHUB_ENV
-          echo "Devices auto-detected: $DEVICES"
+      - name: Setup R (für knitr/includeHTML)
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: 'release'
+          use-public-rspm: true
+
+      - name: Install R packages
+        run: Rscript -e 'install.packages(c("knitr","htmltools"), repos="https://cloud.r-project.org")'
 
       # --- Render ---
-      - name: Render Quarto
-        env:
-          TTN_APP_ID:     ${{ vars.TTN_APP_ID }}
-          TTN_REGION:     ${{ vars.TTN_REGION }}
-          TTN_API_KEY:    ${{ secrets.TTN_API_KEY }}
-          DEVICES:        ${{ env.DEVICES }}
-          TTN_AFTER_DAYS: ${{ vars.TTN_AFTER_DAYS || 2 }}
-        run: quarto render
+      - name: Quarto render
+        run: quarto render --no-cache
 
-      # --- Commit nach docs/ ---
+      # --- Deploy zu gh-pages (docs/) ---
       - name: Commit rendered site
         run: |
-          git config user.name  "quarto-bot"
-          git config user.email "quarto-bot@example.com"
-          git add docs || true
-          git commit -m "Publish rendered site" || echo "no changes"
-          git push || true
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/ data/
+          git commit -m "Quarto render $(date -u +%Y-%m-%dT%H:%M:%SZ)" || echo "no changes"
+          git push
