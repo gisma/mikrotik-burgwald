@@ -5,13 +5,8 @@ format: html
 
 ```{r}
 path <- "data/data.html"
-if (!file.exists(path)) {
-  cat('<div class="callout-note">',
-      '<strong>Hinweis:</strong> <code>data/data.html</code> wurde noch nicht erzeugt.',
-      'Bitte erst den Python-Job laufen lassen (TTN Pull).',
-      '</div>')
-} else {
+
   htmltools::includeHTML(path)
-}
+
 
 ```
