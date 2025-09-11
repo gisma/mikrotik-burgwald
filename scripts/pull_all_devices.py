@@ -18,6 +18,8 @@ REG   = os.environ["TTN_REGION"]            # z.B. "eu1"
 KEY   = os.environ["TTN_API_KEY"]           # "NNSXS...."
 DEVS  = [d for d in os.environ["DEVICES"].split() if d.strip()]  # space-getrennt
 
+print("DEBUG ENV:", "APP=", APP, "REG=", REG, "KEY=", KEY[:8]+"..." if KEY else "MISSING")
+
 # ── Verzeichnisse ─────────────────────────────────────────────────────────────
 DOCS  = pathlib.Path("docs"); DOCS.mkdir(exist_ok=True, parents=True)
 DATA  = pathlib.Path("data"); DATA.mkdir(exist_ok=True, parents=True)
