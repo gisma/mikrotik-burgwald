@@ -30,6 +30,9 @@ website:
         contents:
           - text: "Anleitung"
             href: lorawan_doku.qmd
+          - text: "data"
+            href: data.html
+       
 
 format:
   html:

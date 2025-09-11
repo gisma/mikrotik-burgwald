@@ -22,7 +22,7 @@ jobs:
           TTN_APP_ID: gisma-hydro-testbed     # ← anpassen
           TTN_REGION: eu1                      # ← anpassen
           TTN_API_KEY: ${{ secrets.TTN_API_KEY }}
-          DEVICE_ID: dds75-lb-07           # ← anpassen
+          DEVICE_ID: burgwald-sensecap-01           # ← anpassen
         run: |
           python scripts/one_device_build.py
 
