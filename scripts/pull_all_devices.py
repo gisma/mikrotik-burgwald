@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import os, json, pathlib, requests, pandas as pd
+import os, re, json, pathlib, requests, pandas as pd
 import plotly.express as px, plotly.io as pio
 from datetime import datetime, timedelta, timezone
 from urllib.parse import quote
@@ -10,23 +10,17 @@ from urllib.parse import quote
 APP   = os.environ["TTN_APP_ID"]              # z.B. gisma-hydro-testbed
 REG   = os.environ["TTN_REGION"]              # z.B. eu1
 KEY   = os.environ["TTN_API_KEY"]             # NNSXS....
-DEVS  = [d for d in os.environ["DEVICES"].split() if d.strip()]  # space-getrennt
-AFTER_DAYS = int(os.environ.get("TTN_AFTER_DAYS", "2"))          # Testweise 2 Tage
+DEVS  = [d for d in os.environ["DEVICES"].split() if d.strip()]
+AFTER_DAYS = int(os.environ.get("TTN_AFTER_DAYS", "2"))
 AFTER = (datetime.now(timezone.utc) - timedelta(days=AFTER_DAYS)).strftime("%Y-%m-%dT%H:%M:%SZ")
-HDRS  = {"Authorization": f"Bearer {KEY}"}     # kein Accept -> wir parsen NDJSON & SSE
+HDRS  = {"Authorization": f"Bearer {KEY}"}     # wir parsen NDJSON & SSE robust
 
 DOCS  = pathlib.Path("docs"); DOCS.mkdir(exist_ok=True, parents=True)
 DATA  = pathlib.Path("data"); DATA.mkdir(exist_ok=True, parents=True)
 
 # ===== Parser-Utils =====
 def _robust_json_lines(raw_text: str):
-    """
-    Akzeptiert:
-      - NDJSON: {"..."}\n{"..."}\n
-      - SSE:    data: {"..."}\n\n
-      - TTN:    {"result": {...}}
-    Liefert Liste von dicts (ein Objekt je Uplink).
-    """
+    """Verträgt NDJSON, SSE ('data: {...}') und TTN-Wrapper {"result": {...}}."""
     out = []
     for ln in raw_text.splitlines():
         s = ln.strip()
@@ -47,7 +41,6 @@ def _robust_json_lines(raw_text: str):
     return out
 
 def _best_ts(o: dict):
-    """Wähle bestmöglichen Zeitstempel."""
     up = o.get("uplink_message", {}) if isinstance(o, dict) else {}
     rx = (up.get("rx_metadata") or [{}])
     return (o.get("received_at")
@@ -113,21 +106,17 @@ def flatten_payload(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 def normalize_dds75(df: pd.DataFrame) -> pd.DataFrame:
-    # Battery
     if "battery" not in df.columns:
         for src in ("Bat","BAT","Bat_V"):
             if src in df.columns:
                 df["battery"] = pd.to_numeric(df[src], errors="coerce"); break
-    # Distance -> cm (dein Sample: "Distance")
     if "distance_cm" not in df.columns:
         if "Distance_mm" in df.columns:
             df["distance_cm"] = pd.to_numeric(df["Distance_mm"], errors="coerce") / 10.0
         elif "Distance" in df.columns:
             df["distance_cm"] = pd.to_numeric(df["Distance"], errors="coerce") / 10.0
-    # Temperatur
     if "temperature" not in df.columns and "TempC_DS18B20" in df.columns:
         df["temperature"] = pd.to_numeric(df["TempC_DS18B20"], errors="coerce")
-    # Flags
     for src, dst in [("Interrupt_flag","interrupt_flag"), ("Sensor_flag","sensor_flag")]:
         if src in df.columns and dst not in df.columns:
             df[dst] = pd.to_numeric(df[src], errors="coerce")
@@ -149,62 +138,45 @@ def normalize_pslb(df: pd.DataFrame) -> pd.DataFrame:
     for src, dst in mapping.items():
         if src in df.columns and dst not in df.columns:
             df[dst] = pd.to_numeric(df[src], errors="coerce")
-    # Digitale Eingänge als Text belassen
     for s in ("IN1_pin_level","IN2_pin_level","Exti_pin_level","Exti_status"):
         if s in df.columns and s.lower() not in df.columns:
             df[s.lower()] = df[s]
     return df
 
 def normalize_sensecap_messages(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Zieht aus decoded_payload.messages (Liste von Listen) flache Spalten:
-    temperature, humidity, illumination, uv_index, wind_speed, wind_dir, rainfall, pressure_hpa.
-    """
+    """SenseCAP decoded_payload.messages -> flache Spalten."""
     if df.empty or "payload_json" not in df.columns:
         return df
-
     def extract_from_messages(s):
         try:
             o = json.loads(s) if isinstance(s, str) else {}
         except Exception:
             return {}
-        msgs = o.get("messages") or []  # bei SenseCAP liegt das direkt im decoded_payload
+        msgs = o.get("messages") or []
         flat_msgs = []
         for m in msgs:
-            if isinstance(m, list):
-                flat_msgs.extend(m)
-            elif isinstance(m, dict):
-                flat_msgs.append(m)
-
-        out_by_type = {}
+            if isinstance(m, list): flat_msgs.extend(m)
+            elif isinstance(m, dict): flat_msgs.append(m)
+        by_type = {}
         for m in flat_msgs:
-            t = m.get("type")
-            v = m.get("measurementValue")
-            if t is None:
-                continue
-            try:
-                v = float(v)
-            except Exception:
-                pass
-            out_by_type[t] = v  # letzter gewinnt
-
+            t = m.get("type"); v = m.get("measurementValue")
+            if t is None: continue
+            try: v = float(v)
+            except Exception: pass
+            by_type[t] = v
         res = {}
-        if "Air Temperature" in out_by_type:  res["temperature"]  = out_by_type["Air Temperature"]
-        if "Air Humidity" in out_by_type:     res["humidity"]     = out_by_type["Air Humidity"]
-        if "Light Intensity" in out_by_type:  res["illumination"] = out_by_type["Light Intensity"]
-        if "UV Index" in out_by_type:         res["uv_index"]     = out_by_type["UV Index"]
-        if "Wind Speed" in out_by_type:       res["wind_speed"]   = out_by_type["Wind Speed"]
-        if "Wind Direction Sensor" in out_by_type: res["wind_dir"] = out_by_type["Wind Direction Sensor"]
-        if "Rain Gauge" in out_by_type:       res["rainfall"]     = out_by_type["Rain Gauge"]
-        if "Barometric Pressure" in out_by_type:
-            p = out_by_type["Barometric Pressure"]
-            try:
-                p = float(p)
-                res["pressure_hpa"] = p/100.0 if p > 5000 else p
-            except Exception:
-                pass
+        if "Air Temperature" in by_type:  res["temperature"]  = by_type["Air Temperature"]
+        if "Air Humidity" in by_type:     res["humidity"]     = by_type["Air Humidity"]
+        if "Light Intensity" in by_type:  res["illumination"] = by_type["Light Intensity"]
+        if "UV Index" in by_type:         res["uv_index"]     = by_type["UV Index"]
+        if "Wind Speed" in by_type:       res["wind_speed"]   = by_type["Wind Speed"]
+        if "Wind Direction Sensor" in by_type: res["wind_dir"] = by_type["Wind Direction Sensor"]
+        if "Rain Gauge" in by_type:       res["rainfall"]     = by_type["Rain Gauge"]
+        if "Barometric Pressure" in by_type:
+            p = by_type["Barometric Pressure"]
+            try: p = float(p); res["pressure_hpa"] = p/100.0 if p > 5000 else p
+            except Exception: pass
         return res
-
     metrics = df["payload_json"].apply(extract_from_messages).apply(pd.Series)
     if metrics is not None and not metrics.empty:
         dup = [c for c in metrics.columns if c in df.columns]
@@ -213,32 +185,58 @@ def normalize_sensecap_messages(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 def normalize_all(df: pd.DataFrame) -> pd.DataFrame:
-    # Zweiter Schritt: alles, was wie Zahl aussieht, numerisch casten
+    # generische Numerik-Casts
     for c in df.columns:
         if c not in ("device_id",) and df[c].dtype == "object":
             df[c] = pd.to_numeric(df[c], errors="ignore")
-    # Gerätespezifisch
     df = normalize_dds75(df)
     df = normalize_pslb(df)
     df = normalize_sensecap_messages(df)
-    # rssi/snr numerisch
     for col in ("rssi","snr"):
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors="coerce")
     return df
 
-# ===== Plot =====
+# ===== Typ-Erkennung & Rendering =====
+def detect_sensor_type(df: pd.DataFrame, device_id: str) -> str:
+    """Bestimme Sensortyp für Gruppierung."""
+    # Hinweise aus Payload
+    for col, val in [("node_type", None), ("Node_type", None), ("sensor_model", None), ("SENSOR_MODEL", None)]:
+        if col in df.columns:
+            v = str(df[col].dropna().iloc[-1]) if not df[col].dropna().empty else ""
+            if v: return v
+    name = device_id.lower()
+    if "sensecap" in name: return "SenseCAP"
+    if "dds75" in name:    return "DDS75-LB"
+    if "ps-lb" in name:    return "PS-LB"
+    # Heuristik über Spalten
+    cols = set(df.columns)
+    if {"illumination","uv_index","wind_speed","pressure_hpa"} & cols: return "SenseCAP"
+    if {"distance_cm","TempC_DS18B20","Interrupt_flag"} & cols:        return "DDS75-LB"
+    if {"water_cm","idc_input_ma","vdc_input_v"} & cols:                return "PS-LB"
+    return "Other"
+
 def to_plot_html(df: pd.DataFrame, y: str, title: str) -> str | None:
     if y not in df.columns or not pd.api.types.is_numeric_dtype(df[y]): return None
     d = df[["received_at", y]].dropna()
     if d.empty: return None
-    f = px.line(d, x="received_at", y=y, title=title)
-    f.update_layout(margin=dict(l=10, r=10, t=40, b=10))
-    return pio.to_html(f, include_plotlyjs="cdn", full_html=False,
-                       default_width="100%", default_height="420px")
+    fig = px.line(d, x="received_at", y=y, title=title)
+    fig.update_layout(margin=dict(l=10, r=10, t=40, b=10))
+    return pio.to_html(fig, include_plotlyjs="cdn", full_html=False,
+                       default_width="100%", default_height="350px")
+
+# Welche Metriken je Typ bevorzugt gezeigt werden (bis zu 4 pro Gerät)
+PREFERRED_BY_TYPE = {
+    "DDS75-LB": ["distance_cm","temperature","battery","rssi"],
+    "PS-LB":    ["water_cm","idc_input_ma","vdc_input_v","battery"],
+    "SenseCAP": ["temperature","humidity","pressure_hpa","illumination"],
+    "Other":    ["battery","rssi","snr"]
+}
 
 # ===== Main =====
-overview_rows, plot_cards, debug_cards = [], [], []
+overview_rows, debug_cards = [], []
+# Typ -> Liste von (device_id, df)
+by_type: dict[str, list[tuple[str, pd.DataFrame]]] = {}
 
 for dev in DEVS:
     df = device_pull(dev)
@@ -250,25 +248,10 @@ for dev in DEVS:
         last_ts = pd.to_datetime(df["received_at"], utc=True, errors="coerce").max()
         overview_rows.append({"device_id": dev, "records": len(df), "last_seen_utc": last_ts})
 
-        # Plots
-        numeric_cols = [c for c in df.columns if pd.api.types.is_numeric_dtype(df[c]) and c not in {"f_port"}]
-        preferred = [
-            "temperature","humidity","pressure_hpa","pressure","pm25","co2",
-            "distance_cm","water_cm","battery","rssi","snr",
-            "pressure_kpa","pressure_mpa","diff_pressure_pa","idc_input_ma","vdc_input_v",
-            "illumination","uv_index","wind_speed","wind_dir","rainfall"
-        ]
-        ordered = [c for c in preferred if c in numeric_cols] + [c for c in numeric_cols if c not in preferred]
-        parts, used = [], set()
-        for col in ordered:
-            if col in used: continue
-            h = to_plot_html(df, col, f"{col} – {dev}")
-            if h: parts.append(h); used.add(col)
-            if len(parts) >= 6: break
-        if parts:
-            plot_cards.append(f'<div class="card"><h3>{dev}</h3>{"".join(parts)}</div>')
+        typ = detect_sensor_type(df, dev)
+        by_type.setdefault(typ, []).append((dev, df))
 
-    # Debug: Roh-Sample + Parquet-Head
+    # Debug
     raw = DATA / f"{dev}_raw.ndjson"
     sample = ""
     if raw.exists():
@@ -289,23 +272,60 @@ if not ov.empty:
     ov["last_seen_utc"] = pd.to_datetime(ov["last_seen_utc"], utc=True, errors="coerce").dt.strftime("%Y-%m-%d %H:%M:%SZ")
 overview_html = ov.sort_values("device_id").to_html(index=False) if not ov.empty else "<p>Keine Geräte-/Records gefunden.</p>"
 
-# Dashboard
+# ===== HTML bauen: große Typ-Kacheln → zweispaltige Gerätekacheln
 stamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%SZ")
+
+# CSS: Typ-Kachel ganz, darin zweispaltige Device-Kacheln
+style = """
+<style>
+body{font-family:system-ui,Segoe UI,Roboto,Ubuntu,Arial,sans-serif;margin:20px}
+.card{background:#fff;border:1px solid #eee;border-radius:12px;box-shadow:0 1px 6px rgba(0,0,0,.05);padding:16px;margin:16px 0}
+.card h2{margin:0 0 .25rem}
+.card h3{margin:.25rem 0 .5rem}
+table{border-collapse:collapse;width:100%} th,td{border:1px solid #ddd;padding:6px 8px;text-align:left}
+
+.type-grid{display:grid;grid-template-columns:1fr;gap:16px}
+.device-grid{display:grid;grid-template-columns:repeat(2,minmax(280px,1fr));gap:14px;margin-top:12px}
+.device-tile{border:1px solid #ddd;border-radius:12px;padding:10px}
+.device-tile h4{margin:.2rem 0 .6rem;font-size:15px}
+.plot-wrap{border:1px solid #eee;border-radius:10px;padding:4px;margin-bottom:8px}
+@media (max-width:800px){ .device-grid{grid-template-columns:1fr} }
+</style>
+"""
+
+type_cards_html = []
+for typ, items in by_type.items():
+    device_tiles = []
+    preferred = PREFERRED_BY_TYPE.get(typ, PREFERRED_BY_TYPE["Other"])
+    for dev, df in sorted(items, key=lambda x: x[0]):
+        # wähle bis zu 4 Plots passend zum Typ
+        numeric_cols = [c for c in df.columns if pd.api.types.is_numeric_dtype(df[c]) and c not in {"f_port"}]
+        ordered = [c for c in preferred if c in numeric_cols] + [c for c in numeric_cols if c not in preferred]
+        plots, used = [], set()
+        for col in ordered:
+            if col in used: continue
+            html_plot = to_plot_html(df, col, f"{col}")
+            if html_plot:
+                plots.append(f'<div class="plot-wrap">{html_plot}</div>')
+                used.add(col)
+            if len(plots) >= 4:  # max 4 Plots pro Gerät
+                break
+        if not plots:
+            plots.append('<div class="plot-wrap"><em>Keine numerischen Felder gefunden.</em></div>')
+        device_tiles.append(f'<div class="device-tile"><h4>{dev}</h4>{"".join(plots)}</div>')
+    type_cards_html.append(f'<div class="card"><h2>{typ}</h2><div class="device-grid">{"".join(device_tiles)}</div></div>')
+
 html = f"""<!doctype html>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>TTN – Alle Geräte</title>
-<style>
-body{{font-family:system-ui,Segoe UI,Roboto,Ubuntu,Arial,sans-serif;margin:20px}}
-.card{{background:#fff;border:1px solid #eee;border-radius:12px;box-shadow:0 1px 6px rgba(0,0,0,.04);padding:16px;margin:16px 0}}
-table{{border-collapse:collapse;width:100%}} th,td{{border:1px solid #ddd;padding:6px 8px;text-align:left}}
-.grid{{display:grid;grid-template-columns:1fr;gap:16px}}
-</style>
-<h1>TTN Dashboard – Alle Geräte</h1>
+<title>TTN – Alle Geräte (nach Typ gruppiert)</title>
+{style}
+<h1>TTN Dashboard – Nach Sensortyp gruppiert</h1>
 <small>Stand: {stamp} • Quelle: TTN Storage ({APP}@{REG}) • Fenster: letzte {AFTER_DAYS} Tage</small>
 <div class="card"><h2>Übersicht</h2>{overview_html}<p style="margin-top:8px">Parquet: <code>data/&lt;device&gt;.parquet</code></p></div>
-<div class="grid">
-{"".join(plot_cards) if plot_cards else '<div class="card">Keine plottbaren numerischen Felder gefunden. Prüfe Decoder / Payload.</div>'}
-</div>"""
+<div class="type-grid">
+{"".join(type_cards_html) if type_cards_html else '<div class="card">Keine Daten zum Anzeigen.</div>'}
+</div>
+"""
 (DOCS / "data.html").write_text(html, encoding="utf-8")
 
 # Debug-Seite
