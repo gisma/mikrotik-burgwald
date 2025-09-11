@@ -1,4 +1,4 @@
-name: Build & Publish Quarto
+name: Build and Publish Quarto
 
 on:
   push:
@@ -7,9 +7,6 @@ on:
       - "**.qmd"
       - "_quarto.yml"
       - "data/**"
-    paths-ignore:
-      - ".github/**"
-      - "docs/**"
   workflow_dispatch:
 
 permissions:
@@ -51,11 +48,10 @@ jobs:
 
       - name: Render Quarto
         env:
-          # falls in data/index.qmd benötigt
-          TTN_APP_ID:    ${{ secrets.TTN_APP_ID }}
-          TTN_REGION:    ${{ vars.TTN_REGION }}
-          TTN_API_KEY:   ${{ secrets.TTN_API_KEY }}
-          DEVICES:       ${{ vars.TTN_DEVICES }}
+          TTN_APP_ID:     ${{ secrets.TTN_APP_ID }}
+          TTN_REGION:     ${{ vars.TTN_REGION }}
+          TTN_API_KEY:    ${{ secrets.TTN_API_KEY }}
+          DEVICES:        ${{ vars.TTN_DEVICES }}
           TTN_AFTER_DAYS: ${{ vars.TTN_AFTER_DAYS }}
         run: |
           quarto render
