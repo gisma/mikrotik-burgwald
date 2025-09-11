@@ -67,7 +67,12 @@ jobs:
       - name: Render site (Quarto)
         run: |
           quarto render --no-cache
-
+      - name: Copy data/ into docs/ (after render!)
+        run: |
+          mkdir -p docs/data
+          rsync -a --delete data/ docs/data/
+          echo "----- docs/data -----"; ls -lAh docs/data
+          
       # --- Commit & Push mit Rebase/Retries ---
       - name: Commit rendered site
         run: |
