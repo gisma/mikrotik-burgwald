@@ -11,6 +11,7 @@ execute:
 
 
 
+
 ```{r}
 # --- Hilfsfunktionen ---
 naturalsize <- function(bytes) {
