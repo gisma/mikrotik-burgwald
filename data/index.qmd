@@ -9,6 +9,7 @@ execute:
 
 ```{r}
 
+
 BASE_URL <- " https://gisma.github.io/mikrotik-burgwald/data"
 
 
@@ -40,3 +41,30 @@ if (length(files) == 0) {
   )
   knitr::kable(df, format = "html", table.attr = 'class="table table-sm"')
 }
+
+describe_file <- function(name) {
+  n <- tolower(name)
+  ext <- sub("^.*\\.", "", n)
+  if (grepl("^dds75-lb-.*\\.parquet$", n))
+    return("Parquet-Timeseries DDS75-LB: received_at, device_id, distance_cm, temperature, battery, Flags.")
+  if (grepl("^burgwald-ps-lb-.*\\.parquet$", n))
+    return("Parquet-Timeseries PS-LB: received_at, water_cm/pressure_kpa/_mpa, idc_input_ma, vdc_input_v, battery.")
+  if (grepl("^burgwald-sensecap-.*\\.parquet$", n))
+    return("Parquet-Timeseries SenseCAP: received_at, temperature, humidity, pressure_hpa, illumination, ggf. UV/Wind/Regen.")
+  if (ext == "parquet")
+    return("Parquet: received_at, device_id, f_port, rssi, snr sowie sensortypische Messspalten.")
+  if (ext == "ndjson")
+    return("NDJSON: eine JSON-Zeile pro TTN-Uplink inkl. decoded_payload, rssi/snr, f_port.")
+  if (ext == "csv")
+    return("CSV: Tabellendaten mit received_at (UTC) und normalisierten Messfeldern; Kopfzeile vorhanden.")
+  return("Datenablage des Messnetzes (Format je nach Gerät/Export).")
+}
+
+# … beim Erstellen der Tabelle:
+df <- data.frame(
+  Datei = sprintf("[%s](%s)", names, urls),
+  Größe = vapply(info$size, naturalsize, character(1)),
+  `Geändert (UTC)` = format(as.POSIXct(info$mtime, tz = "UTC"), "%Y-%m-%d %H:%M:%SZ"),
+  Beschreibung = vapply(names, describe_file, character(1)),
+  check.names = FALSE
+)
