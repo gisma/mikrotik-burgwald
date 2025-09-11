@@ -2,48 +2,32 @@ name: Build & Publish Quarto (R/knitr)
 
 on:
   push:
-    branches:
-      - '**'                 # auf allen Branches triggern
+    branches: ['**']
     paths:
       - '**.qmd'
-      - '**.md'
       - '_quarto.yml'
       - 'data/**'
-      - 'docs/**'            # falls du etwas statisches direkt in docs änderst
       - '.github/workflows/quarto-render.yml'
-  workflow_dispatch:          # manuell startbar im Actions-Tab
+  workflow_dispatch:
 
 permissions:
-  contents: write             # zum Committen nach /docs
+  contents: write
 
 jobs:
   build:
     runs-on: ubuntu-22.04
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Quarto
-        uses: quarto-dev/quarto-actions/setup@v2
-
-      - name: Setup R
-        uses: r-lib/actions/setup-r@v2
+      - uses: actions/checkout@v4
+      - uses: quarto-dev/quarto-actions/setup@v2
+      - uses: r-lib/actions/setup-r@v2
         with:
           r-version: 'release'
           use-public-rspm: true
-
       - name: Install R packages
-        run: |
-          Rscript -e 'install.packages(c("knitr","rmarkdown"), repos="https://cloud.r-project.org")'
-
-      - name: Render Quarto site to docs/
-        env:
-          QUARTO_PRINT_STACKTRACE: "1"
-        run: |
-          quarto render
-
-      - name: Commit rendered site (docs/)
+        run: Rscript -e 'install.packages(c("knitr","rmarkdown"), repos="https://cloud.r-project.org")'
+      - name: Render site (to docs/)
+        run: quarto render
+      - name: Commit rendered site
         run: |
           git config user.name  "quarto-bot"
           git config user.email "quarto-bot@example.com"
