@@ -5,7 +5,7 @@ project:
   output-dir: docs
   render:
     - index.qmd
-    - data/index.qmd
+    - index_data.qmd
     - lorawan_doku.qmd
     - live-data.qmd
   resources:
