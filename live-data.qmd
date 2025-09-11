@@ -1,12 +1,45 @@
 ---
-title: "Daten (Python-Ausgabe)"
+title: "Daten "
 format: html
 ---
 
-```{r}
-path <- "data/data.html"
 
-  htmltools::includeHTML("data/data.html")
+<div class="iframe-wrap">
+  <iframe id="data-iframe"
+          src="data/data.html"
+          loading="lazy"
+          width="100%"
+          height="900"
+          style="border:0;"
+          referrerpolicy="no-referrer">
+  </iframe>
+</div>
 
+<script>
+(function() {
+  function resizeIframe(el) {
+    try {
+      // gleicher Origin (GitHub Pages gleicher Host): Höhe automatisch setzen
+      var doc = el.contentDocument || el.contentWindow.document;
+      var h = Math.max(
+        doc.body.scrollHeight || 0,
+        doc.documentElement.scrollHeight || 0,
+        600
+      );
+      el.style.height = (h + 20) + "px";
+    } catch (e) {
+      // Cross-Origin: nichts zu tun, fallback-Höhe bleibt
+    }
+  }
+  document.addEventListener('DOMContentLoaded', function () {
+    var ifr = document.getElementById('data-iframe');
+    if (ifr) ifr.addEventListener('load', function () { resizeIframe(ifr); });
+  });
+})();
+</script>
 
-```
+<style>
+.iframe-wrap { width: 100%; }
+.iframe-wrap iframe { width: 100%; display: block; }
+</style>
+

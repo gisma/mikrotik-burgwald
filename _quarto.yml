@@ -11,6 +11,7 @@ project:
   resources:
     - "data/**"             # kopiert alle Dateien in data/ mit ins Output
 
+
 website:
   site-url: https://gisma.github.io/mikrotik-burgwald
   title: "Hydro-Messnetz Burgwald"
@@ -64,3 +65,4 @@ diagram:
   mermaid:
     engine: kroki
     kroki-url: https://kroki.io
+

@@ -27,7 +27,7 @@ jobs:
       - name: Checkout (full history)
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0     # wichtig für rebase/push
+          fetch-depth: 0
           persist-credentials: true
 
       # --- Python vorbereiten & Daten holen ---
@@ -49,22 +49,24 @@ jobs:
             echo '<!doctype html><meta charset="utf-8"><p>(Noch keine Daten verfügbar. Die TTN-Pipeline erzeugt diese Seite beim nächsten Lauf.)</p>' > data/data.html
           fi
 
-      # --- Quarto + R ---
+      # --- Quarto (ohne R) ---
       - name: Setup Quarto
         uses: quarto-dev/quarto-actions/setup@v2
 
-      - name: Setup R
-        uses: r-lib/actions/setup-r@v2
-        with:
-          r-version: "release"
-          use-public-rspm: true
+      # HINWEIS: R ist entfernt. Falls du später wieder R-Chunks nutzt, diese beiden Steps reaktivieren:
+      # - name: Setup R
+      #   uses: r-lib/actions/setup-r@v2
+      #   with:
+      #     r-version: "release"
+      #     use-public-rspm: true
+      #
+      # - name: Install R packages
+      #   run: |
+      #     Rscript -e 'install.packages(c("knitr","rmarkdown","here","htmltools"), repos="https://cloud.r-project.org")'
 
-      - name: Install R packages
+      - name: Render site (Quarto)
         run: |
-          Rscript -e 'install.packages(c("knitr","rmarkdown","here","htmltools"), repos="https://cloud.r-project.org")'
-
-      - name: Render site
-        run: quarto render --no-cache
+          quarto render --no-cache
 
       # --- Commit & Push mit Rebase/Retries ---
       - name: Commit rendered site
@@ -73,30 +75,25 @@ jobs:
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          # nur die relevanten Pfade aufnehmen
+          # Nur veröffentlichte Artefakte adden
           git add docs/ data/ || true
           git commit -m "Quarto render $(date -u +%Y-%m-%dT%H:%M:%SZ)" || echo "no changes"
 
-          # Remote-Änderungen integrieren & pushen (bis zu 3 Versuche)
+          # Bis zu 3 Push-Versuche mit Rebase
           for i in 1 2 3; do
-            # immer aktuellen Remote-Stand holen
             git fetch origin main
-
-            # Rebase auf neuesten Stand; Konflikte sind bei generierten Dateien selten
             if git rebase origin/main; then
               if git push; then
                 echo "Push OK"
                 exit 0
               fi
             fi
-
-            echo "Rebase/Push-Versuch $i fehlgeschlagen – erneuter Versuch ..."
-            # Sicherheitsnetz: Rebase abbrechen, Arbeitsbaum zurückrollen
+            echo "Rebase/Push-Versuch $i fehlgeschlagen – neuer Versuch ..."
             git rebase --abort || true
             sleep 2
           done
 
-          echo "Letzter Versuch: force-with-lease (nur wenn Branchschutz dies erlaubt)"
+          echo "Letzter Versuch: force-with-lease (falls Branchschutz das erlaubt)"
           git fetch origin main
           git rebase origin/main || true
-          git push --force-with-lease
+          git push --force-with-lease || true
