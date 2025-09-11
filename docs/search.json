@@ -1,5 +1,31 @@
 [
   {
+    "objectID": "live-data.html",
+    "href": "live-data.html",
+    "title": "Daten (Python-Ausgabe)",
+    "section": "",
+    "text": "path &lt;- \"data/data.html\"\nif (!file.exists(path)) {\n  cat('&lt;div class=\"callout-note\"&gt;',\n      '&lt;strong&gt;Hinweis:&lt;/strong&gt; &lt;code&gt;data/data.html&lt;/code&gt; wurde noch nicht erzeugt.',\n      'Bitte erst den Python-Job laufen lassen (TTN Pull).',\n      '&lt;/div&gt;')\n} else {\n  htmltools::includeHTML(path)\n}\n\n(Noch keine Daten verfügbar. Die TTN-Pipeline erzeugt diese Seite beim nächsten Lauf.)"
+  },
+  {
+    "objectID": "data/index.html",
+    "href": "data/index.html",
+    "title": "Daten Repo",
+    "section": "",
+    "text": "Datei\nGröße\nGeändert (UTC)\nBeschreibung\n\n\n\n\nindex.rmarkdown\nindex.rmarkdown\n3.2 KiB\n2025-09-11 18:21:28Z\nDatenablage des Messnetzes (Format je nach Gerät/Export).\n\n\ndds75-lb-07_raw.ndjson\ndds75-lb-07_raw.ndjson\n109.9 KiB\n2025-09-11 18:14:53Z\nNDJSON: eine JSON-Zeile pro TTN-Uplink (decoded_payload, rssi/snr, f_port).\n\n\ndds75-lb-05_raw.ndjson\ndds75-lb-05_raw.ndjson\n109.5 KiB\n2025-09-11 18:14:53Z\nNDJSON: eine JSON-Zeile pro TTN-Uplink (decoded_payload, rssi/snr, f_port).\n\n\ndds75-lb-05.parquet\ndds75-lb-05.parquet\n5.7 KiB\n2025-09-11 18:14:53Z\nParquet-Timeseries DDS75-LB: received_at, device_id, distance_cm, temperature, battery, Flags.\n\n\ndds75-lb-06_raw.ndjson\ndds75-lb-06_raw.ndjson\n106.5 KiB\n2025-09-11 18:14:53Z\nNDJSON: eine JSON-Zeile pro TTN-Uplink (decoded_payload, rssi/snr, f_port).\n\n\ndds75-lb-06.parquet\ndds75-lb-06.parquet\n5.2 KiB\n2025-09-11 18:14:53Z\nParquet-Timeseries DDS75-LB: received_at, device_id, distance_cm, temperature, battery, Flags.\n\n\ndds75-lb-07.parquet\ndds75-lb-07.parquet\n5.6 KiB\n2025-09-11 18:14:53Z\nParquet-Timeseries DDS75-LB: received_at, device_id, distance_cm, temperature, battery, Flags.\n\n\ndds75-lb-02_raw.ndjson\ndds75-lb-02_raw.ndjson\n109.1 KiB\n2025-09-11 18:14:53Z\nNDJSON: eine JSON-Zeile pro TTN-Uplink (decoded_payload, rssi/snr, f_port).\n\n\ndds75-lb-03_raw.ndjson\ndds75-lb-03_raw.ndjson\n102.0 KiB\n2025-09-11 18:14:53Z\nNDJSON: eine JSON-Zeile pro TTN-Uplink (decoded_payload, rssi/snr, f_port).\n\n\ndds75-lb-03.parquet\ndds75-lb-03.parquet\n5.3 KiB\n2025-09-11 18:14:53Z\nParquet-Timeseries DDS75-LB: received_at, device_id, distance_cm, temperature, battery, Flags.\n\n\ndds75-lb-04_raw.ndjson\ndds75-lb-04_raw.ndjson\n112.7 KiB\n2025-09-11 18:14:53Z\nNDJSON: eine JSON-Zeile pro TTN-Uplink (decoded_payload, rssi/snr, f_port).\n\n\ndds75-lb-04.parquet\ndds75-lb-04.parquet\n5.5 KiB\n2025-09-11 18:14:53Z\nParquet-Timeseries DDS75-LB: received_at, device_id, distance_cm, temperature, battery, Flags.\n\n\nburgwald-sensecap-01_raw.ndjson\nburgwald-sensecap-01_raw.ndjson\n1.2 MiB\n2025-09-11 18:14:53Z\nNDJSON: eine JSON-Zeile pro TTN-Uplink (decoded_payload, rssi/snr, f_port).\n\n\ndata.html\ndata.html\n133.0 B\n2025-09-11 18:14:53Z\nDatenablage des Messnetzes (Format je nach Gerät/Export).\n\n\ndds75-lb-001_raw.ndjson\ndds75-lb-001_raw.ndjson\n195.9 KiB\n2025-09-11 18:14:53Z\nNDJSON: eine JSON-Zeile pro TTN-Uplink (decoded_payload, rssi/snr, f_port).\n\n\ndds75-lb-001.parquet\ndds75-lb-001.parquet\n6.3 KiB\n2025-09-11 18:14:53Z\nParquet-Timeseries DDS75-LB: received_at, device_id, distance_cm, temperature, battery, Flags.\n\n\ndds75-lb-02.parquet\ndds75-lb-02.parquet\n5.5 KiB\n2025-09-11 18:14:53Z\nParquet-Timeseries DDS75-LB: received_at, device_id, distance_cm, temperature, battery, Flags.\n\n\nburgwald-ps-lb-01_raw.ndjson\nburgwald-ps-lb-01_raw.ndjson\n136.8 KiB\n2025-09-11 18:14:53Z\nNDJSON: eine JSON-Zeile pro TTN-Uplink (decoded_payload, rssi/snr, f_port).\n\n\nburgwald-sensecap-01.parquet\nburgwald-sensecap-01.parquet\n31.1 KiB\n2025-09-11 18:14:53Z\nParquet-Timeseries SenseCAP: received_at, temperature, humidity, pressure_hpa, illumination, ggf. UV/Wind/Regen.\n\n\nburgwald-ps-lb-01.parquet\nburgwald-ps-lb-01.parquet\n6.2 KiB\n2025-09-11 18:14:53Z\nParquet-Timeseries PS-LB: received_at, water_cm/pressure_kpa/_mpa, idc_input_ma, vdc_input_v, battery."
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Hydro-Messnetz Burgwald",
+    "section": "",
+    "text": "Im Burgwald in Hessen wird ein hydrologisches Echtzeit-Monitoring eingerichtet, das kontinuierlich Daten zu Niederschlag, Bodenfeuchte, Grundwasser und Abfluss liefert. Sensoren erfassen die relevanten Größen und übertragen sie per Funk oder Mobilfunk in zentrale Datenbanken. So können Veränderungen in Moor- und Quellbereichen zeitnah erkannt und für Wasserhaushaltsanalysen genutzt werden. Diese Webseite dient der technischen und inhaltlichen Dokumentation des Monitorings und stellt perspektivisch auch die erhobenen Datensätze für Forschung, Praxis und Öffentlichkeit zur Verfügung.",
+    "crumbs": [
+      "Home",
+      "Über...",
+      "Hydro-Messnetz Burgwald"
+    ]
+  },
+  {
     "objectID": "lorawan_doku.html",
     "href": "lorawan_doku.html",
     "title": "LoraWan Doku",
@@ -202,24 +228,5 @@
       "LoRaWAN",
       "Anleitung"
     ]
-  },
-  {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "Hydro-Messnetz Burgwald",
-    "section": "",
-    "text": "Im Burgwald in Hessen wird ein hydrologisches Echtzeit-Monitoring eingerichtet, das kontinuierlich Daten zu Niederschlag, Bodenfeuchte, Grundwasser und Abfluss liefert. Sensoren erfassen die relevanten Größen und übertragen sie per Funk oder Mobilfunk in zentrale Datenbanken. So können Veränderungen in Moor- und Quellbereichen zeitnah erkannt und für Wasserhaushaltsanalysen genutzt werden. Diese Webseite dient der technischen und inhaltlichen Dokumentation des Monitorings und stellt perspektivisch auch die erhobenen Datensätze für Forschung, Praxis und Öffentlichkeit zur Verfügung.",
-    "crumbs": [
-      "Home",
-      "Über...",
-      "Hydro-Messnetz Burgwald"
-    ]
-  },
-  {
-    "objectID": "data/index.html",
-    "href": "data/index.html",
-    "title": "Daten Repo",
-    "section": "",
-    "text": "Datei\nGröße\nGeändert (UTC)\nBeschreibung\n\n\n\n\nindex.rmarkdown\nindex.rmarkdown\n3.2 KiB\n2025-09-11 13:32:06Z\nDatenablage des Messnetzes (Format je nach Gerät/Export).\n\n\ndds75-lb-05_raw.ndjson\ndds75-lb-05_raw.ndjson\n92.8 KiB\n2025-09-11 13:30:18Z\nNDJSON: eine JSON-Zeile pro TTN-Uplink (decoded_payload, rssi/snr, f_port).\n\n\ndds75-lb-05.parquet\ndds75-lb-05.parquet\n5.5 KiB\n2025-09-11 13:30:18Z\nParquet-Timeseries DDS75-LB: received_at, device_id, distance_cm, temperature, battery, Flags.\n\n\ndds75-lb-06_raw.ndjson\ndds75-lb-06_raw.ndjson\n91.3 KiB\n2025-09-11 13:30:18Z\nNDJSON: eine JSON-Zeile pro TTN-Uplink (decoded_payload, rssi/snr, f_port).\n\n\ndds75-lb-06.parquet\ndds75-lb-06.parquet\n5.1 KiB\n2025-09-11 13:30:18Z\nParquet-Timeseries DDS75-LB: received_at, device_id, distance_cm, temperature, battery, Flags.\n\n\ndds75-lb-07_raw.ndjson\ndds75-lb-07_raw.ndjson\n93.4 KiB\n2025-09-11 13:30:18Z\nNDJSON: eine JSON-Zeile pro TTN-Uplink (decoded_payload, rssi/snr, f_port).\n\n\ndds75-lb-07.parquet\ndds75-lb-07.parquet\n5.4 KiB\n2025-09-11 13:30:18Z\nParquet-Timeseries DDS75-LB: received_at, device_id, distance_cm, temperature, battery, Flags.\n\n\ndds75-lb-02_raw.ndjson\ndds75-lb-02_raw.ndjson\n93.8 KiB\n2025-09-11 13:30:18Z\nNDJSON: eine JSON-Zeile pro TTN-Uplink (decoded_payload, rssi/snr, f_port).\n\n\ndds75-lb-03_raw.ndjson\ndds75-lb-03_raw.ndjson\n87.8 KiB\n2025-09-11 13:30:18Z\nNDJSON: eine JSON-Zeile pro TTN-Uplink (decoded_payload, rssi/snr, f_port).\n\n\ndds75-lb-03.parquet\ndds75-lb-03.parquet\n5.1 KiB\n2025-09-11 13:30:18Z\nParquet-Timeseries DDS75-LB: received_at, device_id, distance_cm, temperature, battery, Flags.\n\n\ndds75-lb-04_raw.ndjson\ndds75-lb-04_raw.ndjson\n94.0 KiB\n2025-09-11 13:30:18Z\nNDJSON: eine JSON-Zeile pro TTN-Uplink (decoded_payload, rssi/snr, f_port).\n\n\ndds75-lb-04.parquet\ndds75-lb-04.parquet\n5.3 KiB\n2025-09-11 13:30:18Z\nParquet-Timeseries DDS75-LB: received_at, device_id, distance_cm, temperature, battery, Flags.\n\n\ndds75-lb-001_raw.ndjson\ndds75-lb-001_raw.ndjson\n192.6 KiB\n2025-09-11 13:30:18Z\nNDJSON: eine JSON-Zeile pro TTN-Uplink (decoded_payload, rssi/snr, f_port).\n\n\ndds75-lb-001.parquet\ndds75-lb-001.parquet\n6.2 KiB\n2025-09-11 13:30:18Z\nParquet-Timeseries DDS75-LB: received_at, device_id, distance_cm, temperature, battery, Flags.\n\n\ndds75-lb-02.parquet\ndds75-lb-02.parquet\n5.3 KiB\n2025-09-11 13:30:18Z\nParquet-Timeseries DDS75-LB: received_at, device_id, distance_cm, temperature, battery, Flags.\n\n\nburgwald-sensecap-01_raw.ndjson\nburgwald-sensecap-01_raw.ndjson\n1.1 MiB\n2025-09-11 13:30:18Z\nNDJSON: eine JSON-Zeile pro TTN-Uplink (decoded_payload, rssi/snr, f_port).\n\n\nburgwald-ps-lb-01_raw.ndjson\nburgwald-ps-lb-01_raw.ndjson\n133.5 KiB\n2025-09-11 13:30:18Z\nNDJSON: eine JSON-Zeile pro TTN-Uplink (decoded_payload, rssi/snr, f_port).\n\n\nburgwald-sensecap-01.parquet\nburgwald-sensecap-01.parquet\n28.5 KiB\n2025-09-11 13:30:18Z\nParquet-Timeseries SenseCAP: received_at, temperature, humidity, pressure_hpa, illumination, ggf. UV/Wind/Regen.\n\n\nburgwald-ps-lb-01.parquet\nburgwald-ps-lb-01.parquet\n6.1 KiB\n2025-09-11 13:30:18Z\nParquet-Timeseries PS-LB: received_at, water_cm/pressure_kpa/_mpa, idc_input_ma, vdc_input_v, battery."
   }
 ]
