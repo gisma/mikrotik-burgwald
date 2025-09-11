@@ -30,7 +30,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install requests pandas plotly pyarrow
 
-      - name: Python: Daten-Seite erzeugen
+      - name: Python Daten-Seite erzeugen
         env:
           TTN_APP_ID:   ${{ secrets.TTN_APP_ID }}
           TTN_REGION:   ${{ secrets.TTN_REGION }}
