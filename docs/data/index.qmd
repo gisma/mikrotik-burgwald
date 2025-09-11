@@ -1,98 +1,124 @@
 ---
 title: "Daten Repo"
-format: 
-  html:
-    code-link: false
-engine: knitr
-execute:
-  echo: false
-  eval: true
+format:  html
+
 ---
 
 
+## Allgmeine Formate im Repo
+
+**NDJSON** und **Parquet** sind beides Datenformate, die sich gut ergänzen:
+
+* **NDJSON** (Newline Delimited JSON) speichert Ereignisse zeilenweise als JSON-Objekte.
+  → Ideal für **Streaming und APIs**, weil jede Zeile ein eigenständiger Datensatz ist, der sofort verarbeitet werden kann.
+  → Lässt sich mit Tools wie `jq`, `pandas.read_json(lines=True)` oder `jsonlite::stream_in()` direkt auswerten.
+
+* **Parquet** ist ein **spaltenorientiertes, binäres Format** für große Datenmengen.
+  → Optimiert für **Analysen und Abfragen**, sehr platzsparend und schnell.
+  → Standard in Big-Data-Systemen (Spark, Hadoop, BigQuery, DuckDB, GDAL/GeoParquet).
+
+Typischer Workflow: **NDJSON für die rohe, zeilenweise Speicherung eingehender Sensordaten** → später in **Parquet für effiziente Archivierung und Analyse** konvertieren.
 
 
-```{r}
-# --- Hilfsfunktionen ---
-naturalsize <- function(bytes) {
-  units <- c("B","KiB","MiB","GiB","TiB")
-  i <- 1; sz <- as.numeric(bytes)
-  while (sz >= 1024 && i < length(units)) { sz <- sz/1024; i <- i+1 }
-  sprintf("%.1f %s", sz, units[i])
+### Sensoren
+* DDS75-LB (dds75-lb-*.parquet): Zeitreihen eines Ultraschall-Pegelsensors mit distance_cm (bzw. Distance_mm), temperature (DS18B20), battery sowie optionalen Flags (interrupt_flag, sensor_flag).
+* PS-LB (burgwald-ps-lb-*.parquet): Zeitreihen eines 4–20-mA/Pressure-Sensors mit water_cm bzw. pressure_kpa/_mpa, zusätzlich idc_input_ma, vdc_input_v, battery und digitalen Eingangsflags.
+* SenseCAP Wetterstation (burgwald-sensecap-*.parquet): Zeitreihen mit temperature, humidity, pressure_hpa, illumination sowie ggf. uv_index, wind_speed, wind_dir, rainfall.
+
+
+<div id="data-list">Lade Datenliste …</div>
+
+<script>
+/** ==== Konfiguration (anpassen) ==== **/
+const GH_OWNER = "gisma";                 // GitHub User/Org
+const GH_REPO  = "mikrotik-burgwald";     // Repository
+const BRANCH   = "main";                  // Branch/Ref
+const DATA_DIR = "data";                  // Ordner im Repo (relativ zur Wurzel)
+
+/** ==== Hilfsfunktionen ==== **/
+function humanSize(n){
+  const u=["B","KiB","MiB","GiB","TiB"];
+  let i=0, f=Number(n)||0;
+  while(f>=1024 && i<u.length-1){ f/=1024; i++; }
+  return `${f.toFixed(f<10&&i>0?1:0)} ${u[i]}`;
 }
-html_escape <- function(x) {
-  x <- gsub("&","&amp;",x,fixed=TRUE)
-  x <- gsub("<","&lt;", x,fixed=TRUE)
-  x <- gsub(">","&gt;", x,fixed=TRUE)
-  x <- gsub('"',"&quot;",x,fixed=TRUE)
-  x
-}
-
-# Pfad dieses Dokuments (= data/)
-root <- file.path(normalizePath(here::here()),"data")
-# trailing slash für robustes StartsWith
-root_slash <- paste0(root, .Platform$file.sep)
-
-# Dateien direkt in data/, keine Unterordner
-all <- list.files(root, all.files = FALSE, full.names = TRUE, no.. = TRUE)
-
-# Normalisieren + sicherstellen, dass sie innerhalb von root liegen
-safe <- vapply(all, function(p) {
-  np <- normalizePath(p, mustWork = FALSE)
-  startsWith(np, root_slash) && file.exists(np) && !dir.exists(np)
-}, logical(1))
-
-files <- all[safe]
-names_all <- basename(files)
-
-# index.qmd ausblenden
-keep <- names_all != "index.qmd"
-files <- files[keep]
-names_all <- names_all[keep]
-
-# Optional: erlaubte Namenszeichen
-allowed <- grepl("^[A-Za-z0-9._-]+$", names_all)
-files <- files[allowed]
-names_all <- names_all[allowed]
-
-if (!length(files)) {
-  cat("(Keine Dateien gefunden)")
-} else {
-  info  <- file.info(files)
-
-  # nach Änderungszeit (neu → alt) sortieren
-  ord <- order(info$mtime, decreasing = TRUE)
-  files <- files[ord]; names_all <- names_all[ord]; info <- info[ord, ]
-
-  # Relativ-Links innerhalb von data/
-  hrefs <- paste0("./", utils::URLencode(names_all, reserved = TRUE))
-  links <- sprintf('<a href="%s">%s</a>', hrefs, html_escape(names_all))
-
-  describe_file <- function(name) {
-    n <- tolower(name); ext <- sub("^.*\\.", "", n)
-    if (grepl("^dds75-lb-.*\\.parquet$", n))
-      return("Parquet-Timeseries DDS75-LB: received_at, device_id, distance_cm, temperature, battery, Flags.")
-    if (grepl("^burgwald-ps-lb-.*\\.parquet$", n))
-      return("Parquet-Timeseries PS-LB: received_at, water_cm/pressure_kpa/_mpa, idc_input_ma, vdc_input_v, battery.")
-    if (grepl("^burgwald-sensecap-.*\\.parquet$", n))
-      return("Parquet-Timeseries SenseCAP: received_at, temperature, humidity, pressure_hpa, illumination, ggf. UV/Wind/Regen.")
-    if (ext == "parquet") return("Parquet: received_at, device_id, f_port, rssi, snr + sensorspezifische Spalten.")
-    if (ext == "ndjson")  return("NDJSON: eine JSON-Zeile pro TTN-Uplink (decoded_payload, rssi/snr, f_port).")
-    if (ext == "csv")     return("CSV: received_at (UTC) + normalisierte Messfelder; Kopfzeile vorhanden.")
-    "Datenablage des Messnetzes (Format je nach Gerät/Export)."
+// Root der GitHub Pages-Seite ermitteln (robust für user.github.io/repo/)
+function siteRoot(){
+  const parts = location.pathname.split("/").filter(Boolean);
+  if (location.host.endsWith("github.io") && parts.length>0) {
+    // https://owner.github.io/repo/...
+    return `${location.origin}/${parts[0]}/`;
   }
-
-  df <- data.frame(
-    Datei            = links,
-    Größe            = vapply(info$size, naturalsize, character(1)),
-    `Geändert (UTC)` = format(as.POSIXct(info$mtime, tz = "UTC"), "%Y-%m-%d %H:%M:%SZ"),
-    Beschreibung     = vapply(names_all, describe_file, character(1)),
-    check.names      = FALSE
-  )
-
-  knitr::kable(df, format = "html", table.attr = 'class="table table-sm"', escape = FALSE)
+  // Lokale Previews / eigene Domains
+  return `${location.origin}/`;
+}
+// Link-Ziel: GitHub Pages (schön) oder raw.githubusercontent (direkter Download)?
+const LINK_MODE = "pages"; // "pages" | "raw"
+function fileHref(name){
+  if (LINK_MODE === "raw") {
+    return `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/${BRANCH}/${DATA_DIR}/${encodeURIComponent(name)}`;
+  } else {
+    return `${siteRoot()}${DATA_DIR}/${encodeURIComponent(name)}`;
+  }
 }
 
+/** ==== Laden & Rendern ==== **/
+(async function(){
+  const host = "https://api.github.com";
+  const url  = `${host}/repos/${GH_OWNER}/${GH_REPO}/contents/${encodeURIComponent(DATA_DIR)}?ref=${encodeURIComponent(BRANCH)}`;
+  const mount = document.getElementById("data-list");
+  try {
+    const res = await fetch(url, {headers: {"Accept":"application/vnd.github+json"}});
+    if (!res.ok) throw new Error(`GitHub API: ${res.status} ${res.statusText}`);
+    const items = await res.json();
 
-```
+    // filtern: nur Dateien mit gewünschter Endung
+    const rows = (Array.isArray(items) ? items : [])
+      .filter(it => it.type === "file")
+      .filter(it => /\.parquet$/i.test(it.name) || /\.ndjson$/i.test(it.name))
+      // optional: neueste zuerst (API liefert size, aber kein mtime; wir sortieren nach Name)
+      .sort((a,b) => a.name.localeCompare(b.name));
+
+    if (rows.length === 0) {
+      mount.innerHTML = "<em>(Keine passenden Dateien gefunden)</em>";
+      return;
+    }
+
+    // Tabelle bauen
+    const thead = `
+      <thead>
+        <tr>
+          <th>Datei</th>
+          <th>Größe</th>
+          <th>Typ</th>
+        </tr>
+      </thead>`;
+    const tbody = rows.map(it => {
+      const href = fileHref(it.name);
+      const size = humanSize(it.size);
+      const typ  = it.name.toLowerCase().endsWith(".parquet") ? "Parquet" : "NDJSON";
+      return `
+        <tr>
+          <td><a href="${href}">${it.name}</a></td>
+          <td>${size}</td>
+          <td>${typ}</td>
+        </tr>`;
+    }).join("");
+
+    // Minimal-CSS + Tabelle einfügen
+    const css = `<style>
+      #data-list table{width:100%;border-collapse:collapse}
+      #data-list th,#data-list td{padding:.4rem .5rem;border:1px solid #ddd;text-align:left}
+      #data-list th{background:#f7f7f7}
+    </style>`;
+    mount.innerHTML = `${css}<table>${thead}<tbody>${tbody}</tbody></table>`;
+  } catch (err){
+    console.error(err);
+    document.getElementById("data-list").innerHTML =
+      `<div style="color:#b00">Fehler beim Laden der Dateiliste: ${String(err.message||err)}</div>`;
+  }
+})();
+</script>
+
+
 
