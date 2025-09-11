@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="de"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>TTN – Alle Devices</title>
+<style>
+body{font-family:system-ui,Segoe UI,Roboto,Ubuntu,Arial,sans-serif;margin:20px;}
+h1{margin:0 0 .25rem} small{color:#555}
+.card{background:#fff;border:1px solid #eee;border-radius:12px;box-shadow:0 1px 6px rgba(0,0,0,.04);padding:16px;margin:16px 0}
+table{border-collapse:collapse;width:100%} th,td{border:1px solid #ddd;padding:6px 8px;text-align:left}
+.grid{display:grid;grid-template-columns:1fr;gap:16px}
+@media (min-width:1000px){.grid{grid-template-columns:1fr;}}
+</style>
+</head><body>
+<h1>TTN Dashboard – Alle Geräte</h1>
+<small>Stand: 2025-09-11 06:35:03Z • Quelle: TTN Storage (gisma-hydro-testbed@eu1) • Fenster: letzte 24 h</small>
+
+<div class="card">
+  <h2>Übersicht</h2>
+  <table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>device_id</th>
+      <th>records</th>
+      <th>last_seen_utc</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>burgwald-ps-lb-01</td>
+      <td>47</td>
+      <td>&lt;NA&gt;</td>
+    </tr>
+    <tr>
+      <td>burgwald-sensecap-01</td>
+      <td>322</td>
+      <td>&lt;NA&gt;</td>
+    </tr>
+    <tr>
+      <td>dds75-lb-001</td>
+      <td>67</td>
+      <td>&lt;NA&gt;</td>
+    </tr>
+    <tr>
+      <td>dds75-lb-02</td>
+      <td>35</td>
+      <td>&lt;NA&gt;</td>
+    </tr>
+    <tr>
+      <td>dds75-lb-03</td>
+      <td>37</td>
+      <td>&lt;NA&gt;</td>
+    </tr>
+    <tr>
+      <td>dds75-lb-04</td>
+      <td>35</td>
+      <td>&lt;NA&gt;</td>
+    </tr>
+    <tr>
+      <td>dds75-lb-05</td>
+      <td>34</td>
+      <td>&lt;NA&gt;</td>
+    </tr>
+    <tr>
+      <td>dds75-lb-06</td>
+      <td>34</td>
+      <td>&lt;NA&gt;</td>
+    </tr>
+    <tr>
+      <td>dds75-lb-07</td>
+      <td>33</td>
+      <td>&lt;NA&gt;</td>
+    </tr>
+  </tbody>
+</table>
+  <p style="margin-top:8px">Parquet pro Gerät: <code>data/&lt;device&gt;.parquet</code></p>
+</div>
+
+<div class="grid">
+  <div class="card">Keine plottbaren Felder gefunden (Decoder-Keys in Script anpassen).</div>
+</div>
+
+</body></html>
