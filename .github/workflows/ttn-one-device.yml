@@ -1,6 +1,8 @@
 name: TTN all devices → Pages
+
 on:
-  schedule: [{ cron: "*/15 * * * *" }]   # alle 15 Minuten
+  schedule:
+    - cron: "*/15 * * * *"   # alle 15 Minuten
   workflow_dispatch:
 
 permissions:
@@ -9,37 +11,43 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    # ← ENV gehört hierhin (job-weit für alle Steps)
+    env:
+      TTN_APP_ID:  ${{ secrets.TTN_APP_ID }}
+      TTN_REGION:  ${{ secrets.TTN_REGION }}
+      TTN_API_KEY: ${{ secrets.TTN_API_KEY }}
+      DEVICES: >-
+        burgwald-sensecap-01
+        dds75-lb-001
+        burgwald-ps-lb-01
+        dds75-lb-02
+        dds75-lb-03
+        dds75-lb-04
+        dds75-lb-05
+        dds75-lb-06
+        dds75-lb-07
+
     steps:
       - uses: actions/checkout@v4
 
-      - name: Deps
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install deps
         run: |
           python -m pip install --upgrade pip
           pip install requests pandas plotly pyarrow
 
       - name: Pull all devices & build dashboard
-env:
-  TTN_APP_ID:   ${{ secrets.TTN_APP_ID }}
-  TTN_REGION:   ${{ secrets.TTN_REGION }}
-  TTN_API_KEY:  ${{ secrets.TTN_API_KEY }}
-  DEVICES: >
-    burgwald-sensecap-01
-    dds75-lb-001
-    burgwald-ps-lb-01
-    dds75-lb-02
-    dds75-lb-03
-    dds75-lb-04
-    dds75-lb-05
-    dds75-lb-06
-    dds75-lb-07
-
-        run: |
-          python scripts/pull_all_devices.py
+        run: python scripts/pull_all_devices.py
 
       - name: Commit /docs and /data
         run: |
           git config user.name  "ttn-bot"
           git config user.email "ttn-bot@example.com"
-          git add docs/ data/
+          git add docs/ data/ || true
           git commit -m "update all-devices $(date -u +%FT%TZ)" || echo "no changes"
           git push
