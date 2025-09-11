@@ -66,31 +66,29 @@ def device_pull(dev: str) -> pd.DataFrame:
     return df
 
 
-def unpack_payload(d: dict) -> dict:
-    """Hier deine Decoder-Keys anpassen."""
-    if not isinstance(d, dict):
-        return {}
-    return {
-        "pm25": d.get("pm25"),
-        "co2": d.get("co2"),
-        "temperature": d.get("temperature") or d.get("temp") or d.get("t"),
-        "humidity": d.get("humidity") or d.get("rh"),
-        "pressure": d.get("pressure") or d.get("p"),
-        "battery": d.get("battery") or d.get("vbat"),
-        "distance_cm": d.get("distance_cm") or d.get("distance"),
-        "water_cm": d.get("water_cm") or d.get("waterlevel_cm") or d.get("wl_cm"),
-        "no2": d.get("no2"),
-        "o3": d.get("o3"),
-    }
+def flatten_payload(df: pd.DataFrame) -> pd.DataFrame:
+    """payload_json -> dict -> flache Spalten (beliebige Decoder-Keys)."""
+    if "payload_json" not in df.columns or df.empty:
+        return df
+    dicts = df["payload_json"].apply(lambda s: json.loads(s) if isinstance(s, str) and s else {})
+    if dicts.map(bool).any():
+        flat = pd.json_normalize(dicts)  # beliebig tiefe Strukturen werden flatten
+        # Kollisionen vermeiden: nur Spaltennamen, die es noch nicht gibt
+        flat_cols = {c: c.replace(".", "_") for c in flat.columns}
+        flat.rename(columns=flat_cols, inplace=True)
+        dupes = [c for c in flat.columns if c in df.columns]
+        flat.drop(columns=dupes, inplace=True, errors="ignore")
+        df = pd.concat([df.reset_index(drop=True), flat.reset_index(drop=True)], axis=1)
+    return df
 
 
-def make_line(df: pd.DataFrame, col: str, title: str) -> str | None:
-    if col not in df.columns or not df[col].notna().any():
+def to_plot_html(df: pd.DataFrame, y: str, title: str) -> str | None:
+    if y not in df.columns or not pd.api.types.is_numeric_dtype(df[y]):
         return None
-    d = df[["received_at", col]].dropna()
+    d = df[["received_at", y]].dropna()
     if d.empty:
         return None
-    f = px.line(d, x="received_at", y=col, title=title)
+    f = px.line(d, x="received_at", y=y, title=title)
     f.update_layout(margin=dict(l=10, r=10, t=40, b=10))
     return pio.to_html(f, include_plotlyjs="cdn", full_html=False,
                        default_width="100%", default_height="420px")
@@ -108,34 +106,36 @@ for dev in DEVS:
         overview_rows.append({"device_id": dev, "records": 0, "last_seen_utc": None})
         continue
 
-    # payload_json -> payload (Dict) -> Spalten
-    if "payload_json" in df.columns:
-        df["payload"] = df["payload_json"].apply(lambda s: json.loads(s) if isinstance(s, str) and s else {})
-    else:
-        df["payload"] = [{}] * len(df)
+    # Payload flach aufspalten (beliebige Keys)
+    df = flatten_payload(df)
 
-    pl = df["payload"].apply(unpack_payload).apply(pd.Series)
-    df = pd.concat([df.drop(columns=["payload"]), pl], axis=1)
-
-    last_ts = df["received_at"].max()
+    # Kennzahlen
+    last_ts = pd.to_datetime(df["received_at"], utc=True, errors="coerce").max()
     overview_rows.append({"device_id": dev, "records": len(df), "last_seen_utc": last_ts})
 
-    # Plots pro Device (nur vorhandene Spalten)
-    labels = {
-        "pm25": "PM2.5 (µg/m³)",
-        "co2": "CO₂ (ppm)",
-        "temperature": "Temperatur (°C)",
-        "humidity": "Relative Feuchte (%)",
-        "pressure": "Luftdruck (hPa)",
-        "battery": "Batterie/Spannung",
-        "distance_cm": "Distanz (cm)",
-        "water_cm": "Wasserstand (cm)",
-    }
+    # Plotbare Spalten bestimmen:
+    # - alle numerischen Payload-Spalten + rssi/snr (optional)
+    numeric_cols = [c for c in df.columns
+                    if pd.api.types.is_numeric_dtype(df[c])
+                    and c not in {"f_port"}]  # f_port nicht plotten
+
+    # ein paar typische Kandidaten zuerst nach oben sortieren
+    preferred = ["temperature", "humidity", "pressure", "pm25", "co2",
+                 "distance", "distance_cm", "water_cm", "battery", "vbat"]
+    ordered = [c for c in preferred if c in numeric_cols] + [c for c in numeric_cols if c not in preferred]
+
     dev_parts = []
-    for col, title in labels.items():
-        html_plot = make_line(df, col, f"{title} – {dev}")
+    used = set()
+    for col in ordered:
+        if col in used:
+            continue
+        html_plot = to_plot_html(df, col, f"{col} – {dev}")
         if html_plot:
             dev_parts.append(html_plot)
+            used.add(col)
+        # begrenzen, damit die Seite schlank bleibt (max. 6 Plots/Device)
+        if len(dev_parts) >= 6:
+            break
 
     if dev_parts:
         plot_cards.append(f'<div class="card"><h3>{dev}</h3>{"".join(dev_parts)}</div>')
@@ -144,7 +144,9 @@ for dev in DEVS:
 # Übersicht
 ov = pd.DataFrame(overview_rows)
 if not ov.empty:
-    ov["last_seen_utc"] = ov["last_seen_utc"].astype("string")
+    # sauber formatieren statt astype("string")
+    ov["last_seen_utc"] = pd.to_datetime(ov["last_seen_utc"], utc=True, errors="coerce") \
+                              .dt.strftime("%Y-%m-%d %H:%M:%SZ")
 overview_html = (ov.sort_values("device_id").to_html(index=False)
                  if not ov.empty else "<p>Keine Geräte-/Records gefunden.</p>")
 
@@ -173,7 +175,7 @@ table{{border-collapse:collapse;width:100%}} th,td{{border:1px solid #ddd;paddin
 </div>
 
 <div class="grid">
-  {"".join(plot_cards) if plot_cards else '<div class="card">Keine plottbaren Felder gefunden (Decoder-Keys in Script anpassen).</div>'}
+  {"".join(plot_cards) if plot_cards else '<div class="card">Keine plottbaren numerischen Felder gefunden. Prüfe Decoder / Payload.</div>'}
 </div>
 
 </body></html>"""
