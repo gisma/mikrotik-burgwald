@@ -1,0 +1,37 @@
+---
+title: "Daten"
+format: html
+engine: knitr        # <— erzwingt R/knitr statt Jupyter
+execute:
+  echo: true
+  eval: true
+---
+
+## Ordner dieses Dokuments
+
+```{r}
+root <- file.path(here::here(),"data")
+
+naturalsize <- function(bytes) {
+  units <- c("B","KiB","MiB","GiB","TiB")
+  i <- 1; sz <- as.numeric(bytes)
+  while (sz >= 1024 && i < length(units)) { sz <- sz/1024; i <- i+1 }
+  sprintf("%.1f %s", sz, units[i])
+}
+
+files <- list.files(root, all.files = FALSE, full.names = TRUE, no.. = TRUE)
+files <- files[basename(files) != "index.qmd" & file.exists(files) & !dir.exists(files)]
+
+if (length(files) == 0) {
+  cat("(Keine Dateien gefunden)")
+} else {
+  info <- file.info(files)
+  df <- data.frame(
+    Datei = sprintf("[%s](%s)", basename(files), basename(files)),
+    Größe = vapply(info$size, naturalsize, character(1)),
+    `Geändert (UTC)` = format(as.POSIXct(info$mtime, tz = "UTC"), "%Y-%m-%d %H:%M:%SZ"),
+    check.names = FALSE
+  )
+  knitr::kable(df, format = "html", table.attr = 'class="table table-sm"')
+}
+```

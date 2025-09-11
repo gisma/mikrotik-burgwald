@@ -1,0 +1,67 @@
+{
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "---\n",
+        "title: \"Daten\"\n",
+        "format: html\n",
+        "execute:\n",
+        "  echo: false\n",
+        "  eval: true\n",
+        "---"
+      ],
+      "id": "0f947f25"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "from pathlib import Path\n",
+        "from datetime import datetime, timezone\n",
+        "import pandas as pd\n",
+        "\n",
+        "# Ordner dieses Dokuments\n",
+        "root = Path(__file__).resolve().parent\n",
+        "\n",
+        "def naturalsize(n: int) -> str:\n",
+        "    # einfache, paketfreie Größenformatierung (binär)\n",
+        "    units = [\"B\",\"KiB\",\"MiB\",\"GiB\",\"TiB\"]\n",
+        "    i = 0\n",
+        "    f = float(n)\n",
+        "    while f >= 1024 and i < len(units) - 1:\n",
+        "        f /= 1024.0\n",
+        "        i += 1\n",
+        "    return f\"{f:.1f} {units[i]}\"\n",
+        "\n",
+        "rows = []\n",
+        "for p in sorted(root.glob(\"*\")):\n",
+        "    if p.name == \"index.qmd\":\n",
+        "        continue\n",
+        "    if p.is_file():\n",
+        "        rows.append({\n",
+        "            \"Datei\": f\"[{p.name}]({p.name})\",\n",
+        "            \"Größe\": naturalsize(p.stat().st_size),\n",
+        "            \"Geändert (UTC)\": datetime.fromtimestamp(p.stat().st_mtime, tz=timezone.utc)\\\n",
+        "                                   .strftime(\"%Y-%m-%d %H:%M:%SZ\")\n",
+        "        })\n",
+        "\n",
+        "df = pd.DataFrame(rows)\n",
+        "print(\"(Keine Dateien gefunden)\" if df.empty else df.to_markdown(index=False))"
+      ],
+      "id": "fb75f929",
+      "execution_count": null,
+      "outputs": []
+    }
+  ],
+  "metadata": {
+    "kernelspec": {
+      "display_name": "Python 3",
+      "language": "python",
+      "name": "python3"
+    }
+  },
+  "nbformat": 4,
+  "nbformat_minor": 5
+}

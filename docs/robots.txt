@@ -1,0 +1,1 @@
+Sitemap: https://gisma.github.io/mikrotik-burgwald/sitemap.xml
