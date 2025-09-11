@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>index – Hydro-Messnetz Burgwald</title>
+<title>Daten Repo – Hydro-Messnetz Burgwald</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -70,35 +70,6 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
-  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
-
-<script type="text/javascript">
-const typesetMath = (el) => {
-  if (window.MathJax) {
-    // MathJax Typeset
-    window.MathJax.typeset([el]);
-  } else if (window.katex) {
-    // KaTeX Render
-    var mathElements = el.getElementsByClassName("math");
-    var macros = [];
-    for (var i = 0; i < mathElements.length; i++) {
-      var texText = mathElements[i].firstChild;
-      if (mathElements[i].tagName == "SPAN") {
-        window.katex.render(texText.data, mathElements[i], {
-          displayMode: mathElements[i].classList.contains('display'),
-          throwOnError: false,
-          macros: macros,
-          fleqn: false
-        });
-      }
-    }
-  }
-}
-window.Quarto = {
-  typesetMath
-};
-</script>
 
 <link rel="stylesheet" href="../css/styles.css">
 </head>
@@ -297,7 +268,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">Daten</li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">Daten Repo</li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -385,14 +356,8 @@ window.Quarto = {
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active">
-    <h2 id="toc-title">On this page</h2>
-   
-  <ul>
-  <li><a href="#beim-erstellen-der-tabelle" id="toc-beim-erstellen-der-tabelle" class="nav-link active" data-scroll-target="#beim-erstellen-der-tabelle">… beim Erstellen der Tabelle:</a></li>
-  </ul>
-</nav>
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+        
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -400,7 +365,7 @@ window.Quarto = {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Daten</h1>
+<h1 class="title">Daten Repo</h1>
 </div>
 
 
@@ -417,23 +382,158 @@ window.Quarto = {
 </header>
 
 
-<p>BASE_URL &lt;- ” https://gisma.github.io/mikrotik-burgwald/data”</p>
-<p>root &lt;- file.path(here::here(), “data”)</p>
-<p>naturalsize &lt;- function(bytes) { units &lt;- c(“B”,“KiB”,“MiB”,“GiB”,“TiB”) i &lt;- 1; sz &lt;- as.numeric(bytes) while (sz &gt;= 1024 &amp;&amp; i &lt; length(units)) { sz &lt;- sz/1024; i &lt;- i+1 } sprintf(“%.1f %s”, sz, units[i]) }</p>
-<p>files &lt;- list.files(root, all.files = FALSE, full.names = TRUE, no.. = TRUE) files &lt;- files[basename(files) != “index.qmd” &amp; file.exists(files) &amp; !dir.exists(files)]</p>
-<p>if (length(files) == 0) { cat(“(Keine Dateien gefunden)”) } else { info &lt;- file.info(files) # Namen und absoluter URL (URL-encodiert) names &lt;- basename(files) urls &lt;- paste0(BASE_URL, “/”, utils::URLencode(names, reserved = TRUE))</p>
-<p>df &lt;- data.frame( Datei = sprintf(“<a href="%s">%s</a>”, names, urls), Größe = vapply(info<span class="math inline">\(size, naturalsize, character(1)),
-    `Geändert (UTC)` = format(as.POSIXct(info\)</span>mtime, tz = “UTC”), “%Y-%m-%d %H:%M:%SZ”), check.names = FALSE ) knitr::kable(df, format = “html”, table.attr = ‘class=“table table-sm”’) }</p>
-<p>describe_file &lt;- function(name) { n &lt;- tolower(name) ext &lt;- sub(“^.<em>\.”, ””, n) if (grepl(”^dds75-lb-.</em>\.parquet<span class="math inline">\(", n))
-    return("Parquet-Timeseries DDS75-LB: received_at, device_id, distance_cm, temperature, battery, Flags.")
-  if (grepl("^burgwald-ps-lb-.*\\.parquet\)</span>”, n)) return(“Parquet-Timeseries PS-LB: received_at, water_cm/pressure_kpa/_mpa, idc_input_ma, vdc_input_v, battery.”) if (grepl(“^burgwald-sensecap-.*\.parquet$“, n)) return(”Parquet-Timeseries SenseCAP: received_at, temperature, humidity, pressure_hpa, illumination, ggf. UV/Wind/Regen.”) if (ext == “parquet”) return(“Parquet: received_at, device_id, f_port, rssi, snr sowie sensortypische Messspalten.”) if (ext == “ndjson”) return(“NDJSON: eine JSON-Zeile pro TTN-Uplink inkl. decoded_payload, rssi/snr, f_port.”) if (ext == “csv”) return(“CSV: Tabellendaten mit received_at (UTC) und normalisierten Messfeldern; Kopfzeile vorhanden.”) return(“Datenablage des Messnetzes (Format je nach Gerät/Export).”) }</p>
-<section id="beim-erstellen-der-tabelle" class="level1">
-<h1>… beim Erstellen der Tabelle:</h1>
-<p>df &lt;- data.frame( Datei = sprintf(“<a href="%s">%s</a>”, names, urls), Größe = vapply(info<span class="math inline">\(size, naturalsize, character(1)),
-  `Geändert (UTC)` = format(as.POSIXct(info\)</span>mtime, tz = “UTC”), “%Y-%m-%d %H:%M:%SZ”), Beschreibung = vapply(names, describe_file, character(1)), check.names = FALSE )</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="table table-sm caption-top table-striped small" data-quarto-postprocess="true">
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th"></th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Datei</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Größe</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Geändert (UTC)</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Beschreibung</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">index.rmarkdown</td>
+<td style="text-align: left;"><a href="./index.rmarkdown">index.rmarkdown</a></td>
+<td style="text-align: left;">3.2 KiB</td>
+<td style="text-align: left;">2025-09-11 13:32:06Z</td>
+<td style="text-align: left;">Datenablage des Messnetzes (Format je nach Gerät/Export).</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">dds75-lb-05_raw.ndjson</td>
+<td style="text-align: left;"><a href="./dds75-lb-05_raw.ndjson">dds75-lb-05_raw.ndjson</a></td>
+<td style="text-align: left;">92.8 KiB</td>
+<td style="text-align: left;">2025-09-11 13:30:18Z</td>
+<td style="text-align: left;">NDJSON: eine JSON-Zeile pro TTN-Uplink (decoded_payload, rssi/snr, f_port).</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">dds75-lb-05.parquet</td>
+<td style="text-align: left;"><a href="./dds75-lb-05.parquet">dds75-lb-05.parquet</a></td>
+<td style="text-align: left;">5.5 KiB</td>
+<td style="text-align: left;">2025-09-11 13:30:18Z</td>
+<td style="text-align: left;">Parquet-Timeseries DDS75-LB: received_at, device_id, distance_cm, temperature, battery, Flags.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">dds75-lb-06_raw.ndjson</td>
+<td style="text-align: left;"><a href="./dds75-lb-06_raw.ndjson">dds75-lb-06_raw.ndjson</a></td>
+<td style="text-align: left;">91.3 KiB</td>
+<td style="text-align: left;">2025-09-11 13:30:18Z</td>
+<td style="text-align: left;">NDJSON: eine JSON-Zeile pro TTN-Uplink (decoded_payload, rssi/snr, f_port).</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">dds75-lb-06.parquet</td>
+<td style="text-align: left;"><a href="./dds75-lb-06.parquet">dds75-lb-06.parquet</a></td>
+<td style="text-align: left;">5.1 KiB</td>
+<td style="text-align: left;">2025-09-11 13:30:18Z</td>
+<td style="text-align: left;">Parquet-Timeseries DDS75-LB: received_at, device_id, distance_cm, temperature, battery, Flags.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">dds75-lb-07_raw.ndjson</td>
+<td style="text-align: left;"><a href="./dds75-lb-07_raw.ndjson">dds75-lb-07_raw.ndjson</a></td>
+<td style="text-align: left;">93.4 KiB</td>
+<td style="text-align: left;">2025-09-11 13:30:18Z</td>
+<td style="text-align: left;">NDJSON: eine JSON-Zeile pro TTN-Uplink (decoded_payload, rssi/snr, f_port).</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">dds75-lb-07.parquet</td>
+<td style="text-align: left;"><a href="./dds75-lb-07.parquet">dds75-lb-07.parquet</a></td>
+<td style="text-align: left;">5.4 KiB</td>
+<td style="text-align: left;">2025-09-11 13:30:18Z</td>
+<td style="text-align: left;">Parquet-Timeseries DDS75-LB: received_at, device_id, distance_cm, temperature, battery, Flags.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">dds75-lb-02_raw.ndjson</td>
+<td style="text-align: left;"><a href="./dds75-lb-02_raw.ndjson">dds75-lb-02_raw.ndjson</a></td>
+<td style="text-align: left;">93.8 KiB</td>
+<td style="text-align: left;">2025-09-11 13:30:18Z</td>
+<td style="text-align: left;">NDJSON: eine JSON-Zeile pro TTN-Uplink (decoded_payload, rssi/snr, f_port).</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">dds75-lb-03_raw.ndjson</td>
+<td style="text-align: left;"><a href="./dds75-lb-03_raw.ndjson">dds75-lb-03_raw.ndjson</a></td>
+<td style="text-align: left;">87.8 KiB</td>
+<td style="text-align: left;">2025-09-11 13:30:18Z</td>
+<td style="text-align: left;">NDJSON: eine JSON-Zeile pro TTN-Uplink (decoded_payload, rssi/snr, f_port).</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">dds75-lb-03.parquet</td>
+<td style="text-align: left;"><a href="./dds75-lb-03.parquet">dds75-lb-03.parquet</a></td>
+<td style="text-align: left;">5.1 KiB</td>
+<td style="text-align: left;">2025-09-11 13:30:18Z</td>
+<td style="text-align: left;">Parquet-Timeseries DDS75-LB: received_at, device_id, distance_cm, temperature, battery, Flags.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">dds75-lb-04_raw.ndjson</td>
+<td style="text-align: left;"><a href="./dds75-lb-04_raw.ndjson">dds75-lb-04_raw.ndjson</a></td>
+<td style="text-align: left;">94.0 KiB</td>
+<td style="text-align: left;">2025-09-11 13:30:18Z</td>
+<td style="text-align: left;">NDJSON: eine JSON-Zeile pro TTN-Uplink (decoded_payload, rssi/snr, f_port).</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">dds75-lb-04.parquet</td>
+<td style="text-align: left;"><a href="./dds75-lb-04.parquet">dds75-lb-04.parquet</a></td>
+<td style="text-align: left;">5.3 KiB</td>
+<td style="text-align: left;">2025-09-11 13:30:18Z</td>
+<td style="text-align: left;">Parquet-Timeseries DDS75-LB: received_at, device_id, distance_cm, temperature, battery, Flags.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">dds75-lb-001_raw.ndjson</td>
+<td style="text-align: left;"><a href="./dds75-lb-001_raw.ndjson">dds75-lb-001_raw.ndjson</a></td>
+<td style="text-align: left;">192.6 KiB</td>
+<td style="text-align: left;">2025-09-11 13:30:18Z</td>
+<td style="text-align: left;">NDJSON: eine JSON-Zeile pro TTN-Uplink (decoded_payload, rssi/snr, f_port).</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">dds75-lb-001.parquet</td>
+<td style="text-align: left;"><a href="./dds75-lb-001.parquet">dds75-lb-001.parquet</a></td>
+<td style="text-align: left;">6.2 KiB</td>
+<td style="text-align: left;">2025-09-11 13:30:18Z</td>
+<td style="text-align: left;">Parquet-Timeseries DDS75-LB: received_at, device_id, distance_cm, temperature, battery, Flags.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">dds75-lb-02.parquet</td>
+<td style="text-align: left;"><a href="./dds75-lb-02.parquet">dds75-lb-02.parquet</a></td>
+<td style="text-align: left;">5.3 KiB</td>
+<td style="text-align: left;">2025-09-11 13:30:18Z</td>
+<td style="text-align: left;">Parquet-Timeseries DDS75-LB: received_at, device_id, distance_cm, temperature, battery, Flags.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">burgwald-sensecap-01_raw.ndjson</td>
+<td style="text-align: left;"><a href="./burgwald-sensecap-01_raw.ndjson">burgwald-sensecap-01_raw.ndjson</a></td>
+<td style="text-align: left;">1.1 MiB</td>
+<td style="text-align: left;">2025-09-11 13:30:18Z</td>
+<td style="text-align: left;">NDJSON: eine JSON-Zeile pro TTN-Uplink (decoded_payload, rssi/snr, f_port).</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">burgwald-ps-lb-01_raw.ndjson</td>
+<td style="text-align: left;"><a href="./burgwald-ps-lb-01_raw.ndjson">burgwald-ps-lb-01_raw.ndjson</a></td>
+<td style="text-align: left;">133.5 KiB</td>
+<td style="text-align: left;">2025-09-11 13:30:18Z</td>
+<td style="text-align: left;">NDJSON: eine JSON-Zeile pro TTN-Uplink (decoded_payload, rssi/snr, f_port).</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">burgwald-sensecap-01.parquet</td>
+<td style="text-align: left;"><a href="./burgwald-sensecap-01.parquet">burgwald-sensecap-01.parquet</a></td>
+<td style="text-align: left;">28.5 KiB</td>
+<td style="text-align: left;">2025-09-11 13:30:18Z</td>
+<td style="text-align: left;">Parquet-Timeseries SenseCAP: received_at, temperature, humidity, pressure_hpa, illumination, ggf. UV/Wind/Regen.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">burgwald-ps-lb-01.parquet</td>
+<td style="text-align: left;"><a href="./burgwald-ps-lb-01.parquet">burgwald-ps-lb-01.parquet</a></td>
+<td style="text-align: left;">6.1 KiB</td>
+<td style="text-align: left;">2025-09-11 13:30:18Z</td>
+<td style="text-align: left;">Parquet-Timeseries PS-LB: received_at, water_cm/pressure_kpa/_mpa, idc_input_ma, vdc_input_v, battery.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 
 
-</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

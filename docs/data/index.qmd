@@ -1,78 +1,98 @@
-  ---
-  title: "Daten"
-  format: html
-  engine: knitr
-  execute:
-    echo: false
-    eval: true
-  ---
-  
-##  Verfügbare Sensordaten
-  
+---
+title: "Daten Repo"
+format: 
+  html:
+    code-link: false
+engine: knitr
+execute:
+  echo: false
+  eval: true
+---
+
+
+
+
 ```{r}
-  # Basis-URL deiner GitHub Pages (ohne führendes Leerzeichen!)
-  BASE_URL <- "https://gisma.github.io/mikrotik-burgwald/data"
-  
-  # Datenordner (benötigt Paket 'here')
-  root <- file.path(here::here(), "data")
-  
-  naturalsize <- function(bytes) {
-    units <- c("B","KiB","MiB","GiB","TiB")
-    i <- 1; sz <- as.numeric(bytes)
-    while (sz >= 1024 && i < length(units)) { sz <- sz/1024; i <- i+1 }
-    sprintf("%.1f %s", sz, units[i])
-  }
-  
-  # Beschreibung je Dateiname/Endung
+# --- Hilfsfunktionen ---
+naturalsize <- function(bytes) {
+  units <- c("B","KiB","MiB","GiB","TiB")
+  i <- 1; sz <- as.numeric(bytes)
+  while (sz >= 1024 && i < length(units)) { sz <- sz/1024; i <- i+1 }
+  sprintf("%.1f %s", sz, units[i])
+}
+html_escape <- function(x) {
+  x <- gsub("&","&amp;",x,fixed=TRUE)
+  x <- gsub("<","&lt;", x,fixed=TRUE)
+  x <- gsub(">","&gt;", x,fixed=TRUE)
+  x <- gsub('"',"&quot;",x,fixed=TRUE)
+  x
+}
+
+# Pfad dieses Dokuments (= data/)
+root <- file.path(normalizePath(here::here()),"data")
+# trailing slash für robustes StartsWith
+root_slash <- paste0(root, .Platform$file.sep)
+
+# Dateien direkt in data/, keine Unterordner
+all <- list.files(root, all.files = FALSE, full.names = TRUE, no.. = TRUE)
+
+# Normalisieren + sicherstellen, dass sie innerhalb von root liegen
+safe <- vapply(all, function(p) {
+  np <- normalizePath(p, mustWork = FALSE)
+  startsWith(np, root_slash) && file.exists(np) && !dir.exists(np)
+}, logical(1))
+
+files <- all[safe]
+names_all <- basename(files)
+
+# index.qmd ausblenden
+keep <- names_all != "index.qmd"
+files <- files[keep]
+names_all <- names_all[keep]
+
+# Optional: erlaubte Namenszeichen
+allowed <- grepl("^[A-Za-z0-9._-]+$", names_all)
+files <- files[allowed]
+names_all <- names_all[allowed]
+
+if (!length(files)) {
+  cat("(Keine Dateien gefunden)")
+} else {
+  info  <- file.info(files)
+
+  # nach Änderungszeit (neu → alt) sortieren
+  ord <- order(info$mtime, decreasing = TRUE)
+  files <- files[ord]; names_all <- names_all[ord]; info <- info[ord, ]
+
+  # Relativ-Links innerhalb von data/
+  hrefs <- paste0("./", utils::URLencode(names_all, reserved = TRUE))
+  links <- sprintf('<a href="%s">%s</a>', hrefs, html_escape(names_all))
+
   describe_file <- function(name) {
-    n <- tolower(name)
-    ext <- sub("^.*\\.", "", n)
+    n <- tolower(name); ext <- sub("^.*\\.", "", n)
     if (grepl("^dds75-lb-.*\\.parquet$", n))
       return("Parquet-Timeseries DDS75-LB: received_at, device_id, distance_cm, temperature, battery, Flags.")
     if (grepl("^burgwald-ps-lb-.*\\.parquet$", n))
       return("Parquet-Timeseries PS-LB: received_at, water_cm/pressure_kpa/_mpa, idc_input_ma, vdc_input_v, battery.")
     if (grepl("^burgwald-sensecap-.*\\.parquet$", n))
       return("Parquet-Timeseries SenseCAP: received_at, temperature, humidity, pressure_hpa, illumination, ggf. UV/Wind/Regen.")
-    if (ext == "parquet")
-      return("Parquet: received_at, device_id, f_port, rssi, snr sowie sensortypische Messspalten.")
-    if (ext == "ndjson")
-      return("NDJSON: eine JSON-Zeile pro TTN-Uplink inkl. decoded_payload, rssi/snr, f_port.")
-    if (ext == "csv")
-      return("CSV: Tabellendaten mit received_at (UTC) und normalisierten Messfeldern; Kopfzeile vorhanden.")
-    return("Datenablage des Messnetzes (Format je nach Gerät/Export).")
+    if (ext == "parquet") return("Parquet: received_at, device_id, f_port, rssi, snr + sensorspezifische Spalten.")
+    if (ext == "ndjson")  return("NDJSON: eine JSON-Zeile pro TTN-Uplink (decoded_payload, rssi/snr, f_port).")
+    if (ext == "csv")     return("CSV: received_at (UTC) + normalisierte Messfelder; Kopfzeile vorhanden.")
+    "Datenablage des Messnetzes (Format je nach Gerät/Export)."
   }
-  
-  # kleines HTML-Escaping für Linktext
-  html_escape <- function(x) {
-    x <- gsub("&","&amp;",x,fixed=TRUE)
-    x <- gsub("<","&lt;", x,fixed=TRUE)
-    x <- gsub(">","&gt;", x,fixed=TRUE)
-    x <- gsub('"',"&quot;",x,fixed=TRUE)
-    x
-  }
-  
-  files <- list.files(root, all.files = FALSE, full.names = TRUE, no.. = TRUE)
-  files <- files[basename(files) != "index.qmd" & file.exists(files) & !dir.exists(files)]
-  
-  if (length(files) == 0) {
-    cat("(Keine Dateien gefunden)")
-  } else {
-    info  <- file.info(files)
-    names <- basename(files)
-    urls  <- paste0(BASE_URL, "/", utils::URLencode(names, reserved = TRUE))
-    links <- sprintf('<a href="%s">%s</a>', urls, html_escape(names))
-  
-    df <- data.frame(
-      Datei = links,
-      Größe = vapply(info$size, naturalsize, character(1)),
-      `Geändert (UTC)` = format(as.POSIXct(info$mtime, tz="UTC"), "%Y-%m-%d %H:%M:%SZ"),
-      Beschreibung = vapply(names, describe_file, character(1)),
-      check.names = FALSE
-    )
-  
-    # Wichtig: escape = FALSE, damit die <a>-Links nicht maskiert werden
-    knitr::kable(df, format="html", table.attr='class="table table-sm"', escape=FALSE)
-  }
+
+  df <- data.frame(
+    Datei            = links,
+    Größe            = vapply(info$size, naturalsize, character(1)),
+    `Geändert (UTC)` = format(as.POSIXct(info$mtime, tz = "UTC"), "%Y-%m-%d %H:%M:%SZ"),
+    Beschreibung     = vapply(names_all, describe_file, character(1)),
+    check.names      = FALSE
+  )
+
+  knitr::kable(df, format = "html", table.attr = 'class="table table-sm"', escape = FALSE)
+}
+
 
 ```
 
