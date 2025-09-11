@@ -17,11 +17,11 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      TTN_APP_ID:        ${{ secrets.TTN_APP_ID }}
-      TTN_REGION:        ${{ secrets.TTN_REGION }}
-      TTN_API_KEY:       ${{ secrets.TTN_API_KEY }}
-      DEVICES:           ${{ secrets.TTN_DEVICES }}
-      TTN_AFTER_DAYS:    "2"
+      TTN_APP_ID:      ${{ secrets.TTN_APP_ID }}
+      TTN_REGION:      ${{ secrets.TTN_REGION }}
+      TTN_API_KEY:     ${{ secrets.TTN_API_KEY }}
+      DEVICES:         ${{ secrets.TTN_DEVICES }}
+      TTN_AFTER_DAYS:  "2"
 
     steps:
       - name: Checkout (full history)
@@ -43,36 +43,35 @@ jobs:
 
       - name: Build data page (Python)
         run: |
+          set -e
           mkdir -p data
           python scripts/pull_all_devices.py
           if [ ! -f data/data.html ]; then
             echo '<!doctype html><meta charset="utf-8"><p>(Noch keine Daten verfügbar. Die TTN-Pipeline erzeugt diese Seite beim nächsten Lauf.)</p>' > data/data.html
           fi
+          echo "----- data/ -----"
+          ls -lAh data
 
       # --- Quarto (ohne R) ---
       - name: Setup Quarto
         uses: quarto-dev/quarto-actions/setup@v2
 
-      # HINWEIS: R ist entfernt. Falls du später wieder R-Chunks nutzt, diese beiden Steps reaktivieren:
-      # - name: Setup R
-      #   uses: r-lib/actions/setup-r@v2
-      #   with:
-      #     r-version: "release"
-      #     use-public-rspm: true
-      #
-      # - name: Install R packages
-      #   run: |
-      #     Rscript -e 'install.packages(c("knitr","rmarkdown","here","htmltools"), repos="https://cloud.r-project.org")'
-
       - name: Render site (Quarto)
         run: |
+          set -e
           quarto render --no-cache
-      - name: Copy data/ into docs/ (after render!)
+          echo "----- docs/ (nach Render) -----"
+          ls -lAh docs || true
+
+      # wichtig: data/ erst NACH dem Render in docs/data spiegeln
+      - name: Copy data/ into docs/data/
         run: |
+          set -e
           mkdir -p docs/data
-          rsync -a --delete data/ docs/data/
-          echo "----- docs/data -----"; ls -lAh docs/data
-          
+          rsync -av --delete data/ docs/data/
+          echo "----- docs/data/ -----"
+          ls -lAh docs/data
+
       # --- Commit & Push mit Rebase/Retries ---
       - name: Commit rendered site
         run: |
@@ -98,7 +97,7 @@ jobs:
             sleep 2
           done
 
-          echo "Letzter Versuch: force-with-lease (falls Branchschutz das erlaubt)"
+          echo "Letzter Versuch: force-with-lease (falls Branchschutz dies erlaubt)"
           git fetch origin main
           git rebase origin/main || true
           git push --force-with-lease || true
