@@ -326,7 +326,7 @@ html = f"""<!doctype html>
 {"".join(type_cards_html) if type_cards_html else '<div class="card">Keine Daten zum Anzeigen.</div>'}
 </div>
 """
-(DOCS / "data.html").write_text(html, encoding="utf-8")
+(DATA / "data.html").write_text(html, encoding="utf-8")
 
 # Debug-Seite
 dbg = f"""<!doctype html><meta charset="utf-8"><title>Debug</title>
@@ -334,4 +334,4 @@ dbg = f"""<!doctype html><meta charset="utf-8"><title>Debug</title>
 <h1>Debug – Pull & Persist</h1>
 {"".join(debug_cards)}
 """
-(DOCS / "debug.html").write_text(dbg, encoding="utf-8")
+(DATA / "debug.html").write_text(dbg, encoding="utf-8")
