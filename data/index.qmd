@@ -1,16 +1,18 @@
 ---
 title: "Daten"
 format: html
-engine: knitr        # <— erzwingt R/knitr statt Jupyter
+engine: knitr
 execute:
   echo: false
   eval: true
 ---
 
-## Ordner dieses Dokuments
-
 ```{r}
-root <- file.path(here::here(),"data")
+
+BASE_URL <- " https://gisma.github.io/mikrotik-burgwald/data"
+
+
+root <- file.path(here::here(), "data")
 
 naturalsize <- function(bytes) {
   units <- c("B","KiB","MiB","GiB","TiB")
@@ -26,12 +28,15 @@ if (length(files) == 0) {
   cat("(Keine Dateien gefunden)")
 } else {
   info <- file.info(files)
+  # Namen und absoluter URL (URL-encodiert)
+  names <- basename(files)
+  urls  <- paste0(BASE_URL, "/", utils::URLencode(names, reserved = TRUE))
+
   df <- data.frame(
-    Datei = sprintf("[%s](%s)", basename(files), basename(files)),
+    Datei = sprintf("[%s](%s)", names, urls),
     Größe = vapply(info$size, naturalsize, character(1)),
     `Geändert (UTC)` = format(as.POSIXct(info$mtime, tz = "UTC"), "%Y-%m-%d %H:%M:%SZ"),
     check.names = FALSE
   )
   knitr::kable(df, format = "html", table.attr = 'class="table table-sm"')
 }
-```
