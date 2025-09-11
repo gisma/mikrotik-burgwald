@@ -45,7 +45,7 @@ jobs:
           r-version: "release"
           use-public-rspm: true
 
-      - name: Install R dependencies (knitr/rmarkdown/here)
+      - name: Install R dependencies
         uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: |
@@ -59,24 +59,26 @@ jobs:
         with:
           tinytex: false
 
-      # Optional: alte Freezes dieser Seite säubern (gegen „zeigt alte Python-Seite“)
-      - name: Clean stale freeze
+      # --- Devices automatisch ermitteln ---
+      - name: Detect devices from data/
+        id: devices
         run: |
-          rm -rf _freeze/data/index || true
+          DEVICES=$(ls data/*.parquet 2>/dev/null | xargs -n1 basename | sed 's/\.parquet$//' | tr '\n' ' ')
+          echo "DEVICES=$DEVICES" >> $GITHUB_ENV
+          echo "Devices auto-detected: $DEVICES"
 
       # --- Render ---
       - name: Render Quarto
         env:
-          TTN_APP_ID:     ${{ secrets.TTN_APP_ID }}
+          TTN_APP_ID:     ${{ vars.TTN_APP_ID }}
           TTN_REGION:     ${{ vars.TTN_REGION }}
           TTN_API_KEY:    ${{ secrets.TTN_API_KEY }}
-          DEVICES:        ${{ vars.TTN_DEVICES }}
-          TTN_AFTER_DAYS: ${{ vars.TTN_AFTER_DAYS }}
-        run: |
-          quarto render
+          DEVICES:        ${{ env.DEVICES }}
+          TTN_AFTER_DAYS: ${{ vars.TTN_AFTER_DAYS || 2 }}
+        run: quarto render
 
       # --- Commit nach docs/ ---
-      - name: Commit rendered site (docs/)
+      - name: Commit rendered site
         run: |
           git config user.name  "quarto-bot"
           git config user.email "quarto-bot@example.com"
