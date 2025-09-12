@@ -170,6 +170,7 @@ button:disabled{ opacity:.6; cursor:not-allowed; }
 .light tr:nth-child(even) td{ background:#fbfdff; }
 .light tr:hover td{ background:#f3f6ff; }
 
+
 /* Kacheln */
 .light .device-tile{
   background:#ffffff;
