@@ -424,95 +424,60 @@ ul.task-list li input[type="checkbox"] {
 <div id="data-list">
 Lade Datenliste …
 </div>
+<div id="data-list">
+Lade Datenliste …
+</div>
 <script>
-/** ==== Konfiguration (anpassen) ==== **/
-const GH_OWNER = "gisma";                 // GitHub User/Org
-const GH_REPO  = "mikrotik-burgwald";     // Repository
-const BRANCH   = "main";                  // Branch/Ref
-const DATA_DIR = "data";                  // Ordner im Repo (relativ zur Wurzel)
-
-/** ==== Hilfsfunktionen ==== **/
-function humanSize(n){
-  const u=["B","KiB","MiB","GiB","TiB"];
-  let i=0, f=Number(n)||0;
-  while(f>=1024 && i<u.length-1){ f/=1024; i++; }
-  return `${f.toFixed(f<10&&i>0?1:0)} ${u[i]}`;
-}
-// Root der GitHub Pages-Seite ermitteln (robust für user.github.io/repo/)
-function siteRoot(){
-  const parts = location.pathname.split("/").filter(Boolean);
-  if (location.host.endsWith("github.io") && parts.length>0) {
-    // https://owner.github.io/repo/...
-    return `${location.origin}/${parts[0]}/`;
-  }
-  // Lokale Previews / eigene Domains
-  return `${location.origin}/`;
-}
-// Link-Ziel: GitHub Pages (schön) oder raw.githubusercontent (direkter Download)?
-const LINK_MODE = "pages"; // "pages" | "raw"
-function fileHref(name){
-  if (LINK_MODE === "raw") {
-    return `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/${BRANCH}/${DATA_DIR}/${encodeURIComponent(name)}`;
-  } else {
-    return `${siteRoot()}${DATA_DIR}/${encodeURIComponent(name)}`;
-  }
-}
-
-/** ==== Laden & Rendern ==== **/
-(async function(){
-  const host = "https://api.github.com";
-  const url  = `${host}/repos/${GH_OWNER}/${GH_REPO}/contents/${encodeURIComponent(DATA_DIR)}?ref=${encodeURIComponent(BRANCH)}`;
+(function(){
   const mount = document.getElementById("data-list");
-  try {
-    const res = await fetch(url, {headers: {"Accept":"application/vnd.github+json"}});
-    if (!res.ok) throw new Error(`GitHub API: ${res.status} ${res.statusText}`);
-    const items = await res.json();
+  const url   = "/data/index.json?v=" + Date.now(); // Cache-Buster
 
-    // filtern: nur Dateien mit gewünschter Endung
-    const rows = (Array.isArray(items) ? items : [])
-      .filter(it => it.type === "file")
-      .filter(it => /\.parquet$/i.test(it.name) || /\.ndjson$/i.test(it.name))
-      // optional: neueste zuerst (API liefert size, aber kein mtime; wir sortieren nach Name)
-      .sort((a,b) => a.name.localeCompare(b.name));
+  function humanSize(n){
+    const u=["B","KiB","MiB","GiB","TiB"];
+    let i=0, f=Number(n)||0;
+    while(f>=1024 && i<u.length-1){ f/=1024; i++; }
+    return `${f.toFixed(f<10&&i>0?1:0)} ${u[i]}`;
+  }
+  function fmtDate(ts){
+    try { return new Date(ts*1000).toISOString().replace('T',' ').replace('Z','Z'); }
+    catch { return ""; }
+  }
 
-    if (rows.length === 0) {
+  fetch(url).then(r=>{
+    if(!r.ok) throw new Error(r.status+" "+r.statusText);
+    return r.json();
+  }).then(items=>{
+    if(!Array.isArray(items) || items.length===0){
       mount.innerHTML = "<em>(Keine passenden Dateien gefunden)</em>";
       return;
     }
-
-    // Tabelle bauen
-    const thead = `
-      <thead>
-        <tr>
-          <th>Datei</th>
-          <th>Größe</th>
-          <th>Typ</th>
-        </tr>
-      </thead>`;
-    const tbody = rows.map(it => {
-      const href = fileHref(it.name);
-      const size = humanSize(it.size);
-      const typ  = it.name.toLowerCase().endsWith(".parquet") ? "Parquet" : "NDJSON";
-      return `
-        <tr>
-          <td><a href="${href}">${it.name}</a></td>
-          <td>${size}</td>
-          <td>${typ}</td>
-        </tr>`;
-    }).join("");
-
-    // Minimal-CSS + Tabelle einfügen
     const css = `<style>
       #data-list table{width:100%;border-collapse:collapse}
-      #data-list th,#data-list td{padding:.4rem .5rem;border:1px solid #ddd;text-align:left}
+      #data-list th,#data-list td{padding:.45rem .6rem;border:1px solid #ddd;text-align:left}
       #data-list th{background:#f7f7f7}
+      @media (prefers-color-scheme: dark){
+        #data-list th{background:#222;color:#eee}
+        #data-list th,#data-list td{border-color:#333}
+      }
     </style>`;
-    mount.innerHTML = `${css}<table>${thead}<tbody>${tbody}</tbody></table>`;
-  } catch (err){
+    const head = `
+      <thead><tr>
+        <th>Datei</th><th>Größe</th><th>Typ</th><th>Letzte Änderung (UTC)</th>
+      </tr></thead>`;
+    const body = items.map(it=>{
+      const href = `/data/${encodeURIComponent(it.name)}`;
+      return `<tr>
+        <td><a href="${href}">${it.name}</a></td>
+        <td>${humanSize(it.size)}</td>
+        <td>${it.type||""}</td>
+        <td>${fmtDate(it.mtime||0)}</td>
+      </tr>`;
+    }).join("");
+    mount.innerHTML = `${css}<table>${head}<tbody>${body}</tbody></table>`;
+  }).catch(err=>{
     console.error(err);
-    document.getElementById("data-list").innerHTML =
-      `<div style="color:#b00">Fehler beim Laden der Dateiliste: ${String(err.message||err)}</div>`;
-  }
+    mount.innerHTML = `<div style="color:#b00">Konnte /data/index.json nicht laden: ${String(err.message||err)}</div>`;
+  });
 })();
 </script>
 
