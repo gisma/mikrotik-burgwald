@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Daten Repo – Hydro-Messnetz Burgwald</title>
+<title>Daten Repository – Hydro-Messnetz Burgwald</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -70,6 +70,7 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
+<style>html{ scroll-behavior: smooth; }</style>
 
 
 <link rel="stylesheet" href="css/styles.css">
@@ -376,10 +377,9 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#allgmeine-formate-im-repo" id="toc-allgmeine-formate-im-repo" class="nav-link active" data-scroll-target="#allgmeine-formate-im-repo">Allgmeine Formate im Repo</a>
-  <ul class="collapse">
+  <li><a href="#allgemeine-formate-im-repo" id="toc-allgemeine-formate-im-repo" class="nav-link active" data-scroll-target="#allgemeine-formate-im-repo">Allgemeine Formate im Repo</a></li>
   <li><a href="#sensoren" id="toc-sensoren" class="nav-link" data-scroll-target="#sensoren">Sensoren</a></li>
-  </ul></li>
+  <li><a href="#dateien-in-data" id="toc-dateien-in-data" class="nav-link" data-scroll-target="#dateien-in-data">Dateien in <code>data/</code></a></li>
   </ul>
 </nav>
     </div>
@@ -389,7 +389,7 @@ ul.task-list li input[type="checkbox"] {
 
 <header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./index_data.html">Messnetz-Daten</a></li><li class="breadcrumb-item"><a href="./index_data.html">Daten Repository</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">Daten Repo</h1>
+<h1 class="title">Daten Repository</h1>
 </div>
 
 
@@ -406,83 +406,109 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<section id="allgmeine-formate-im-repo" class="level2">
-<h2 class="anchored" data-anchor-id="allgmeine-formate-im-repo">Allgmeine Formate im Repo</h2>
+<section id="allgemeine-formate-im-repo" class="level2">
+<h2 class="anchored" data-anchor-id="allgemeine-formate-im-repo">Allgemeine Formate im Repo</h2>
 <p><strong>NDJSON</strong> und <strong>Parquet</strong> sind beides Datenformate, die sich gut ergänzen:</p>
 <ul>
-<li><p><strong>NDJSON</strong> (Newline Delimited JSON) speichert Ereignisse zeilenweise als JSON-Objekte. → Ideal für <strong>Streaming und APIs</strong>, weil jede Zeile ein eigenständiger Datensatz ist, der sofort verarbeitet werden kann. → Lässt sich mit Tools wie <code>jq</code>, <code>pandas.read_json(lines=True)</code> oder <code>jsonlite::stream_in()</code> direkt auswerten.</p></li>
-<li><p><strong>Parquet</strong> ist ein <strong>spaltenorientiertes, binäres Format</strong> für große Datenmengen. → Optimiert für <strong>Analysen und Abfragen</strong>, sehr platzsparend und schnell. → Standard in Big-Data-Systemen (Spark, Hadoop, BigQuery, DuckDB, GDAL/GeoParquet).</p></li>
+<li><p><strong>NDJSON</strong> (Newline Delimited JSON) speichert Ereignisse zeilenweise als JSON-Objekte.<br>
+→ Ideal für <strong>Streaming und APIs</strong>, weil jede Zeile ein eigenständiger Datensatz ist.<br>
+→ Lässt sich mit Tools wie <code>jq</code>, <code>pandas.read_json(lines=True)</code> oder <code>jsonlite::stream_in()</code> direkt auswerten.</p></li>
+<li><p><strong>Parquet</strong> ist ein <strong>spaltenorientiertes, binäres Format</strong> für große Datenmengen.<br>
+→ Optimiert für <strong>Analysen und Abfragen</strong>, sehr platzsparend und schnell.<br>
+→ Standard in Big-Data-Ecosystemen (Spark, Hadoop, DuckDB, BigQuery, GDAL/GeoParquet).</p></li>
 </ul>
-<p>Typischer Workflow: <strong>NDJSON für die rohe, zeilenweise Speicherung eingehender Sensordaten</strong> → später in <strong>Parquet für effiziente Archivierung und Analyse</strong> konvertieren.</p>
-<section id="sensoren" class="level3">
-<h3 class="anchored" data-anchor-id="sensoren">Sensoren</h3>
+<p><strong>Typischer Workflow:</strong> Rohdaten zunächst als <strong>NDJSON</strong> persistieren → für Analyse/Archiv in <strong>Parquet</strong> konvertieren.</p>
+</section>
+<section id="sensoren" class="level2">
+<h2 class="anchored" data-anchor-id="sensoren">Sensoren</h2>
 <ul>
-<li>DDS75-LB (dds75-lb-*.parquet): Zeitreihen eines Ultraschall-Pegelsensors mit distance_cm (bzw. Distance_mm), temperature (DS18B20), battery sowie optionalen Flags (interrupt_flag, sensor_flag).</li>
-<li>PS-LB (burgwald-ps-lb-*.parquet): Zeitreihen eines 4–20-mA/Pressure-Sensors mit water_cm bzw. pressure_kpa/_mpa, zusätzlich idc_input_ma, vdc_input_v, battery und digitalen Eingangsflags.</li>
-<li>SenseCAP Wetterstation (burgwald-sensecap-*.parquet): Zeitreihen mit temperature, humidity, pressure_hpa, illumination sowie ggf. uv_index, wind_speed, wind_dir, rainfall.</li>
+<li><strong>DDS75-LB</strong> (<code>dds75-lb-*.parquet</code>): <code>distance_cm</code> (bzw. <code>Distance_mm</code>), <code>temperature</code>, <code>battery</code>, Flags (<code>interrupt_flag</code>, <code>sensor_flag</code>).</li>
+<li><strong>PS-LB</strong> (<code>burgwald-ps-lb-*.parquet</code>): <code>water_cm</code> bzw. <code>pressure_kpa/_mpa</code>, zusätzlich <code>idc_input_ma</code>, <code>vdc_input_v</code>, <code>battery</code>, digitale Eingänge.</li>
+<li><strong>SenseCAP</strong> (<code>burgwald-sensecap-*.parquet</code>): <code>temperature</code>, <code>humidity</code>, <code>pressure_hpa</code>, <code>illumination</code>, ggf. <code>uv_index</code>, <code>wind_speed</code>, <code>wind_dir</code>, <code>rainfall</code>.</li>
 </ul>
-<div id="data-list">
-Lade Datenliste …
-</div>
+<hr>
+</section>
+<section id="dateien-in-data" class="level2">
+<h2 class="anchored" data-anchor-id="dateien-in-data">Dateien in <code>data/</code></h2>
 <div id="data-list">
 Lade Datenliste …
 </div>
 <script>
-(function(){
-  const mount = document.getElementById("data-list");
-  const url   = "/data/index.json?v=" + Date.now(); // Cache-Buster
+// --- Hilfsfunktionen ---
+function humanSize(n){
+  const u=["B","KiB","MiB","GiB","TiB"];
+  let i=0, f=Number(n)||0;
+  while (f>=1024 && i<u.length-1){ f/=1024; i++; }
+  return `${f.toFixed(f<10&&i>0?1:0)} ${u[i]}`;
+}
+function fmtDate(ts){
+  try { return new Date((Number(ts)||0)*1000).toISOString().replace('T',' ').replace('Z','Z'); }
+  catch { return ""; }
+}
 
-  function humanSize(n){
-    const u=["B","KiB","MiB","GiB","TiB"];
-    let i=0, f=Number(n)||0;
-    while(f>=1024 && i<u.length-1){ f/=1024; i++; }
-    return `${f.toFixed(f<10&&i>0?1:0)} ${u[i]}`;
+// --- Render-Funktion ---
+function renderTable(mount, items){
+  if (!Array.isArray(items) || items.length===0){
+    mount.innerHTML = "<em>(Keine passenden Dateien gefunden)</em>";
+    return;
   }
-  function fmtDate(ts){
-    try { return new Date(ts*1000).toISOString().replace('T',' ').replace('Z','Z'); }
-    catch { return ""; }
-  }
-
-  fetch(url).then(r=>{
-    if(!r.ok) throw new Error(r.status+" "+r.statusText);
-    return r.json();
-  }).then(items=>{
-    if(!Array.isArray(items) || items.length===0){
-      mount.innerHTML = "<em>(Keine passenden Dateien gefunden)</em>";
-      return;
+  const css = `<style>
+    #data-list table{width:100%;border-collapse:collapse}
+    #data-list th,#data-list td{padding:.5rem .6rem;border:1px solid #ddd;text-align:left}
+    #data-list th{background:#f7f7f7}
+    @media (prefers-color-scheme: dark){
+      #data-list th{background:#1f2937;color:#e5e7eb}
+      #data-list th,#data-list td{border-color:#374151;color:#e5e7eb}
+      #data-list a{color:#93c5fd}
     }
-    const css = `<style>
-      #data-list table{width:100%;border-collapse:collapse}
-      #data-list th,#data-list td{padding:.45rem .6rem;border:1px solid #ddd;text-align:left}
-      #data-list th{background:#f7f7f7}
-      @media (prefers-color-scheme: dark){
-        #data-list th{background:#222;color:#eee}
-        #data-list th,#data-list td{border-color:#333}
+  </style>`;
+  const head = `
+    <thead><tr>
+      <th>Datei</th><th>Größe</th><th>Typ</th><th>Letzte Änderung (UTC)</th>
+    </tr></thead>`;
+  const body = items.map(it=>{
+    const name = String(it.name||"");
+    const href = "{{< relpath \"data/\" >}}" + encodeURIComponent(name);
+    return `<tr>
+      <td><a href="${href}">${name}</a></td>
+      <td>${humanSize(it.size)}</td>
+      <td>${it.type||""}</td>
+      <td>${fmtDate(it.mtime)}</td>
+    </tr>`;
+  }).join("");
+  mount.innerHTML = `${css}<table>${head}<tbody>${body}</tbody></table>`;
+}
+
+// --- Laden von index.json (Pfad via relpath, cache-busting) ---
+(async function(){
+  const mount = document.getElementById("data-list");
+  // Quarto setzt hier einen korrekten relativen Pfad – funktioniert lokal & auf Pages
+  const baseUrl = "{{< relpath \"data/index.json\" >}}";
+  const url     = baseUrl + (baseUrl.includes("?") ? "&" : "?") + "v=" + Date.now();
+  try {
+    const res = await fetch(url, {cache: "no-store"});
+    if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+    const items = await res.json();
+    // (Optional) sortieren: Parquet zuerst, dann NDJSON, innerhalb alphabetisch
+    items.sort((a,b)=>{
+      const ta = (a.type||"").toLowerCase(), tb = (b.type||"").toLowerCase();
+      if (ta!==tb){
+        if (ta==="parquet") return -1;
+        if (tb==="parquet") return 1;
       }
-    </style>`;
-    const head = `
-      <thead><tr>
-        <th>Datei</th><th>Größe</th><th>Typ</th><th>Letzte Änderung (UTC)</th>
-      </tr></thead>`;
-    const body = items.map(it=>{
-      const href = `/data/${encodeURIComponent(it.name)}`;
-      return `<tr>
-        <td><a href="${href}">${it.name}</a></td>
-        <td>${humanSize(it.size)}</td>
-        <td>${it.type||""}</td>
-        <td>${fmtDate(it.mtime||0)}</td>
-      </tr>`;
-    }).join("");
-    mount.innerHTML = `${css}<table>${head}<tbody>${body}</tbody></table>`;
-  }).catch(err=>{
+      return String(a.name).localeCompare(String(b.name));
+    });
+    renderTable(mount, items);
+  } catch (err){
     console.error(err);
-    mount.innerHTML = `<div style="color:#b00">Konnte /data/index.json nicht laden: ${String(err.message||err)}</div>`;
-  });
+    mount.innerHTML =
+      `<div style="color:#b00">Konnte <code>${baseUrl}</code> nicht laden: ${String(err.message||err)}</div>
+       <div style="margin-top:.5rem"><small>Ist der Workflow gelaufen und wurde <code>docs/data/index.json</code> erzeugt?</small></div>`;
+  }
 })();
 </script>
 
 
-</section>
 </section>
 
 </main> <!-- /main -->
@@ -911,4 +937,5 @@ Lade Datenliste …
 
 
 
+<script src="site_libs/quarto-html/zenscroll-min.js"></script>
 </body></html>

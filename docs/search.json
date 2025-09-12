@@ -206,9 +206,9 @@
   {
     "objectID": "index_data.html",
     "href": "index_data.html",
-    "title": "Daten Repo",
+    "title": "Daten Repository",
     "section": "",
-    "text": "NDJSON und Parquet sind beides Datenformate, die sich gut ergänzen:\n\nNDJSON (Newline Delimited JSON) speichert Ereignisse zeilenweise als JSON-Objekte. → Ideal für Streaming und APIs, weil jede Zeile ein eigenständiger Datensatz ist, der sofort verarbeitet werden kann. → Lässt sich mit Tools wie jq, pandas.read_json(lines=True) oder jsonlite::stream_in() direkt auswerten.\nParquet ist ein spaltenorientiertes, binäres Format für große Datenmengen. → Optimiert für Analysen und Abfragen, sehr platzsparend und schnell. → Standard in Big-Data-Systemen (Spark, Hadoop, BigQuery, DuckDB, GDAL/GeoParquet).\n\nTypischer Workflow: NDJSON für die rohe, zeilenweise Speicherung eingehender Sensordaten → später in Parquet für effiziente Archivierung und Analyse konvertieren.\n\n\n\nDDS75-LB (dds75-lb-*.parquet): Zeitreihen eines Ultraschall-Pegelsensors mit distance_cm (bzw. Distance_mm), temperature (DS18B20), battery sowie optionalen Flags (interrupt_flag, sensor_flag).\nPS-LB (burgwald-ps-lb-*.parquet): Zeitreihen eines 4–20-mA/Pressure-Sensors mit water_cm bzw. pressure_kpa/_mpa, zusätzlich idc_input_ma, vdc_input_v, battery und digitalen Eingangsflags.\nSenseCAP Wetterstation (burgwald-sensecap-*.parquet): Zeitreihen mit temperature, humidity, pressure_hpa, illumination sowie ggf. uv_index, wind_speed, wind_dir, rainfall.\n\n\nLade Datenliste …\n\n\nLade Datenliste …",
+    "text": "NDJSON und Parquet sind beides Datenformate, die sich gut ergänzen:\n\nNDJSON (Newline Delimited JSON) speichert Ereignisse zeilenweise als JSON-Objekte.\n→ Ideal für Streaming und APIs, weil jede Zeile ein eigenständiger Datensatz ist.\n→ Lässt sich mit Tools wie jq, pandas.read_json(lines=True) oder jsonlite::stream_in() direkt auswerten.\nParquet ist ein spaltenorientiertes, binäres Format für große Datenmengen.\n→ Optimiert für Analysen und Abfragen, sehr platzsparend und schnell.\n→ Standard in Big-Data-Ecosystemen (Spark, Hadoop, DuckDB, BigQuery, GDAL/GeoParquet).\n\nTypischer Workflow: Rohdaten zunächst als NDJSON persistieren → für Analyse/Archiv in Parquet konvertieren.",
     "crumbs": [
       "Impressum",
       "Messnetz-Daten",
@@ -216,11 +216,35 @@
     ]
   },
   {
-    "objectID": "index_data.html#allgmeine-formate-im-repo",
-    "href": "index_data.html#allgmeine-formate-im-repo",
-    "title": "Daten Repo",
+    "objectID": "index_data.html#allgemeine-formate-im-repo",
+    "href": "index_data.html#allgemeine-formate-im-repo",
+    "title": "Daten Repository",
     "section": "",
-    "text": "NDJSON und Parquet sind beides Datenformate, die sich gut ergänzen:\n\nNDJSON (Newline Delimited JSON) speichert Ereignisse zeilenweise als JSON-Objekte. → Ideal für Streaming und APIs, weil jede Zeile ein eigenständiger Datensatz ist, der sofort verarbeitet werden kann. → Lässt sich mit Tools wie jq, pandas.read_json(lines=True) oder jsonlite::stream_in() direkt auswerten.\nParquet ist ein spaltenorientiertes, binäres Format für große Datenmengen. → Optimiert für Analysen und Abfragen, sehr platzsparend und schnell. → Standard in Big-Data-Systemen (Spark, Hadoop, BigQuery, DuckDB, GDAL/GeoParquet).\n\nTypischer Workflow: NDJSON für die rohe, zeilenweise Speicherung eingehender Sensordaten → später in Parquet für effiziente Archivierung und Analyse konvertieren.\n\n\n\nDDS75-LB (dds75-lb-*.parquet): Zeitreihen eines Ultraschall-Pegelsensors mit distance_cm (bzw. Distance_mm), temperature (DS18B20), battery sowie optionalen Flags (interrupt_flag, sensor_flag).\nPS-LB (burgwald-ps-lb-*.parquet): Zeitreihen eines 4–20-mA/Pressure-Sensors mit water_cm bzw. pressure_kpa/_mpa, zusätzlich idc_input_ma, vdc_input_v, battery und digitalen Eingangsflags.\nSenseCAP Wetterstation (burgwald-sensecap-*.parquet): Zeitreihen mit temperature, humidity, pressure_hpa, illumination sowie ggf. uv_index, wind_speed, wind_dir, rainfall.\n\n\nLade Datenliste …\n\n\nLade Datenliste …",
+    "text": "NDJSON und Parquet sind beides Datenformate, die sich gut ergänzen:\n\nNDJSON (Newline Delimited JSON) speichert Ereignisse zeilenweise als JSON-Objekte.\n→ Ideal für Streaming und APIs, weil jede Zeile ein eigenständiger Datensatz ist.\n→ Lässt sich mit Tools wie jq, pandas.read_json(lines=True) oder jsonlite::stream_in() direkt auswerten.\nParquet ist ein spaltenorientiertes, binäres Format für große Datenmengen.\n→ Optimiert für Analysen und Abfragen, sehr platzsparend und schnell.\n→ Standard in Big-Data-Ecosystemen (Spark, Hadoop, DuckDB, BigQuery, GDAL/GeoParquet).\n\nTypischer Workflow: Rohdaten zunächst als NDJSON persistieren → für Analyse/Archiv in Parquet konvertieren.",
+    "crumbs": [
+      "Impressum",
+      "Messnetz-Daten",
+      "Daten Repository"
+    ]
+  },
+  {
+    "objectID": "index_data.html#sensoren",
+    "href": "index_data.html#sensoren",
+    "title": "Daten Repository",
+    "section": "Sensoren",
+    "text": "Sensoren\n\nDDS75-LB (dds75-lb-*.parquet): distance_cm (bzw. Distance_mm), temperature, battery, Flags (interrupt_flag, sensor_flag).\nPS-LB (burgwald-ps-lb-*.parquet): water_cm bzw. pressure_kpa/_mpa, zusätzlich idc_input_ma, vdc_input_v, battery, digitale Eingänge.\nSenseCAP (burgwald-sensecap-*.parquet): temperature, humidity, pressure_hpa, illumination, ggf. uv_index, wind_speed, wind_dir, rainfall.",
+    "crumbs": [
+      "Impressum",
+      "Messnetz-Daten",
+      "Daten Repository"
+    ]
+  },
+  {
+    "objectID": "index_data.html#dateien-in-data",
+    "href": "index_data.html#dateien-in-data",
+    "title": "Daten Repository",
+    "section": "Dateien in data/",
+    "text": "Dateien in data/\n\nLade Datenliste …",
     "crumbs": [
       "Impressum",
       "Messnetz-Daten",
