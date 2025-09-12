@@ -8,43 +8,62 @@ on:
 permissions:
   contents: write
 
+# ⬇️ verhindert parallele Läufe, die sich gegenseitig wegpushen
+concurrency:
+  group: ttn-pages
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
 
     env:
-      TTN_API_KEY:  ${{ secrets.TTN_API_KEY }}
-      TTN_APP_ID:   ${{ secrets.TTN_APP_ID }}
-      TTN_REGION:   ${{ secrets.TTN_REGION }}
-      TTN_AFTER_DAYS: "2"
-      RUN_DASH: "1"
-      DELAY_BETWEEN_DEVICES: "0.4"
+      TTN_APP_ID:  ${{ secrets.TTN_APP_ID }}
+      TTN_REGION:  ${{ secrets.TTN_REGION }}
+      TTN_API_KEY: ${{ secrets.TTN_API_KEY }}
+      # optional: Standard-Theme
+      THEME_DEFAULT: "light"
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout (full history for rebase)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: '3.12'
 
       - name: Install deps
         run: |
           python -m pip install --upgrade pip
-          pip install requests pandas plotly pyarrow fastparquet python-dotenv
+          pip install requests pandas plotly pyarrow python-dotenv
 
-      - name: Build dashboard (auto-discovery)
+      - name: Build dashboard (pull all devices)
         run: |
           python scripts/pull_all_devices.py
-          mkdir -p docs
-          cp -r assets/* docs/
-          # zur Kontrolle: welche Devices wurden gefunden?
-          [ -f assets/devices_used.txt ] && cp assets/devices_used.txt docs/
+          mkdir -p docs/assets
+          cp -r assets/* docs/assets/
 
-      - name: Commit docs/ and data/
+      # ⬇️ sicher committen: erst rebase, dann push
+      - name: Commit /docs and /data (with rebase)
+        env:
+          BRANCH: ${{ github.ref_name }}
         run: |
+          set -e
           git config user.name  "ttn-bot"
           git config user.email "ttn-bot@example.com"
+
+          # falls Runner auf detached HEAD steht, Branch sicherstellen
+          git checkout "$BRANCH"
+
+          # remote-Änderungen holen & REBASE statt Merge
+          git pull --rebase origin "$BRANCH" || true
+
           git add docs/ data/ || true
-          git diff --cached --quiet || git commit -m "update all-devices $(date -u +%FT%TZ)"
-          git push
+          # keine Fehlermeldung, wenn nichts zu committen ist
+          git commit -m "update all-devices $(date -u +%FT%TZ)" || echo "no changes"
+
+          # finaler Push
+          git push origin "$BRANCH"

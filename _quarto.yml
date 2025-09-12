@@ -6,6 +6,7 @@ project:
   render:
     - "*.qmd"
   resources:
+    - "images"
     - "data/**" 
     - "assets/**"
     - "theme-ecowitt.css"
@@ -18,9 +19,8 @@ website:
     location: sidebar     # Suchfeld in der Sidebar
     type: textbox
   navbar:                 # optional ganz weglassen, wenn Sidebar reicht
-    left:
-      - text: "Home"
-        href: index.qmd
+    logo: images/logo1.png
+
     right:
       - text: "Impressum"
         href: impressum.qmd        
