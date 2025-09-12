@@ -20,6 +20,9 @@ website:
     left:
       - text: "Home"
         href: index.qmd
+    right:
+      - text: "Impressum"
+        href: impressum.qmd        
   sidebar:
     pinned: true          # Sidebar ist permanent sichtbar
     align: center
