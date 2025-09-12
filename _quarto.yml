@@ -29,9 +29,9 @@ website:
       - section: "Über..."
         contents:
           - index.qmd
-      - section: "LoRaWAN"
+      - section: "MikroTik Setup"
         contents:
-          - text: "Anleitung"
+          - text: "Hub & Sensoren"
             href: lorawan_doku.qmd
       - section: "Daten Vorschau"
         contents:
