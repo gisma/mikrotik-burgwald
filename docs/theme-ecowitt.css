@@ -1,0 +1,232 @@
+/* TTN Dashboard – Ecowitt-like Dark+Contrast */
+:root{
+  /* Farben */
+  --bg: #0b0d10;          /* tiefschwarz */
+  --panel: #171c22;       /* dark manhattan 1 */
+  --panel-2: #1c222a;     /* dark manhattan 2 */
+  --border: #2a313b;      /* dezente Linien */
+  --text: #e9eef7;        /* hell, klar */
+  --text-dim: #b8c2d3;    /* sekundär */
+  --accent: #39a7ff;      /* cyan/blau */
+  --ok: #2ecc71;
+  --warn: #f1c40f;
+  --err: #ff5c5c;
+  --shadow: 0 4px 20px rgba(0,0,0,.45);
+  --radius: 14px;
+
+  /* Typografie */
+  --base-size: 16px;      /* größer als vorher */
+  --h-scale: 1.15;        /* Headlines etwas größer */
+}
+
+html,body{
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, Segoe UI, Roboto, Ubuntu, Arial, sans-serif;
+  font-size: var(--base-size);
+}
+
+/* Karten / Panels */
+.card{
+  background: linear-gradient(180deg, var(--panel), var(--panel-2));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 16px;
+  margin: 16px 0;
+}
+.card h1, .card h2, .card h3{
+  color: #ffffff;                /* Überschriften reinweiß */
+  letter-spacing: .2px;
+}
+.card h1{ font-size: calc(var(--base-size) * 1.6); }
+.card h2{ font-size: calc(var(--base-size) * 1.35); }
+.card h3{ font-size: calc(var(--base-size) * 1.15); }
+small{ color: var(--text-dim); }
+
+/* Tabelle (Übersicht) – keine grellen Flächen */
+table{ border-collapse: collapse; width: 100%; font-size: .95rem; }
+th,td{
+  border: 1px solid var(--border);
+  padding: 10px 12px;
+}
+th{
+  background: #222834;
+  color: #ffffff;
+  font-weight: 600;
+}
+tr:nth-child(even) td{ background: rgba(255,255,255,.03); }
+tr:hover td{ background: rgba(255,255,255,.05); }
+
+/* Grids / Kacheln */
+.type-grid{ display:grid; grid-template-columns:1fr; gap:18px }
+.device-grid{ display:grid; grid-template-columns:repeat(2,minmax(300px,1fr)); gap:16px; margin-top:12px }
+.device-tile{
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #161b21;                  /* dunkler als Panel für Tiefe */
+  transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+}
+.device-tile:hover{
+  transform: translateY(-1px);
+  border-color: #3b4656;
+  box-shadow: 0 10px 28px rgba(0,0,0,.5);
+}
+.device-tile h4{
+  margin:.25rem 0 .6rem;
+  font-size: 1rem;
+  color:#fff;
+}
+
+/* Plot-Container */
+.plot-wrap{
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #12161b;                  /* noch dunkler, kein „Grau-Glow“ */
+  padding: 6px;
+  margin-bottom: 12px;
+}
+
+/* Badges (Status) – besser lesbar */
+.badge{
+  display:inline-block; font-size:.85rem; padding:3px 10px; border-radius:999px;
+  border:1px solid var(--border); background:#10151b; color:var(--text-dim);
+}
+.badge.ok{    color:#d8ffe8; border-color:#2f5f46; background:#153123; }
+.badge.stale{ color:#fff3bf; border-color:#6b5a25; background:#3a3317; }
+.badge.empty{ color:#d6e4ff; border-color:#374463; background:#1a2233; }
+.badge.err{   color:#ffd1d1; border-color:#6a2a2a; background:#3b1818; }
+
+/* Links/Buttons */
+a{ color: var(--accent); text-decoration: none; }
+a:hover{ text-decoration: underline; }
+button{
+  background: var(--accent); color:#081018; border:none; padding:8px 12px;
+  border-radius:10px; font-weight:600; cursor:pointer;
+}
+button:disabled{ opacity:.6; cursor:not-allowed; }
+
+/* Responsiv */
+@media (max-width: 900px){
+  .device-grid{ grid-template-columns:1fr }
+}
+/* Light-Variante per .light am <html> */
+.light{
+  --bg:#f7f8fb; --panel:#ffffff; --panel-2:#fdfdfd; --border:#e7ebf3;
+  --text:#0f172a; --text-dim:#4b5563; --accent:#2563eb;
+  
+/* ===========================
+   Light Theme (per .light am <html>)
+   =========================== */
+.light{
+  /* Grundfarben */
+  --bg:#f6f8fb;
+  --panel:#ffffff;
+  --panel-2:#fafbff;
+  --border:#e4e8f1;
+  --text:#0f172a;        /* sehr dunkles Blau/Schwarz */
+  --text-dim:#4b5563;    /* Sekundärtext */
+  --accent:#2563eb;      /* kräftiges Blau */
+
+  --ok:#1f9d5a;
+  --warn:#b58900;
+  --err:#d64545;
+
+  /* Typografie leicht größer bleibt lesbar */
+  --base-size:16px;
+  --h-scale:1.15;
+}
+
+/* Hintergrund & Standardtext */
+.light html, .light body{
+  background:var(--bg);
+  color:var(--text);
+}
+
+/* Karten / Panels */
+.light .card{
+  background:linear-gradient(180deg,var(--panel),var(--panel-2));
+  border:1px solid var(--border);
+  box-shadow:0 4px 18px rgba(0,0,0,.06);
+}
+.light .card h1,
+.light .card h2,
+.light .card h3{
+  color:#0b1220;
+}
+.light small{ color:var(--text-dim); }
+
+/* Tabelle */
+.light table{ background:transparent; }
+.light th{
+  background:#eef2ff;          /* sehr helles Blau */
+  color:#0b1220;
+  border-color:var(--border);
+}
+.light td{
+  background:#ffffff;
+  border-color:var(--border);
+}
+.light tr:nth-child(even) td{ background:#fbfdff; }
+.light tr:hover td{ background:#f3f6ff; }
+
+
+/* Kacheln */
+.light .device-tile{
+  background:#ffffff;
+  border:1px solid var(--border);
+  box-shadow:0 6px 18px rgba(0,0,0,.06);
+}
+.light .device-tile:hover{
+  border-color:#d7ddef;
+  box-shadow:0 10px 24px rgba(0,0,0,.10);
+}
+.light .device-tile h4{ color:#0b1220; }
+
+/* Plot-Container */
+.light .plot-wrap{
+  background:#ffffff;
+  border:1px solid var(--border);
+}
+
+/* Badges */
+.light .badge{
+  background:#f1f5f9;
+  color:#334155;
+  border-color:#e2e8f0;
+}
+.light .badge.ok{
+  color:#0b3d22;
+  background:#e5f6ed;
+  border-color:#cdeedd;
+}
+.light .badge.stale{
+  color:#4a3a0a;
+  background:#fff5d6;
+  border-color:#f2e2a2;
+}
+.light .badge.empty{
+  color:#16305c;
+  background:#e9f1ff;
+  border-color:#d7e3ff;
+}
+.light .badge.err{
+  color:#5c1414;
+  background:#ffe3e3;
+  border-color:#ffd1d1;
+}
+
+/* Links & Buttons */
+.light a{ color:var(--accent); }
+.light button{
+  background:var(--accent);
+  color:#ffffff;
+}
+
+/* (Optional) leichte Rahmenakzente für Übersichtstabelle */
+.light .card table th,
+.light .card table td{
+  border-color:var(--border);
+}
+
+}
