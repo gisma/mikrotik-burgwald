@@ -1,0 +1,213 @@
+---
+title: "README dashboard"
+subtitle: "version 0.1"
+author: "Chris Reudenbach"
+format:
+  html:
+    theme: cosmo
+    toc: true
+    toc-depth: 3
+    number-sections: true      
+    number-depth: 3           
+
+    code-copy: true
+    code-link: true
+    code-overflow: wrap
+    code-fold: true
+    highlight-style: github
+execute:
+  mermaid: true
+diagram:
+  mermaid:
+    engine: kroki
+    kroki-url: https://kroki.io
+
+# TTN Dashboard – Nutzung, Konfiguration und Deployment
+
+Dieses Repository enthält ein Python-Skript, das aus **The Things Network (TTN) Storage** ein HTML-Dashboard erzeugt.  
+Es erkennt automatisch alle Devices, zieht deren Uplinks, schreibt pro Gerät Parquet-Dateien und erstellt interaktive Plots.
+
+---
+
+## Schnellstart (lokal)
+
+1. (Optional) Erstelle `scripts/.env`:
+
+   ```env
+   TTN_APP_ID=gisma-hydro-testbed
+   TTN_REGION=eu1
+   TTN_API_KEY=NNSXS_...
+   RUN_DASH=1
+   TTN_AFTER_DAYS=2
+   DELAY_BETWEEN_DEVICES=0.3
+   # Health-Report (optional):
+   # STALE_HOURS=3
+   # DEV_INCLUDE=dds75-lb-.*
+   # DEV_EXCLUDE=
+````
+
+2. Ausführen:
+
+   ```bash
+   python scripts/pull_all_devices.py
+   ```
+
+3. Ergebnisse liegen unter:
+
+   * `assets/data.html` (Haupt-Dashboard)
+   * `assets/debug.html` (Rohdaten-Beispiele & Parquet-Previews)
+   * Health-Report: `assets/devices_used.txt` und `assets/devices_used.csv`
+
+---
+
+## Environment-Variablen
+
+Diese können in `.env`, in der Shell oder im GitHub Actions Workflow (`env:`) gesetzt werden.
+Fehlt etwas, werden Standardwerte genutzt.
+
+### Pflicht
+
+* `TTN_APP_ID` — deine TTN Application ID (z. B. `gisma-hydro-testbed`)
+* `TTN_REGION` — TTN-Cluster (z. B. `eu1`)
+* `TTN_API_KEY` — NNSXS-Key mit folgenden Scopes:
+
+  * **View end devices** (für Auto-Discovery)
+  * **View application packages and associations** (Storage)
+  * (hilfreich) **View application info**, **Read application traffic/data**
+
+### Optional (Verhalten)
+
+* `RUN_DASH` (`"1"`)
+  `1` = HTML-Dashboard erzeugen; `0` = CLI-Testmodus (siehe unten).
+* `TTN_AFTER_DAYS` (`"2"`)
+  Gleitendes Fenster: *jetzt − N Tage*.
+  Falls bereits Parquet-Daten existieren, setzt das Skript am letzten Timestamp fort.
+* `DELAY_BETWEEN_DEVICES` (`"0.3"`)
+  Sekunden Pause zwischen den Devices (gegen Rate-Limits).
+* `DEVICES` (leer)
+  Liste mit Device-IDs (whitespace-separiert). Wenn **leer**, werden **alle Devices automatisch** erkannt.
+
+### Health-Report
+
+* `STALE_HOURS` (`"3"`) — Gerät gilt als `STALE (xh)`, wenn `last_seen` älter ist.
+* `DEV_INCLUDE` (`".*"`) — Regex-Filter für Devices, die eingeschlossen werden sollen.
+* `DEV_EXCLUDE` (leer) — Regex-Filter für Devices, die ausgeschlossen werden sollen.
+
+---
+
+## Outputs & Struktur
+
+* `data/` — Parquet-Dateien pro Gerät: `data/<device>.parquet`
+* `assets/`
+
+  * `data.html` — Dashboard
+  * `debug.html` — Debug-Ansicht mit Rohdaten
+  * `devices_used.txt` — **lesbarer** Health-Report
+  * `devices_used.csv` — **maschinenlesbarer** Health-Report
+
+> Hinweis: Beim Start kann `devices_used.txt` kurzzeitig nur die Liste der Devices enthalten. Am Ende wird sie mit dem Health-Report überschrieben.
+
+---
+
+## CLI Smoke-Test
+
+Einzelnes Device abrufen (ohne Dashboard):
+
+```bash
+RUN_DASH=0 python scripts/pull_all_devices.py --device dds75-lb-13 --hours 6 -v
+```
+
+* `--hours` überschreibt `TTN_AFTER_DAYS` nur für diesen Lauf.
+* Daten werden in `data/<device>.parquet` gespeichert und dedupliziert.
+
+---
+
+## GitHub Actions (Pages oder Artefakt)
+
+Beispiel-Workflow:
+
+```yaml
+name: TTN all devices → Pages
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      TTN_API_KEY:  ${{ secrets.TTN_API_KEY }}
+      TTN_APP_ID:   ${{ secrets.TTN_APP_ID }}
+      TTN_REGION:   ${{ secrets.TTN_REGION }}
+      TTN_AFTER_DAYS: "2"
+      RUN_DASH: "1"
+      DELAY_BETWEEN_DEVICES: "0.4"
+      # DEVICES leer lassen = Auto-Discovery
+      # Optional STALE_HOURS / DEV_INCLUDE / DEV_EXCLUDE hier setzen
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Python einrichten
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Dependencies installieren
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests pandas plotly pyarrow fastparquet python-dotenv
+
+      - name: Dashboard bauen
+        run: |
+          python scripts/pull_all_devices.py
+          mkdir -p docs
+          cp -r assets/* docs/
+
+      - name: Commit docs/ und data/
+        run: |
+          git config user.name  "ttn-bot"
+          git config user.email "ttn-bot@example.com"
+          git add docs/ data/ || true
+          git diff --cached --quiet || git commit -m "update all-devices $(date -u +%FT%TZ)"
+          git push
+```
+
+**Repo-Einstellungen:**
+
+* Secrets: `TTN_API_KEY`, `TTN_APP_ID`, `TTN_REGION`.
+* GitHub Pages so einstellen, dass es `docs/` als Source nimmt.
+
+---
+
+## Troubleshooting
+
+* **HTTP 400 invalid token**
+  Neuer Key nötig oder Scopes fehlen.
+* **HTTP 400 mit `after`**
+  Skript probiert automatisch kleinere `limit`-Werte und ohne `after`.
+* **Parquet-Engine fehlt**
+  `pyarrow` oder `fastparquet` installieren (Workflow erledigt das).
+* **Keine Daten**
+  TTN Console prüfen: Storage aktiviert? Device aktiv? Zeitfenster korrekt?
+* **429 Rate limit**
+  `DELAY_BETWEEN_DEVICES` auf 0.6–1.0 erhöhen.
+* **Viele STALE-Geräte**
+  `STALE_HOURS` anpassen oder per Regex filtern.
+
+---
+
+## Design-Notizen
+
+* Auto-Discovery → keine Device-Liste pflegen.
+* Pro-Device Parquet → inkrementelle Pulls, keine Duplikate.
+* Robuste Requests → mit Retries/Backoff.
+* Health-Report als Text & CSV für schnellen Überblick.
+
+🌲📡 Viel Erfolg beim Monitoring!
+

@@ -7,40 +7,49 @@ from datetime import datetime, timedelta, timezone
 from urllib.parse import quote
 from typing import List, Dict, Tuple, Optional
 from pathlib import Path
+
+# Load .env (optional; ignored if python-dotenv is not installed)
 try:
     from dotenv import load_dotenv
     load_dotenv(Path(__file__).with_name(".env"))
 except Exception:
-    pass  # falls python-dotenv nicht vorhanden ist
-  
+    pass
+
 # ===== ENV =====
-APP   = os.environ["TTN_APP_ID"]              # z.B. gisma-hydro-testbed
-REG   = os.environ["TTN_REGION"]              # z.B. eu1
+APP   = os.environ["TTN_APP_ID"]              # e.g., gisma-hydro-testbed
+REG   = os.environ["TTN_REGION"]              # e.g., eu1
 KEY   = os.environ["TTN_API_KEY"]             # NNSXS....
 AFTER_DAYS = int(os.environ.get("TTN_AFTER_DAYS", "2"))
 AFTER = (datetime.now(timezone.utc) - timedelta(days=AFTER_DAYS)).strftime("%Y-%m-%dT%H:%M:%SZ")
-HDRS  = {"Authorization": f"Bearer {KEY}"}     # wir parsen NDJSON & SSE robust
+HDRS  = {"Authorization": f"Bearer {KEY}"}    # robust NDJSON/SSE parsing
 DELAY_BETWEEN_DEVICES = float(os.environ.get("DELAY_BETWEEN_DEVICES", "0.3"))
 
-# Ordner
-DATA   = pathlib.Path("data");   DATA.mkdir(exist_ok=True, parents=True)     # Parquet/NDJSON
-ASSETS = pathlib.Path("assets"); ASSETS.mkdir(exist_ok=True, parents=True)   # HTML-Ausgaben
+# Health report configuration
+STALE_HOURS  = int(os.environ.get("STALE_HOURS", "3"))
+DEV_INCLUDE  = os.environ.get("DEV_INCLUDE", ".*")  # regex include (default: all)
+DEV_EXCLUDE  = os.environ.get("DEV_EXCLUDE", "")    # regex exclude (default: none)
 
-# ===== Geräte-Liste ermitteln =====
+# Folders
+DATA   = pathlib.Path("data");   DATA.mkdir(exist_ok=True, parents=True)     # Parquet/NDJSON
+ASSETS = pathlib.Path("assets"); ASSETS.mkdir(exist_ok=True, parents=True)   # HTML output
+
+# ===== Discover device list from TTN (if DEVICES env is not set) =====
 def list_ttn_devices(app: str) -> List[str]:
-    """Alle End-Device-IDs der Application holen (paginierend)."""
+    """Return all end-device IDs for the given application (paginated)."""
     url = f"https://{REG}.cloud.thethings.network/api/v3/applications/{quote(app)}/devices"
     devs, page = [], ""
     while True:
         params = {"limit": "100"}
-        if page: params["page"] = page
+        if page:
+            params["page"] = page
         r = requests.get(url, headers=HDRS, params=params, timeout=30)
         r.raise_for_status()
         js = r.json() if r.text.strip() else {}
         for ed in js.get("end_devices", []):
             ids = ed.get("ids", {})
             did = ids.get("device_id")
-            if did: devs.append(did)
+            if did:
+                devs.append(did)
         page = js.get("next_page_token")
         if not page:
             break
@@ -50,19 +59,21 @@ DEVICES_ENV = os.environ.get("DEVICES", "").strip()
 if DEVICES_ENV:
     DEVS = [d for d in DEVICES_ENV.split() if d.strip()]
 else:
-    # Fällt automatisch auf alle Geräte in der Application zurück
+    # Auto-discovery fallback if DEVICES is not set
     DEVS = list_ttn_devices(APP)
 
-# deterministische Reihenfolge + Snapshot mitschreiben
+# Deterministic order
 DEVS = sorted(set(DEVS))
+
+# (Initial) snapshot of discovered devices — will be overwritten later by the health report
 try:
     (ASSETS / "devices_used.txt").write_text("\n".join(DEVS), encoding="utf-8")
 except Exception:
     pass
 
-# ===== Parser-Utils =====
+# ===== Parsers =====
 def _robust_json_lines(raw_text: str):
-    """Verträgt NDJSON, SSE ('data: {...}') und TTN-Wrapper {"result": {...}}."""
+    """Accepts NDJSON, SSE ('data: {...}') and TTN wrapper {'result': {...}}."""
     out = []
     for ln in raw_text.splitlines():
         s = ln.strip()
@@ -83,6 +94,7 @@ def _robust_json_lines(raw_text: str):
     return out
 
 def _best_ts(o: dict):
+    """Pick the most reliable timestamp from a TTN uplink."""
     up = o.get("uplink_message", {}) if isinstance(o, dict) else {}
     rx = (up.get("rx_metadata") or [{}])
     return (o.get("received_at")
@@ -90,35 +102,35 @@ def _best_ts(o: dict):
             or (rx and isinstance(rx[0], dict) and rx[0].get("time"))
             or o.get("created_at"))
 
-# ===== HTTP: Retries/Backoff =====
+# ===== HTTP: retries/backoff =====
 RETRY_CODES = {429, 500, 502, 503, 504}
 MAX_RETRIES = 5
-BACKOFF_BASE = 0.6  # Sekunden
+BACKOFF_BASE = 0.6  # seconds
 
 def _do_get_with_retries(url, params, headers, timeout, dev):
-    """GET mit Exponential-Backoff; robust gg. 429/5xx/Netzglitches."""
+    """GET with exponential backoff; resilient against 429/5xx/network glitches."""
     last_exc = None
     for i in range(MAX_RETRIES):
         try:
             resp = requests.get(url, headers=headers, params=params, timeout=timeout)
             if resp.status_code in RETRY_CODES:
                 wait = BACKOFF_BASE * (2 ** i)
-                print(f"[{dev}] RETRY {i+1}/{MAX_RETRIES} HTTP {resp.status_code} → warte {wait:.1f}s")
+                print(f"[{dev}] RETRY {i+1}/{MAX_RETRIES} HTTP {resp.status_code} → wait {wait:.1f}s")
                 time.sleep(wait)
                 continue
             return resp
         except requests.RequestException as e:
             last_exc = e
             wait = BACKOFF_BASE * (2 ** i)
-            print(f"[{dev}] RETRY {i+1}/{MAX_RETRIES} Netzfehler: {e} → {wait:.1f}s Pause")
+            print(f"[{dev}] RETRY {i+1}/{MAX_RETRIES} network error: {e} → {wait:.1f}s pause")
             time.sleep(wait)
     if last_exc:
         raise last_exc
     return requests.get(url, headers=headers, params=params, timeout=timeout)
 
-# ===== Pull je Device =====
+# ===== Pull per device =====
 def device_pull(dev: str) -> pd.DataFrame:
-    """Zieht Storage-Daten eines End-Devices robust (mit Paging & Fallbacks)."""
+    """Fetch TTN Storage data for a device (with paging + fallbacks)."""
     parq = DATA / f"{dev}.parquet"
     raw  = DATA / f"{dev}_raw.ndjson"
     url  = f"https://{REG}.cloud.thethings.network/api/v3/as/applications/{APP}/devices/{quote(dev)}/packages/storage/uplink_message"
@@ -130,7 +142,7 @@ def device_pull(dev: str) -> pd.DataFrame:
         return pd.DataFrame(columns=["device_id","received_at","f_port","rssi","snr","payload_json"])
 
     try:
-        # Startpunkt bestimmen: AFTER, ggf. nach letztem Parquet-TS weiter
+        # Start time: AFTER; if a parquet exists, continue from its last timestamp
         current_after = pd.to_datetime(AFTER, utc=True, errors="coerce")
         used_after = False
         if parq.exists():
@@ -141,7 +153,7 @@ def device_pull(dev: str) -> pd.DataFrame:
                     current_after = max(current_after, last_old + pd.Timedelta(seconds=1))
                     used_after = True
             except Exception as e:
-                print(f"[{dev}] WARN: Parquet lesen fehlgeschlagen: {e}")
+                print(f"[{dev}] WARN: failed reading parquet: {e}")
 
         all_rows: List[Dict] = []
         ndjson_chunks: List[str] = []
@@ -153,16 +165,16 @@ def device_pull(dev: str) -> pd.DataFrame:
 
             r = _do_get_with_retries(url, params, HDRS, 30, dev)
 
-            # 400-Fallbacks (Limit/after zickig)
+            # 400 fallbacks (be conservative with 'after' and 'limit')
             if r.status_code == 400:
                 body = (r.text or "").strip()
                 print(f"[{dev}] WARN HTTP 400 for params={params} - BODY: {body[:300]}")
-                # 1) kleineres Limit
+                # 1) smaller limit
                 params_fb = dict(params); params_fb["limit"] = str(limit_fallback)
                 r2 = _do_get_with_retries(url, params_fb, HDRS, 30, dev)
                 print(f"[{dev}] retry limit={limit_fallback} -> HTTP {r2.status_code}, bytes={len(r2.text)}")
                 if not r2.ok or not r2.text.strip():
-                    # 2) ohne after
+                    # 2) try without 'after'
                     params_no_after = {"limit": str(limit_fallback)}
                     r3 = _do_get_with_retries(url, params_no_after, HDRS, 30, dev)
                     print(f"[{dev}] retry no 'after' limit={limit_fallback} -> HTTP {r3.status_code}, bytes={len(r3.text)}")
@@ -209,54 +221,54 @@ def device_pull(dev: str) -> pd.DataFrame:
 
             all_rows.extend(batch_rows)
 
-            # Paging
+            # Paging: if batch is smaller than limit or no max ts found, stop
             eff_limit = int((params.get("limit") or limit_primary))
             if len(objs) < eff_limit or max_ts is None:
                 break
             current_after = max_ts + pd.Timedelta(seconds=1)
             used_after = True
 
-        # Debug-Rohdaten schreiben
+        # Write raw NDJSON for debugging
         if ndjson_chunks:
             raw.write_text("".join(ndjson_chunks), encoding="utf-8")
 
-        # Neues DF bauen
+        # Build dataframe for new rows
         df_new = pd.DataFrame(all_rows)
         if not df_new.empty:
             df_new["received_at"] = pd.to_datetime(df_new["received_at"], utc=True, errors="coerce")
             df_new = df_new.dropna(subset=["received_at"]).sort_values("received_at")
 
-        # Mit Altbestand mergen
+        # Merge with existing parquet
         if parq.exists():
             try:
                 df_old = pd.read_parquet(parq)
                 df_old["received_at"] = pd.to_datetime(df_old["received_at"], utc=True, errors="coerce")
                 df = pd.concat([df_old, df_new], ignore_index=True) if not df_new.empty else df_old
             except Exception as e:
-                print(f"[{dev}] WARN: Parquet-Merge fehlgeschlagen: {e}")
+                print(f"[{dev}] WARN: parquet merge failed: {e}")
                 df = df_new
         else:
             df = df_new
 
-        # Duplikate & Persistenz
+        # De-duplicate and persist
         if not df.empty:
             subset_cols = [c for c in ["device_id","received_at","f_port","payload_json"] if c in df.columns]
             df = df.drop_duplicates(subset=subset_cols).sort_values("received_at")
             try:
                 df.to_parquet(parq, index=False)
             except Exception as e:
-                print(f"[{dev}] WARN: Parquet schreiben fehlgeschlagen: {e}")
+                print(f"[{dev}] WARN: parquet write failed: {e}")
             return df
 
         return _empty_df()
 
     except Exception as e:
-        print(f"[{dev}] FATAL: device_pull() Exception: {repr(e)}")
+        print(f"[{dev}] FATAL: device_pull() exception: {repr(e)}")
         return _empty_df()
 
-# ===== Flatten & Normalisierung =====
+# ===== Flatten & normalization =====
 def flatten_payload(df: pd.DataFrame) -> pd.DataFrame:
-    """payload_json (Text) -> dict -> flache Spalten (a.b -> a_b)."""
+    """payload_json (string) -> dict -> flat columns (a.b -> a_b)."""
     if df.empty or "payload_json" not in df.columns:
         return df
     dicts = df["payload_json"].apply(lambda s: json.loads(s) if isinstance(s, str) and s else {})
@@ -306,7 +318,7 @@ def normalize_pslb(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 def normalize_sensecap_messages(df: pd.DataFrame) -> pd.DataFrame:
-    """SenseCAP decoded_payload.messages -> flache Spalten."""
+    """SenseCAP decoded_payload.messages -> flat columns."""
     if df.empty or "payload_json" not in df.columns:
         return df
     def extract_from_messages(s):
@@ -336,8 +348,11 @@ def normalize_sensecap_messages(df: pd.DataFrame) -> pd.DataFrame:
         if "Rain Gauge" in by_type:       res["rainfall"]     = by_type["Rain Gauge"]
         if "Barometric Pressure" in by_type:
             p = by_type["Barometric Pressure"]
-            try: p = float(p); res["pressure_hpa"] = p/100.0 if p > 5000 else p
-            except Exception: pass
+            try:
+                p = float(p)
+                res["pressure_hpa"] = p/100.0 if p > 5000 else p
+            except Exception:
+                pass
         return res
     metrics = df["payload_json"].apply(extract_from_messages).apply(pd.Series)
     if metrics is not None and not metrics.empty:
@@ -347,7 +362,7 @@ def normalize_sensecap_messages(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 def normalize_all(df: pd.DataFrame) -> pd.DataFrame:
-    # generische Numerik-Casts
+    # Generic numeric casting
     for c in df.columns:
         if c not in ("device_id",) and df[c].dtype == "object":
             df[c] = pd.to_numeric(df[c], errors="ignore")
@@ -359,9 +374,9 @@ def normalize_all(df: pd.DataFrame) -> pd.DataFrame:
             df[col] = pd.to_numeric(df[col], errors="coerce")
     return df
 
-# ===== Typ-Erkennung & Rendering =====
+# ===== Type detection & plotting =====
 def detect_sensor_type(df: pd.DataFrame, device_id: str) -> str:
-    """Bestimme Sensortyp für Gruppierung."""
+    """Rudimentary sensor type detection for grouping."""
     for col in ("node_type", "Node_type", "sensor_model", "SENSOR_MODEL"):
         if col in df.columns:
             vser = df[col].dropna()
@@ -419,7 +434,7 @@ if RUN_DASH:
             print(f"[{dev}] ERROR: {e!r}")
             df = pd.DataFrame()
 
-        # Übersicht-Zeile
+        # Overview row for table + health
         overview_rows.append({
             "device_id": dev,
             "records": 0 if df.empty else len(df),
@@ -427,14 +442,14 @@ if RUN_DASH:
             "status": status
         })
 
-        # Debug-Karte
+        # Debug card (raw sample + head of parquet if available)
         raw = DATA / f"{dev}_raw.ndjson"
         sample = ""
         if raw.exists():
             sample = "".join(raw.read_text(encoding="utf-8").splitlines(True)[:5])
             sample = sample.replace("<", "&lt;").replace(">", "&gt;")
         head_html = (pd.read_parquet(DATA / f"{dev}.parquet").head(3).to_html(index=False)
-                     if (DATA / f"{dev}.parquet").exists() else "<i>kein Parquet</i>")
+                     if (DATA / f"{dev}.parquet").exists() else "<i>no parquet yet</i>")
         debug_cards.append(f"""
         <div class="card">
           <h3>{dev}</h3>
@@ -442,16 +457,16 @@ if RUN_DASH:
           {head_html}
         </div>""")
 
-        # kleine Pause gegen Rate-Limits
+        # Gentle rate limiting
         time.sleep(DELAY_BETWEEN_DEVICES)
 
-    # Übersicht
+    # Overview table (for HTML)
     ov = pd.DataFrame(overview_rows)
     if not ov.empty:
         ov["last_seen_utc"] = pd.to_datetime(ov["last_seen_utc"], utc=True, errors="coerce").dt.strftime("%Y-%m-%d %H:%M:%SZ")
-    overview_html = ov[["device_id","records","last_seen_utc","status"]].sort_values("device_id").to_html(index=False) if not ov.empty else "<p>Keine Geräte-/Records gefunden.</p>"
+    overview_html = ov[["device_id","records","last_seen_utc","status"]].sort_values("device_id").to_html(index=False) if not ov.empty else "<p>No devices/records found.</p>"
 
-    # ===== HTML bauen: große Typ-Kacheln → zweispaltige Gerätekacheln
+    # Build HTML dashboard
     stamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%SZ")
 
     style = """
@@ -461,7 +476,6 @@ if RUN_DASH:
     .card h2{margin:0 0 .25rem}
     .card h3{margin:.25rem 0 .5rem}
     table{border-collapse:collapse;width:100%} th,td{border:1px solid #ddd;padding:6px 8px;text-align:left}
-
     .type-grid{display:grid;grid-template-columns:1fr;gap:16px}
     .device-grid{display:grid;grid-template-columns:repeat(2,minmax(280px,1fr));gap:14px;margin-top:12px}
     .device-tile{border:1px solid #ddd;border-radius:12px;padding:10px}
@@ -488,19 +502,19 @@ if RUN_DASH:
                 if len(plots) >= 4:
                     break
             if not plots:
-                plots.append('<div class="plot-wrap"><em>Keine numerischen Felder gefunden.</em></div>')
+                plots.append('<div class="plot-wrap"><em>No numeric fields found.</em></div>')
             device_tiles.append(f'<div class="device-tile"><h4>{dev}</h4>{"".join(plots)}</div>')
         type_cards_html.append(f'<div class="card"><h2>{typ}</h2><div class="device-grid">{"".join(device_tiles)}</div></div>')
 
     html = f"""<!doctype html>
     <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>TTN – Alle Geräte (nach Typ gruppiert)</title>
+    <title>TTN – All Devices (grouped by sensor type)</title>
     {style}
-    <h1>TTN Dashboard – Nach Sensortyp gruppiert</h1>
-    <small>Stand: {stamp} • Quelle: TTN Storage ({APP}@{REG}) • Fenster: letzte {AFTER_DAYS} Tage • AFTER={AFTER}</small>
-    <div class="card"><h2>Übersicht</h2>{overview_html}<p style="margin-top:8px">Parquet: <code>data/&lt;device&gt;.parquet</code></p></div>
+    <h1>TTN Dashboard – Grouped by Sensor Type</h1>
+    <small>As of: {stamp} • Source: TTN Storage ({APP}@{REG}) • Window: last {AFTER_DAYS} days • AFTER={AFTER}</small>
+    <div class="card"><h2>Overview</h2>{overview_html}<p style="margin-top:8px">Parquet: <code>data/&lt;device&gt;.parquet</code></p></div>
     <div class="type-grid">
-    {"".join(type_cards_html) if type_cards_html else '<div class="card">Keine Daten zum Anzeigen.</div>'}
+    {"".join(type_cards_html) if type_cards_html else '<div class="card">No data to display.</div>'}
     </div>
     """
 
@@ -510,15 +524,64 @@ if RUN_DASH:
     {"".join(debug_cards)}
     """
 
-    # --- Dateien nach assets/ schreiben ---
+    # Write HTML files
     (ASSETS / "data.html").write_text(html, encoding="utf-8")
     (ASSETS / "debug.html").write_text(dbg, encoding="utf-8")
 
-# ========= Smoke-Test / CLI =========
+    # ===== Health report (text + CSV) =====
+    import re
+    inc_re = re.compile(DEV_INCLUDE)
+    exc_re = re.compile(DEV_EXCLUDE) if DEV_EXCLUDE else None
+
+    # Convert last_seen_utc back to machine-friendly for age calculation
+    ov_for_health = ov.copy()
+    if not ov_for_health.empty:
+        ov_for_health["last_seen_utc"] = pd.to_datetime(ov_for_health["last_seen_utc"], utc=True, errors="coerce")
+
+    health_rows = []
+    for _, row in ov_for_health.iterrows():
+        dev = row["device_id"]
+        if not inc_re.search(dev):
+            continue
+        if exc_re and exc_re.search(dev):
+            continue
+
+        last_seen = row.get("last_seen_utc")
+        records   = int(row.get("records", 0))
+
+        status = "OK"
+        last_seen_str = None
+        if pd.isna(last_seen):
+            status = "NO DATA"
+            last_seen_str = "–"
+        else:
+            last_seen_str = last_seen.strftime("%Y-%m-%d %H:%M:%SZ")
+            age_h = (datetime.now(timezone.utc) - last_seen).total_seconds() / 3600
+            if age_h > STALE_HOURS:
+                status = f"STALE ({age_h:.1f}h)"
+
+        health_rows.append({
+            "device_id": dev,
+            "records": records,
+            "last_seen": last_seen_str,
+            "status": status
+        })
+
+    # Human-readable text summary
+    health_txt = "\n".join(
+        f"{r['device_id']:24s} | {r['records']:5d} rec | last: {r['last_seen'] or '–':20s} | {r['status']}"
+        for r in health_rows
+    )
+    (ASSETS / "devices_used.txt").write_text(health_txt, encoding="utf-8")
+
+    # CSV for machines
+    pd.DataFrame(health_rows).to_csv(ASSETS / "devices_used.csv", index=False)
+
+# ========= Smoke-test / CLI =========
 if __name__ == "__main__":
     import argparse, sys
+    # In dashboard mode: only render, do not run smoke-test
     if os.environ.get("RUN_DASH", "1") == "1":
-        # Online/Dashboard-Modus: nur rendern, kein Smoke-Test
         sys.exit(0)
 
     parser = argparse.ArgumentParser(description="TTN Storage Pull – Smoke Test")
@@ -526,8 +589,6 @@ if __name__ == "__main__":
     parser.add_argument("--hours","-H", type=int, default=None)
     parser.add_argument("--verbose","-v", action="store_true")
     args = parser.parse_args()
-
-
 
     if args.hours is not None:
         AFTER = (datetime.now(timezone.utc) - timedelta(hours=args.hours)).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -538,7 +599,7 @@ if __name__ == "__main__":
     if args.device:
         devs = [args.device]
     if not devs:
-        print("[TEST] Keine Devices in DEVS gefunden. Setze ENV DEVICES='dev1 dev2' oder nutze --device.", file=sys.stderr)
+        print("[TEST] No devices found in DEVS. Set ENV DEVICES='dev1 dev2' or use --device.", file=sys.stderr)
         sys.exit(2)
 
     print(f"[TEST] APP={APP} REG={REG} AFTER={AFTER} (AFTER_DAYS={AFTER_DAYS})")
@@ -554,7 +615,7 @@ if __name__ == "__main__":
             before_rows = None
 
     if args.verbose:
-        print(f"[{dev}] Start pull… (vorher Parquet-Zeilen: {before_rows})")
+        print(f"[{dev}] Start pull… (existing parquet rows: {before_rows})")
 
     df = device_pull(dev)
 
@@ -565,18 +626,18 @@ if __name__ == "__main__":
         except Exception:
             after_rows = None
 
-    print(f"[{dev}] Pull OK. df_returned={len(df)} rows; parquet vorher={before_rows}, nachher={after_rows}")
+    print(f"[{dev}] Pull OK. df_returned={len(df)} rows; parquet before={before_rows}, after={after_rows}")
 
-    # Head & letzter Timestamp zeigen
+    # Show tail & last timestamp
     if not df.empty:
         try:
             last_ts = pd.to_datetime(df["received_at"], utc=True, errors="coerce").max()
-            print(f"[{dev}] letzter Timestamp (UTC): {last_ts}")
-            print(f"[{dev}] Spalten: {list(df.columns)[:12]}{' …' if len(df.columns)>12 else ''}")
+            print(f"[{dev}] last timestamp (UTC): {last_ts}")
+            print(f"[{dev}] columns: {list(df.columns)[:12]}{' …' if len(df.columns)>12 else ''}")
             print(df.tail(3).to_string(index=False))
         except Exception as e:
-            print(f"[{dev}] Hinweis: Konnte Vorschau nicht rendern: {e}")
+            print(f"[{dev}] note: could not render preview: {e}")
 
     if df.empty:
-        print(f"[{dev}] Keine Daten vom Storage im gewählten Fenster.")
-        print("  -> Prüfe: Device-ID korrekt? Data Storage aktiv? API-Key-Rechte? Retention/Zeitfenster?")
+        print(f"[{dev}] No data from storage in selected window.")
+        print("  -> Check: device ID, Data Storage enabled, API key rights, retention/window?")
