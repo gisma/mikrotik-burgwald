@@ -114,4 +114,118 @@ button:disabled{ opacity:.6; cursor:not-allowed; }
 .light{
   --bg:#f7f8fb; --panel:#ffffff; --panel-2:#fdfdfd; --border:#e7ebf3;
   --text:#0f172a; --text-dim:#4b5563; --accent:#2563eb;
+  
+/* ===========================
+   Light Theme (per .light am <html>)
+   =========================== */
+.light{
+  /* Grundfarben */
+  --bg:#f6f8fb;
+  --panel:#ffffff;
+  --panel-2:#fafbff;
+  --border:#e4e8f1;
+  --text:#0f172a;        /* sehr dunkles Blau/Schwarz */
+  --text-dim:#4b5563;    /* Sekundärtext */
+  --accent:#2563eb;      /* kräftiges Blau */
+
+  --ok:#1f9d5a;
+  --warn:#b58900;
+  --err:#d64545;
+
+  /* Typografie leicht größer bleibt lesbar */
+  --base-size:16px;
+  --h-scale:1.15;
+}
+
+/* Hintergrund & Standardtext */
+.light html, .light body{
+  background:var(--bg);
+  color:var(--text);
+}
+
+/* Karten / Panels */
+.light .card{
+  background:linear-gradient(180deg,var(--panel),var(--panel-2));
+  border:1px solid var(--border);
+  box-shadow:0 4px 18px rgba(0,0,0,.06);
+}
+.light .card h1,
+.light .card h2,
+.light .card h3{
+  color:#0b1220;
+}
+.light small{ color:var(--text-dim); }
+
+/* Tabelle */
+.light table{ background:transparent; }
+.light th{
+  background:#eef2ff;          /* sehr helles Blau */
+  color:#0b1220;
+  border-color:var(--border);
+}
+.light td{
+  background:#ffffff;
+  border-color:var(--border);
+}
+.light tr:nth-child(even) td{ background:#fbfdff; }
+.light tr:hover td{ background:#f3f6ff; }
+
+/* Kacheln */
+.light .device-tile{
+  background:#ffffff;
+  border:1px solid var(--border);
+  box-shadow:0 6px 18px rgba(0,0,0,.06);
+}
+.light .device-tile:hover{
+  border-color:#d7ddef;
+  box-shadow:0 10px 24px rgba(0,0,0,.10);
+}
+.light .device-tile h4{ color:#0b1220; }
+
+/* Plot-Container */
+.light .plot-wrap{
+  background:#ffffff;
+  border:1px solid var(--border);
+}
+
+/* Badges */
+.light .badge{
+  background:#f1f5f9;
+  color:#334155;
+  border-color:#e2e8f0;
+}
+.light .badge.ok{
+  color:#0b3d22;
+  background:#e5f6ed;
+  border-color:#cdeedd;
+}
+.light .badge.stale{
+  color:#4a3a0a;
+  background:#fff5d6;
+  border-color:#f2e2a2;
+}
+.light .badge.empty{
+  color:#16305c;
+  background:#e9f1ff;
+  border-color:#d7e3ff;
+}
+.light .badge.err{
+  color:#5c1414;
+  background:#ffe3e3;
+  border-color:#ffd1d1;
+}
+
+/* Links & Buttons */
+.light a{ color:var(--accent); }
+.light button{
+  background:var(--accent);
+  color:#ffffff;
+}
+
+/* (Optional) leichte Rahmenakzente für Übersichtstabelle */
+.light .card table th,
+.light .card table td{
+  border-color:var(--border);
+}
+
 }
