@@ -528,7 +528,7 @@ if RUN_DASH:
     <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
     <title>TTN – All Devices (grouped by sensor type)</title>
     {style}
-    <link rel="stylesheet" href="theme-ecowitt.css">
+    <link rel="stylesheet" href="./theme-ecowitt.css?v={stamp}">link rel="stylesheet" href="theme-ecowitt.css">
     <h1>TTN Dashboard – Grouped by Sensor Type</h1>
     <small>As of: {stamp} • Source: TTN Storage ({APP}@{REG}) • Window: last {AFTER_DAYS} days • AFTER={AFTER}</small>
    <!-- Theme-Toggle -->
