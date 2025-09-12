@@ -110,3 +110,8 @@ button:disabled{ opacity:.6; cursor:not-allowed; }
 @media (max-width: 900px){
   .device-grid{ grid-template-columns:1fr }
 }
+/* Light-Variante per .light am <html> */
+.light{
+  --bg:#f7f8fb; --panel:#ffffff; --panel-2:#fdfdfd; --border:#e7ebf3;
+  --text:#0f172a; --text-dim:#4b5563; --accent:#2563eb;
+}

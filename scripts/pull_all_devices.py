@@ -531,11 +531,29 @@ if RUN_DASH:
     <link rel="stylesheet" href="theme-ecowitt.css">
     <h1>TTN Dashboard – Grouped by Sensor Type</h1>
     <small>As of: {stamp} • Source: TTN Storage ({APP}@{REG}) • Window: last {AFTER_DAYS} days • AFTER={AFTER}</small>
-    <div class="card"><h2>Overview</h2>{overview_html}<p style="margin-top:8px">Parquet: <code>data/&lt;device&gt;.parquet</code></p></div>
-    <div class="type-grid">
-    {"".join(type_cards_html) if type_cards_html else '<div class="card">No data to display.</div>'}
-    </div>
-    """
+   <!-- Theme-Toggle -->
+<div style="display:flex;gap:10px;align-items:center;margin:10px 0 16px">
+  <button id="themeBtn">Theme wechseln</button>
+  <small>Aktuell: <span id="themeName">Dark</span></small>
+</div>
+<script>
+  const body = document.documentElement;
+  const btn  = document.getElementById('themeBtn');
+  const name = document.getElementById('themeName');
+  let dark = true;
+  btn.onclick = () => {{
+    dark = !dark;
+    body.classList.toggle('light', !dark);
+    name.textContent = dark ? 'Dark' : 'Light';
+  }};
+</script>
+
+<div class="card"><h2>Übersicht</h2>{overview_html}<p style="margin-top:8px">Parquet: <code>data/&lt;device&gt;.parquet</code></p></div>
+<div class="type-grid">
+{"".join(type_cards_html) if type_cards_html else '<div class="card">Keine Daten zum Anzeigen.</div>'}
+</div>
+""" 
+
 
     dbg = f"""<!doctype html><meta charset="utf-8"><title>Debug</title>
     <style>body{{font-family:system-ui;margin:20px}} .card{{border:1px solid #eee;border-radius:12px;padding:12px;margin:12px 0}}</style>
