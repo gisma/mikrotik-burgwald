@@ -529,6 +529,7 @@ if RUN_DASH:
     <title>TTN – All Devices (grouped by sensor type)</title>
     {style}
     <link rel="stylesheet" href="./theme-ecowitt.css?v={stamp}">link rel="stylesheet" href="theme-ecowitt.css">
+    <script>document.documentElement.classList.add('light');</script>
     <h1>TTN Dashboard – Grouped by Sensor Type</h1>
     <small>As of: {stamp} • Source: TTN Storage ({APP}@{REG}) • Window: last {AFTER_DAYS} days • AFTER={AFTER}</small>
    <!-- Theme-Toggle -->
