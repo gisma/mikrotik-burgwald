@@ -399,7 +399,15 @@ def to_plot_html(df: pd.DataFrame, y: str, title: str) -> Optional[str]:
     d = df[["received_at", y]].dropna()
     if d.empty: return None
     fig = px.line(d, x="received_at", y=y, title=title)
-    fig.update_layout(margin=dict(l=10, r=10, t=40, b=10))
+    fig.update_layout(
+      template="plotly_dark",
+      paper_bgcolor="rgba(0,0,0,0)",
+      plot_bgcolor="rgba(0,0,0,0)",
+      margin=dict(l=10, r=10, t=40, b=10),
+      font=dict(size=14),  # +1
+      xaxis=dict(gridcolor="rgba(255,255,255,.12)", zerolinecolor="rgba(255,255,255,.18)"),
+      yaxis=dict(gridcolor="rgba(255,255,255,.12)", zerolinecolor="rgba(255,255,255,.18)"),
+    )
     return pio.to_html(fig, include_plotlyjs="cdn", full_html=False,
                        default_width="100%", default_height="350px")
 
@@ -462,10 +470,20 @@ if RUN_DASH:
 
     # Overview table (for HTML)
     ov = pd.DataFrame(overview_rows)
-    if not ov.empty:
-        ov["last_seen_utc"] = pd.to_datetime(ov["last_seen_utc"], utc=True, errors="coerce").dt.strftime("%Y-%m-%d %H:%M:%SZ")
-    overview_html = ov[["device_id","records","last_seen_utc","status"]].sort_values("device_id").to_html(index=False) if not ov.empty else "<p>No devices/records found.</p>"
+    def _badge(s: str) -> str:
+       cls = "badge"
+       if s == "ok": cls += " ok"
+       elif s.startswith("STALE"): cls += " stale"
+       elif s == "empty": cls += " empty"
+       elif s == "error": cls += " err"
+       return f'<span class="{cls}">{s}</span>'
 
+    if not ov.empty:
+       ov["status"] = ov["status"].apply(_badge)
+       ov["last_seen_utc"] = pd.to_datetime(ov["last_seen_utc"], utc=True, errors="coerce").dt.strftime("%Y-%m-%d %H:%M:%SZ")
+
+    overview_html = ov[["device_id","records","last_seen_utc","status"]].sort_values("device_id") \
+        .to_html(index=False, escape=False)  # wichtig: escape=False für HTML-Badges
     # Build HTML dashboard
     stamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%SZ")
 
@@ -510,6 +528,7 @@ if RUN_DASH:
     <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
     <title>TTN – All Devices (grouped by sensor type)</title>
     {style}
+    <link rel="stylesheet" href="theme-ecowitt.css">
     <h1>TTN Dashboard – Grouped by Sensor Type</h1>
     <small>As of: {stamp} • Source: TTN Storage ({APP}@{REG}) • Window: last {AFTER_DAYS} days • AFTER={AFTER}</small>
     <div class="card"><h2>Overview</h2>{overview_html}<p style="margin-top:8px">Parquet: <code>data/&lt;device&gt;.parquet</code></p></div>
