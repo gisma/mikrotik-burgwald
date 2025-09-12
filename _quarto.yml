@@ -1,5 +1,3 @@
-# _quarto.yml — Website mit Sidebar-Navigation
-
 project:
   type: website
   output-dir: docs
@@ -7,28 +5,26 @@ project:
     - "*.qmd"
   resources:
     - "images"
-    - "data/**" 
+    - "data/**"
     - "assets/**"
     - "theme-ecowitt.css"
-
 
 website:
   site-url: https://gisma.github.io/mikrotik-burgwald
   title: "Hydro-Messnetz Burgwald"
   search:
-    location: sidebar     # Suchfeld in der Sidebar
+    location: sidebar
     type: textbox
-  navbar:                 # optional ganz weglassen, wenn Sidebar reicht
+  navbar:
     logo: images/logo1.png
-
     right:
       - text: "Impressum"
-        href: impressum.qmd        
+        href: impressum.qmd
   sidebar:
-    pinned: true          # Sidebar ist permanent sichtbar
+    pinned: true
     align: center
-    style: "docked"       # "docked" (links) oder "floating"
-    collapse-level: 1     # ab Ebene 2 einklappen
+    style: "docked"
+    collapse-level: 1
     contents:
       - section: "Über..."
         contents:
@@ -44,7 +40,7 @@ website:
           - text: "Status Informationen"
             href: debug-data.qmd
           - text: "Dashboard"
-            href: live-data.qmd 
+            href: live-data.qmd
           - text: "Dashboard Doku"
             href: dashboard_doku_de.qmd
 
@@ -55,11 +51,11 @@ format:
       dark: [lumen, css/theme-dark.scss]
     code-background: true
     code-copy: true
-    css: css/styles.css
+    css: css/styles.css      # ← sicherstellen, dass dein CSS lädt
     toc: true
     link-external-icon: true
     link-external-newwindow: true
-    link-external-filter: '^(?:http:|https:)\/\/www\.quarto\.org\/custom'
+    link-external-filter: '^(?:https?:)\/\/(www\.quarto\.org|gisma\.github\.io)\/'
     code-overflow: wrap
     highlight-style: github
 
@@ -71,4 +67,3 @@ diagram:
   mermaid:
     engine: kroki
     kroki-url: https://kroki.io
-
