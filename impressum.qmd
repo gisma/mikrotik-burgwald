@@ -5,7 +5,7 @@ date: '2025-05-01'
 
 
 ---
-![](/images/hinterland-sp.jpg)
+![](images/hinterland-sp.jpg)
 
 # Impressum
 
