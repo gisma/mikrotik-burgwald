@@ -6,8 +6,9 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="author" content="Chris Reudenbach">
 
-<title>Hydro-Messnetz Burgwald</title>
+<title>README dashboard – Hydro-Messnetz Burgwald</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -19,6 +20,41 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -36,14 +72,10 @@ ul.task-list li input[type="checkbox"] {
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="site_libs/quarto-html/anchor.min.js"></script>
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-a6e161b2431e1f94a14e0f5d32135a3c.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-4a17e18fdf56099d4f6da1e105f33a53.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-a6e161b2431e1f94a14e0f5d32135a3c.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-a6e161b2431e1f94a14e0f5d32135a3c.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-7d45e1ce959e4a88296c3cdc2a74aee3.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="site_libs/bootstrap/bootstrap-dark-5d79492a1f2edd9fba6837a2b98a21d7.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="site_libs/bootstrap/bootstrap-7d45e1ce959e4a88296c3cdc2a74aee3.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-0fc7d564eecbdf6d30da349085419380.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -75,169 +107,7 @@ ul.task-list li input[type="checkbox"] {
 <link rel="stylesheet" href="css/styles.css">
 </head>
 
-<body class="nav-sidebar docked nav-fixed quarto-light"><script id="quarto-html-before-body" type="application/javascript">
-    const toggleBodyColorMode = (bsSheetEl) => {
-      const mode = bsSheetEl.getAttribute("data-mode");
-      const bodyEl = window.document.querySelector("body");
-      if (mode === "dark") {
-        bodyEl.classList.add("quarto-dark");
-        bodyEl.classList.remove("quarto-light");
-      } else {
-        bodyEl.classList.add("quarto-light");
-        bodyEl.classList.remove("quarto-dark");
-      }
-    }
-    const toggleBodyColorPrimary = () => {
-      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
-      if (bsSheetEl) {
-        toggleBodyColorMode(bsSheetEl);
-      }
-    }
-    const setColorSchemeToggle = (alternate) => {
-      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
-      for (let i=0; i < toggles.length; i++) {
-        const toggle = toggles[i];
-        if (toggle) {
-          if (alternate) {
-            toggle.classList.add("alternate");
-          } else {
-            toggle.classList.remove("alternate");
-          }
-        }
-      }
-    };
-    const toggleColorMode = (alternate) => {
-      // Switch the stylesheets
-      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
-      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
-      manageTransitions('#quarto-margin-sidebar .nav-link', false);
-      if (alternate) {
-        // note: dark is layered on light, we don't disable primary!
-        enableStylesheet(alternateStylesheets);
-        for (const sheetNode of alternateStylesheets) {
-          if (sheetNode.id === "quarto-bootstrap") {
-            toggleBodyColorMode(sheetNode);
-          }
-        }
-      } else {
-        disableStylesheet(alternateStylesheets);
-        enableStylesheet(primaryStylesheets)
-        toggleBodyColorPrimary();
-      }
-      manageTransitions('#quarto-margin-sidebar .nav-link', true);
-      // Switch the toggles
-      setColorSchemeToggle(alternate)
-      // Hack to workaround the fact that safari doesn't
-      // properly recolor the scrollbar when toggling (#1455)
-      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
-        manageTransitions("body", false);
-        window.scrollTo(0, 1);
-        setTimeout(() => {
-          window.scrollTo(0, 0);
-          manageTransitions("body", true);
-        }, 40);
-      }
-    }
-    const disableStylesheet = (stylesheets) => {
-      for (let i=0; i < stylesheets.length; i++) {
-        const stylesheet = stylesheets[i];
-        stylesheet.rel = 'disabled-stylesheet';
-      }
-    }
-    const enableStylesheet = (stylesheets) => {
-      for (let i=0; i < stylesheets.length; i++) {
-        const stylesheet = stylesheets[i];
-        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
-          stylesheet.rel = 'stylesheet';
-        }
-      }
-    }
-    const manageTransitions = (selector, allowTransitions) => {
-      const els = window.document.querySelectorAll(selector);
-      for (let i=0; i < els.length; i++) {
-        const el = els[i];
-        if (allowTransitions) {
-          el.classList.remove('notransition');
-        } else {
-          el.classList.add('notransition');
-        }
-      }
-    }
-    const isFileUrl = () => {
-      return window.location.protocol === 'file:';
-    }
-    const hasAlternateSentinel = () => {
-      let styleSentinel = getColorSchemeSentinel();
-      if (styleSentinel !== null) {
-        return styleSentinel === "alternate";
-      } else {
-        return false;
-      }
-    }
-    const setStyleSentinel = (alternate) => {
-      const value = alternate ? "alternate" : "default";
-      if (!isFileUrl()) {
-        window.localStorage.setItem("quarto-color-scheme", value);
-      } else {
-        localAlternateSentinel = value;
-      }
-    }
-    const getColorSchemeSentinel = () => {
-      if (!isFileUrl()) {
-        const storageValue = window.localStorage.getItem("quarto-color-scheme");
-        return storageValue != null ? storageValue : localAlternateSentinel;
-      } else {
-        return localAlternateSentinel;
-      }
-    }
-    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
-      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
-      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
-      let newTheme = '';
-      if(authorPrefersDark) {
-        newTheme = isAlternate ? baseTheme : alternateTheme;
-      } else {
-        newTheme = isAlternate ? alternateTheme : baseTheme;
-      }
-      const changeGiscusTheme = () => {
-        // From: https://github.com/giscus/giscus/issues/336
-        const sendMessage = (message) => {
-          const iframe = document.querySelector('iframe.giscus-frame');
-          if (!iframe) return;
-          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
-        }
-        sendMessage({
-          setConfig: {
-            theme: newTheme
-          }
-        });
-      }
-      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
-      if (isGiscussLoaded) {
-        changeGiscusTheme();
-      }
-    };
-    const authorPrefersDark = false;
-    const darkModeDefault = authorPrefersDark;
-      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
-      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
-    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
-    // Dark / light mode switch
-    window.quartoToggleColorScheme = () => {
-      // Read the current dark / light value
-      let toAlternate = !hasAlternateSentinel();
-      toggleColorMode(toAlternate);
-      setStyleSentinel(toAlternate);
-      toggleGiscusIfUsed(toAlternate, darkModeDefault);
-      window.dispatchEvent(new Event('resize'));
-    };
-    // Switch to dark mode if need be
-    if (hasAlternateSentinel()) {
-      toggleColorMode(true);
-    } else {
-      toggleColorMode(false);
-    }
-  </script>
+<body class="nav-sidebar docked nav-fixed quarto-light">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
@@ -277,7 +147,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">Hydro-Messnetz Burgwald</li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./index_data.html">Messnetz-Daten</a></li><li class="breadcrumb-item"><a href="./dashboard_doku_de.html">Dashboard Doku</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -337,13 +207,13 @@ ul.task-list li input[type="checkbox"] {
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
  <span class="menu-text">Messnetz-Daten</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 ">  
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./index_data.html" class="sidebar-item-text sidebar-link">
@@ -358,7 +228,7 @@ ul.task-list li input[type="checkbox"] {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./dashboard_doku_de.html" class="sidebar-item-text sidebar-link">
+  <a href="./dashboard_doku_de.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Dashboard Doku</span></a>
   </div>
 </li>
@@ -369,22 +239,48 @@ ul.task-list li input[type="checkbox"] {
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#ttn-dashboard-nutzung-konfiguration-und-deployment" id="toc-ttn-dashboard-nutzung-konfiguration-und-deployment" class="nav-link active" data-scroll-target="#ttn-dashboard-nutzung-konfiguration-und-deployment"><span class="header-section-number">1</span> TTN Dashboard – Nutzung, Konfiguration und Deployment</a>
+  <ul class="collapse">
+  <li><a href="#schnellstart-lokal" id="toc-schnellstart-lokal" class="nav-link" data-scroll-target="#schnellstart-lokal"><span class="header-section-number">1.1</span> Schnellstart (lokal)</a></li>
+  <li><a href="#environment-variablen" id="toc-environment-variablen" class="nav-link" data-scroll-target="#environment-variablen"><span class="header-section-number">1.2</span> Environment-Variablen</a>
+  <ul class="collapse">
+  <li><a href="#pflicht" id="toc-pflicht" class="nav-link" data-scroll-target="#pflicht"><span class="header-section-number">1.2.1</span> Pflicht</a></li>
+  <li><a href="#optional-verhalten" id="toc-optional-verhalten" class="nav-link" data-scroll-target="#optional-verhalten"><span class="header-section-number">1.2.2</span> Optional (Verhalten)</a></li>
+  <li><a href="#health-report" id="toc-health-report" class="nav-link" data-scroll-target="#health-report"><span class="header-section-number">1.2.3</span> Health-Report</a></li>
+  </ul></li>
+  <li><a href="#outputs-struktur" id="toc-outputs-struktur" class="nav-link" data-scroll-target="#outputs-struktur"><span class="header-section-number">1.3</span> Outputs &amp; Struktur</a></li>
+  <li><a href="#cli-smoke-test" id="toc-cli-smoke-test" class="nav-link" data-scroll-target="#cli-smoke-test"><span class="header-section-number">1.4</span> CLI Smoke-Test</a></li>
+  <li><a href="#github-actions-pages-oder-artefakt" id="toc-github-actions-pages-oder-artefakt" class="nav-link" data-scroll-target="#github-actions-pages-oder-artefakt"><span class="header-section-number">1.5</span> GitHub Actions (Pages oder Artefakt)</a></li>
+  <li><a href="#troubleshooting" id="toc-troubleshooting" class="nav-link" data-scroll-target="#troubleshooting"><span class="header-section-number">1.6</span> Troubleshooting</a></li>
+  <li><a href="#design-notizen" id="toc-design-notizen" class="nav-link" data-scroll-target="#design-notizen"><span class="header-section-number">1.7</span> Design-Notizen</a></li>
+  </ul></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-
-<header id="title-block-header" class="quarto-title-block default">
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./index_data.html">Messnetz-Daten</a></li><li class="breadcrumb-item"><a href="./dashboard_doku_de.html">Dashboard Doku</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">Hydro-Messnetz Burgwald</h1>
+<h1 class="title">README dashboard</h1>
+<p class="subtitle lead">version 0.1</p>
 </div>
 
 
 
 <div class="quarto-title-meta">
 
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Chris Reudenbach </p>
+          </div>
+  </div>
     
   
     
@@ -395,26 +291,186 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p>Im Burgwald in Hessen wird ein hydrologisches Echtzeit-Monitoring eingerichtet, das kontinuierlich Daten zu Niederschlag, Bodenfeuchte, Grundwasser und Abfluss liefert. Sensoren erfassen die relevanten Größen und übertragen sie per Funk oder Mobilfunk in zentrale Datenbanken. So können Veränderungen in Moor- und Quellbereichen zeitnah erkannt und für Wasserhaushaltsanalysen genutzt werden. Diese Webseite dient der technischen und inhaltlichen Dokumentation des Monitorings und stellt perspektivisch auch die erhobenen Datensätze für Forschung, Praxis und Öffentlichkeit zur Verfügung.</p>
+<section id="ttn-dashboard-nutzung-konfiguration-und-deployment" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> TTN Dashboard – Nutzung, Konfiguration und Deployment</h1>
+<p>Dieses Repository enthält ein Python-Skript, das aus <strong>The Things Network (TTN) Storage</strong> ein HTML-Dashboard erzeugt.<br>
+Es erkennt automatisch alle Devices, zieht deren Uplinks, schreibt pro Gerät Parquet-Dateien und erstellt interaktive Plots.</p>
+<hr>
+<section id="schnellstart-lokal" class="level2" data-number="1.1">
+<h2 data-number="1.1" class="anchored" data-anchor-id="schnellstart-lokal"><span class="header-section-number">1.1</span> Schnellstart (lokal)</h2>
+<ol type="1">
+<li><p>(Optional) Erstelle <code>scripts/.env</code>:</p>
+<pre class="env"><code>TTN_APP_ID=gisma-hydro-testbed
+TTN_REGION=eu1
+TTN_API_KEY=NNSXS_...
+RUN_DASH=1
+TTN_AFTER_DAYS=2
+DELAY_BETWEEN_DEVICES=0.3
+# Health-Report (optional):
+# STALE_HOURS=3
+# DEV_INCLUDE=dds75-lb-.*
+# DEV_EXCLUDE=</code></pre></li>
+<li><p>Ausführen:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> scripts/pull_all_devices.py</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></li>
+<li><p>Ergebnisse liegen unter:</p>
+<ul>
+<li><code>assets/data.html</code> (Haupt-Dashboard)</li>
+<li><code>assets/debug.html</code> (Rohdaten-Beispiele &amp; Parquet-Previews)</li>
+<li>Health-Report: <code>assets/devices_used.txt</code> und <code>assets/devices_used.csv</code></li>
+</ul></li>
+</ol>
+<hr>
+</section>
+<section id="environment-variablen" class="level2" data-number="1.2">
+<h2 data-number="1.2" class="anchored" data-anchor-id="environment-variablen"><span class="header-section-number">1.2</span> Environment-Variablen</h2>
+<p>Diese können in <code>.env</code>, in der Shell oder im GitHub Actions Workflow (<code>env:</code>) gesetzt werden. Fehlt etwas, werden Standardwerte genutzt.</p>
+<section id="pflicht" class="level3" data-number="1.2.1">
+<h3 data-number="1.2.1" class="anchored" data-anchor-id="pflicht"><span class="header-section-number">1.2.1</span> Pflicht</h3>
+<ul>
+<li><p><code>TTN_APP_ID</code> — deine TTN Application ID (z. B. <code>gisma-hydro-testbed</code>)</p></li>
+<li><p><code>TTN_REGION</code> — TTN-Cluster (z. B. <code>eu1</code>)</p></li>
+<li><p><code>TTN_API_KEY</code> — NNSXS-Key mit folgenden Scopes:</p>
+<ul>
+<li><strong>View end devices</strong> (für Auto-Discovery)</li>
+<li><strong>View application packages and associations</strong> (Storage)</li>
+<li>(hilfreich) <strong>View application info</strong>, <strong>Read application traffic/data</strong></li>
+</ul></li>
+</ul>
+</section>
+<section id="optional-verhalten" class="level3" data-number="1.2.2">
+<h3 data-number="1.2.2" class="anchored" data-anchor-id="optional-verhalten"><span class="header-section-number">1.2.2</span> Optional (Verhalten)</h3>
+<ul>
+<li><code>RUN_DASH</code> (<code>"1"</code>) <code>1</code> = HTML-Dashboard erzeugen; <code>0</code> = CLI-Testmodus (siehe unten).</li>
+<li><code>TTN_AFTER_DAYS</code> (<code>"2"</code>) Gleitendes Fenster: <em>jetzt − N Tage</em>. Falls bereits Parquet-Daten existieren, setzt das Skript am letzten Timestamp fort.</li>
+<li><code>DELAY_BETWEEN_DEVICES</code> (<code>"0.3"</code>) Sekunden Pause zwischen den Devices (gegen Rate-Limits).</li>
+<li><code>DEVICES</code> (leer) Liste mit Device-IDs (whitespace-separiert). Wenn <strong>leer</strong>, werden <strong>alle Devices automatisch</strong> erkannt.</li>
+</ul>
+</section>
+<section id="health-report" class="level3" data-number="1.2.3">
+<h3 data-number="1.2.3" class="anchored" data-anchor-id="health-report"><span class="header-section-number">1.2.3</span> Health-Report</h3>
+<ul>
+<li><code>STALE_HOURS</code> (<code>"3"</code>) — Gerät gilt als <code>STALE (xh)</code>, wenn <code>last_seen</code> älter ist.</li>
+<li><code>DEV_INCLUDE</code> (<code>".*"</code>) — Regex-Filter für Devices, die eingeschlossen werden sollen.</li>
+<li><code>DEV_EXCLUDE</code> (leer) — Regex-Filter für Devices, die ausgeschlossen werden sollen.</li>
+</ul>
+<hr>
+</section>
+</section>
+<section id="outputs-struktur" class="level2" data-number="1.3">
+<h2 data-number="1.3" class="anchored" data-anchor-id="outputs-struktur"><span class="header-section-number">1.3</span> Outputs &amp; Struktur</h2>
+<ul>
+<li><p><code>data/</code> — Parquet-Dateien pro Gerät: <code>data/&lt;device&gt;.parquet</code></p></li>
+<li><p><code>assets/</code></p>
+<ul>
+<li><code>data.html</code> — Dashboard</li>
+<li><code>debug.html</code> — Debug-Ansicht mit Rohdaten</li>
+<li><code>devices_used.txt</code> — <strong>lesbarer</strong> Health-Report</li>
+<li><code>devices_used.csv</code> — <strong>maschinenlesbarer</strong> Health-Report</li>
+</ul></li>
+</ul>
+<blockquote class="blockquote">
+<p>Hinweis: Beim Start kann <code>devices_used.txt</code> kurzzeitig nur die Liste der Devices enthalten. Am Ende wird sie mit dem Health-Report überschrieben.</p>
+</blockquote>
+<hr>
+</section>
+<section id="cli-smoke-test" class="level2" data-number="1.4">
+<h2 data-number="1.4" class="anchored" data-anchor-id="cli-smoke-test"><span class="header-section-number">1.4</span> CLI Smoke-Test</h2>
+<p>Einzelnes Device abrufen (ohne Dashboard):</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="va">RUN_DASH</span><span class="op">=</span>0 <span class="ex">python</span> scripts/pull_all_devices.py <span class="at">--device</span> dds75-lb-13 <span class="at">--hours</span> 6 <span class="at">-v</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li><code>--hours</code> überschreibt <code>TTN_AFTER_DAYS</code> nur für diesen Lauf.</li>
+<li>Daten werden in <code>data/&lt;device&gt;.parquet</code> gespeichert und dedupliziert.</li>
+</ul>
+<hr>
+</section>
+<section id="github-actions-pages-oder-artefakt" class="level2" data-number="1.5">
+<h2 data-number="1.5" class="anchored" data-anchor-id="github-actions-pages-oder-artefakt"><span class="header-section-number">1.5</span> GitHub Actions (Pages oder Artefakt)</h2>
+<p>Beispiel-Workflow:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">name</span><span class="kw">:</span><span class="at"> TTN all devices → Pages</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">on</span><span class="kw">:</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">schedule</span><span class="kw">:</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">cron</span><span class="kw">:</span><span class="at"> </span><span class="st">"*/15 * * * *"</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">workflow_dispatch</span><span class="kw">:</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="fu">permissions</span><span class="kw">:</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">contents</span><span class="kw">:</span><span class="at"> write</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="fu">jobs</span><span class="kw">:</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">build</span><span class="kw">:</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">runs-on</span><span class="kw">:</span><span class="at"> ubuntu-latest</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">env</span><span class="kw">:</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">TTN_API_KEY</span><span class="kw">:</span><span class="at">  ${{ secrets.TTN_API_KEY }}</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">TTN_APP_ID</span><span class="kw">:</span><span class="at">   ${{ secrets.TTN_APP_ID }}</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">TTN_REGION</span><span class="kw">:</span><span class="at">   ${{ secrets.TTN_REGION }}</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">TTN_AFTER_DAYS</span><span class="kw">:</span><span class="at"> </span><span class="st">"2"</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">RUN_DASH</span><span class="kw">:</span><span class="at"> </span><span class="st">"1"</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">DELAY_BETWEEN_DEVICES</span><span class="kw">:</span><span class="at"> </span><span class="st">"0.4"</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="co">      # DEVICES leer lassen = Auto-Discovery</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="co">      # Optional STALE_HOURS / DEV_INCLUDE / DEV_EXCLUDE hier setzen</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">steps</span><span class="kw">:</span></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> actions/checkout@v4</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Python einrichten</span></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> actions/setup-python@v5</span></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">with</span><span class="kw">:</span></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="fu">python-version</span><span class="kw">:</span><span class="at"> </span><span class="st">"3.12"</span></span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Dependencies installieren</span></span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a><span class="fu">        run</span><span class="kw">: </span><span class="ch">|</span></span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>          python -m pip install --upgrade pip</span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>          pip install requests pandas plotly pyarrow fastparquet python-dotenv</span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Dashboard bauen</span></span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a><span class="fu">        run</span><span class="kw">: </span><span class="ch">|</span></span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>          python scripts/pull_all_devices.py</span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>          mkdir -p docs</span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>          cp -r assets/* docs/</span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Commit docs/ und data/</span></span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a><span class="fu">        run</span><span class="kw">: </span><span class="ch">|</span></span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a>          git config user.name  "ttn-bot"</span>
+<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>          git config user.email "ttn-bot@example.com"</span>
+<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a>          git add docs/ data/ || true</span>
+<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a>          git diff --cached --quiet || git commit -m "update all-devices $(date -u +%FT%TZ)"</span>
+<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a>          git push</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Repo-Einstellungen:</strong></p>
+<ul>
+<li>Secrets: <code>TTN_API_KEY</code>, <code>TTN_APP_ID</code>, <code>TTN_REGION</code>.</li>
+<li>GitHub Pages so einstellen, dass es <code>docs/</code> als Source nimmt.</li>
+</ul>
+<hr>
+</section>
+<section id="troubleshooting" class="level2" data-number="1.6">
+<h2 data-number="1.6" class="anchored" data-anchor-id="troubleshooting"><span class="header-section-number">1.6</span> Troubleshooting</h2>
+<ul>
+<li><strong>HTTP 400 invalid token</strong> Neuer Key nötig oder Scopes fehlen.</li>
+<li><strong>HTTP 400 mit <code>after</code></strong> Skript probiert automatisch kleinere <code>limit</code>-Werte und ohne <code>after</code>.</li>
+<li><strong>Parquet-Engine fehlt</strong> <code>pyarrow</code> oder <code>fastparquet</code> installieren (Workflow erledigt das).</li>
+<li><strong>Keine Daten</strong> TTN Console prüfen: Storage aktiviert? Device aktiv? Zeitfenster korrekt?</li>
+<li><strong>429 Rate limit</strong> <code>DELAY_BETWEEN_DEVICES</code> auf 0.6–1.0 erhöhen.</li>
+<li><strong>Viele STALE-Geräte</strong> <code>STALE_HOURS</code> anpassen oder per Regex filtern.</li>
+</ul>
+<hr>
+</section>
+<section id="design-notizen" class="level2" data-number="1.7">
+<h2 data-number="1.7" class="anchored" data-anchor-id="design-notizen"><span class="header-section-number">1.7</span> Design-Notizen</h2>
+<ul>
+<li>Auto-Discovery → keine Device-Liste pflegen.</li>
+<li>Pro-Device Parquet → inkrementelle Pulls, keine Duplikate.</li>
+<li>Robuste Requests → mit Retries/Backoff.</li>
+<li>Health-Report als Text &amp; CSV für schnellen Überblick.</li>
+</ul>
+<p>🌲📡 Viel Erfolg beim Monitoring!</p>
 
 
+</section>
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
-    // Ensure there is a toggle, if there isn't float one in the top right
-    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
-      const a = window.document.createElement('a');
-      a.classList.add('top-right');
-      a.classList.add('quarto-color-scheme-toggle');
-      a.href = "";
-      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
-      const i = window.document.createElement("i");
-      i.classList.add('bi');
-      a.appendChild(i);
-      window.document.body.appendChild(a);
-    }
-    setColorSchemeToggle(hasAlternateSentinel())
     const icon = "";
     const anchorJS = new window.AnchorJS();
     anchorJS.options = {
