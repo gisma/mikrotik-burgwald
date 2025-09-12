@@ -16,7 +16,7 @@
     "href": "lorawan_doku.html#script-hochladen",
     "title": "LoraWan Doku",
     "section": "1.1 Script hochladen",
-    "text": "1.1 Script hochladen\n\nIn WinBox → Files: Setup-Datei gisma_base2.rsc einfach per Drag&Drop auf das Gerät laden. WinBox Download (MikroTik)",
+    "text": "1.1 Script hochladen\n\nIn WinBox → Files: Setup-Datei burgwald_all.rsc einfach per Drag&Drop auf das Gerät laden. WinBox Download (MikroTik)",
     "crumbs": [
       "Home",
       "LoRaWAN",
