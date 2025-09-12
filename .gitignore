@@ -2,10 +2,6 @@
 .Rhistory
 .RData
 .Ruserdata
-<<<<<<< HEAD
-=======
-
->>>>>>> d3d37f09088647280c59493de11b51f7aaac2889
 /.quarto/
 _freeze/
 docs/_freeze/
@@ -14,5 +10,7 @@ docs/_freeze/
 # generated site/data artifacts
 docs/data/*.parquet
 docs/data/*_raw.ndjson
-docs/data/data.html
-docs/data/index.html
+Gemfile
+Gemfile.lock
+data/*.parquet
+data/*_raw.ndjson
