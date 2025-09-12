@@ -10,7 +10,33 @@ from urllib.parse import quote
 APP   = os.environ["TTN_APP_ID"]              # z.B. gisma-hydro-testbed
 REG   = os.environ["TTN_REGION"]              # z.B. eu1
 KEY   = os.environ["TTN_API_KEY"]             # NNSXS....
-DEVS  = [d for d in os.environ["DEVICES"].split() if d.strip()]
+#DEVS  = [d for d in os.environ["DEVICES"].split() if d.strip()]
+def list_ttn_devices(app: str) -> list[str]:
+    url = f"https://{REG}.cloud.thethings.network/api/v3/applications/{quote(app)}/devices"
+    devs, page = [], ""
+    while True:
+        params = {"limit": "100"}
+        if page: params["page"] = page
+        r = requests.get(url, headers=HDRS, params=params, timeout=30)
+        r.raise_for_status()
+        js = r.json() if r.text.strip() else {}
+        for ed in js.get("end_devices", []):
+            # nimm die „ID“, nicht DevEUI
+            ids = ed.get("ids", {})
+            did = ids.get("device_id")
+            if did: devs.append(did)
+        page = js.get("next_page_token")
+        if not page:
+            break
+    return sorted(set(devs))
+
+DEVICES_ENV = os.environ.get("DEVICES", "").strip()
+if DEVICES_ENV:
+    DEVS = [d for d in DEVICES_ENV.split() if d.strip()]
+else:
+    # Fällt automatisch auf alle Geräte in der Application zurück
+    DEVS = list_ttn_devices(APP)
+
 AFTER_DAYS = int(os.environ.get("TTN_AFTER_DAYS", "2"))
 AFTER = (datetime.now(timezone.utc) - timedelta(days=AFTER_DAYS)).strftime("%Y-%m-%dT%H:%M:%SZ")
 HDRS  = {"Authorization": f"Bearer {KEY}"}     # wir parsen NDJSON & SSE robust
