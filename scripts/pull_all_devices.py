@@ -558,7 +558,7 @@ if RUN_DASH:
 
     dbg = f"""<!doctype html><meta charset="utf-8"><title>Debug</title>
     <style>body{{font-family:system-ui;margin:20px}} .card{{border:1px solid #eee;border-radius:12px;padding:12px;margin:12px 0}}</style>
-    <h1>Debug – Pull & Persist</h1>
+    <h1>Status – Pull & Persist</h1>
     {"".join(debug_cards)}
     """
 

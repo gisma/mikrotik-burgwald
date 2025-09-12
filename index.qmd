@@ -1,5 +1,17 @@
 ---
 title: "Hydro-Messnetz Burgwald"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true      
+    number-depth: 3           
+
+    code-copy: true
+    code-link: true
+    code-overflow: wrap
+    code-fold: true
+    highlight-style: github
 ---
 
 Im Burgwald in Hessen wird ein hydrologisches Echtzeit-Monitoring eingerichtet, das kontinuierlich Daten zu Niederschlag, Bodenfeuchte, Grundwasser und Abfluss liefert. Sensoren erfassen die relevanten Größen und übertragen sie per Funk oder Mobilfunk in zentrale Datenbanken. So können Veränderungen in Moor- und Quellbereichen zeitnah erkannt und für Wasserhaushaltsanalysen genutzt werden.

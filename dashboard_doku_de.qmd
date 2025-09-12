@@ -4,7 +4,6 @@ subtitle: "version 0.1"
 author: "Chris Reudenbach"
 format:
   html:
-    theme: cosmo
     toc: true
     toc-depth: 3
     number-sections: true      
