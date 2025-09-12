@@ -8,7 +8,7 @@ on:
 permissions:
   contents: write
 
-# Nur ein Lauf gleichzeitig (verhindert Push-Rennen)
+# Keine parallelen Läufe, verhindert Push-Konflikte
 concurrency:
   group: ttn-pages
   cancel-in-progress: true
@@ -21,14 +21,23 @@ jobs:
       TTN_APP_ID:  ${{ secrets.TTN_APP_ID }}
       TTN_REGION:  ${{ secrets.TTN_REGION }}
       TTN_API_KEY: ${{ secrets.TTN_API_KEY }}
-      # optional: Standard-Theme fürs Dashboard ("light"|"dark")
-      THEME_DEFAULT: "light"
+      THEME_DEFAULT: "light"   # optional: light/dark Default im Dashboard
 
     steps:
       - name: Checkout (full history for rebase)
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      # Früh rebasen, damit der Arbeitsbaum sauber ist
+      - name: Sync branch (pre-build rebase)
+        env:
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          git config user.name  "ttn-bot"
+          git config user.email "ttn-bot@example.com"
+          git checkout "$BRANCH"
+          git pull --rebase origin "$BRANCH" || true
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -42,17 +51,15 @@ jobs:
 
       - name: Build dashboard (pull all devices)
         run: |
-          # baut assets/data.html, assets/debug.html, assets/theme-ecowitt.css etc.
+          # erzeugt assets/data.html, assets/debug.html, theme-ecowitt.css etc.
           python scripts/pull_all_devices.py
-
-          # nach docs/assets kopieren (wird von Pages ausgeliefert)
+          # Assets in Pages-Verzeichnis spiegeln
           mkdir -p docs/assets
           cp -r assets/* docs/assets/ || true
 
       - name: Publish data to docs/data
         run: |
           mkdir -p docs/data
-          # nur gewünschte Dateitypen übernehmen
           cp -a data/*.parquet docs/data/ 2>/dev/null || true
           cp -a data/*.ndjson  docs/data/ 2>/dev/null || true
 
@@ -76,22 +83,27 @@ jobs:
           (d / "index.json").write_text(json.dumps(items, ensure_ascii=False), encoding="utf-8")
           PY
 
-      # Sicheres Committen mit Rebase vor Push
-      - name: Commit docs/ and data/ (with rebase)
+      # Sicher committen: stash → rebase → pop → commit → push
+      - name: Commit docs/ and data/ (stash + rebase + push)
         env:
           BRANCH: ${{ github.ref_name }}
         run: |
           set -e
           git config user.name  "ttn-bot"
           git config user.email "ttn-bot@example.com"
-
-          # Branch sicherstellen (Runner ist oft detached)
           git checkout "$BRANCH"
 
-          # Remote-Änderungen einziehen (ohne Merge-Commit)
+          # Alle erzeugten Änderungen (inkl. untracked) zwischenspeichern
+          git add -A
+          git stash push --include-untracked --message "ci-wip" || true
+
+          # Remote-Stand holen (fast-forward/rebase, keine Merge-Commits)
           git pull --rebase origin "$BRANCH" || true
 
+          # Änderungen zurückholen
+          git stash pop || true
+
+          # Final committen & pushen
           git add docs/ data/ || true
           git commit -m "update all-devices $(date -u +%FT%TZ)" || echo "no changes"
-
           git push origin "$BRANCH"
