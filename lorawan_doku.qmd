@@ -31,7 +31,7 @@ Hier folgt eine basale Anleitung für den Betrieb eines MikroTik-LoRaWAN-Gateway
 
 ## Script hochladen
 
-* In **WinBox → Files**: [Setup-Datei `gisma_base2.rsc`](src/gisma_base2.rsc) einfach per Drag\&Drop auf das Gerät laden. [**WinBox Download (MikroTik)**](https://mikrotik.com/download)
+* In **WinBox → Files**: Setup-Datei [`burgwald_all.rsc`](assets/burgwald_all.rsc) einfach per Drag\&Drop auf das Gerät laden. [**WinBox Download (MikroTik)**](https://mikrotik.com/download)
 
 ## Script importieren
 
