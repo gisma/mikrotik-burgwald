@@ -6,7 +6,7 @@ format: html
 
 <div class="iframe-wrap">
   <iframe id="data-iframe"
-          src="assets/data.html"
+          src="assets/data.html?v=2"
           loading="lazy"
           width="100%"
           height="900"
@@ -16,27 +16,29 @@ format: html
 </div>
 
 <script>
-(function() {
-  function resizeIframe(el) {
-    try {
-      // gleicher Origin (GitHub Pages gleicher Host): Höhe automatisch setzen
-      var doc = el.contentDocument || el.contentWindow.document;
-      var h = Math.max(
-        doc.body.scrollHeight || 0,
-        doc.documentElement.scrollHeight || 0,
-        600
-      );
-      el.style.height = (h + 20) + "px";
-    } catch (e) {
-      // Cross-Origin: nichts zu tun, fallback-Höhe bleibt
-    }
+(function () {
+  function postHeight() {
+    var h = Math.max(
+      document.body.scrollHeight || 0,
+      document.documentElement.scrollHeight || 0
+    );
+    // kleine Obergrenze verhindern Layout-Jitter durch Plotly-Tooltips:
+    if (h < 400) h = 400;
+    parent.postMessage({ ttnHeight: h }, "*");
   }
-  document.addEventListener('DOMContentLoaded', function () {
-    var ifr = document.getElementById('data-iframe');
-    if (ifr) ifr.addEventListener('load', function () { resizeIframe(ifr); });
-  });
+
+  // beim Laden:
+  window.addEventListener("load", postHeight);
+
+  // bei jeder DOM/Größenänderung:
+  new ResizeObserver(function(){ postHeight(); }).observe(document.body);
+
+  // fallback: nachgeladene Fonts/images
+  setTimeout(postHeight, 300);
+  setTimeout(postHeight, 1200);
 })();
 </script>
+
 
 <style>
 .iframe-wrap { width: 100%; }
