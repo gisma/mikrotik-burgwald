@@ -25,7 +25,6 @@ diagram:
 
 Hier folgt eine basale Anleitung für den Betrieb eines MikroTik-LoRaWAN-Gateways (RBwAPR-2nD) über WLAN mit TTN (EU1) sowie der Einbindung der Sensoren **Dragino PS-LB**, **Dragino DDS-75LB** und **Seeed SenseCAP S2120**. Die **konkreten Decoder** sind nicht enthalte aber auf dem Gateway bereits aktiv. Zusätzlich werden praxistaugliche Wege zum **Dauerbetrieb** (Storage, MQTT→CSV/DB, InfluxDB/Grafana) und **No-Code-Speicherung** (Webhooks) skizziert. Beispiele und Snippets sind so gehalten, dass sie direkt übernommen werden können.
 
----
 
 # Kurzanleitung
 
