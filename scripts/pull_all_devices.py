@@ -55,43 +55,93 @@ def device_pull(dev: str) -> pd.DataFrame:
     raw  = DATA / f"{dev}_raw.ndjson"
     url  = f"https://{REG}.cloud.thethings.network/api/v3/as/applications/{APP}/devices/{quote(dev)}/packages/storage/uplink_message"
 
-    r = requests.get(url, headers=HDRS, params={"limit": "1000", "after": AFTER}, timeout=30)
-    r.raise_for_status()
-    raw_text = r.text
-    raw.write_text(raw_text, encoding="utf-8")
+    limit = 1000
+    # Startzeitpunkt: AFTER; falls es bereits Parquet gibt, am letzten Zeitstempel weitermachen
+    current_after = pd.to_datetime(AFTER, utc=True)
+    if parq.exists():
+        try:
+            last_old = pd.read_parquet(parq)["received_at"]
+            last_old = pd.to_datetime(last_old, utc=True, errors="coerce").max()
+            if pd.notna(last_old) and last_old > current_after:
+                current_after = last_old + pd.Timedelta(microseconds=1)
+        except Exception:
+            pass
 
-    objs = _robust_json_lines(raw_text)
-    rows = []
-    for o in objs:
-        up  = o.get("uplink_message", {})
-        rx0 = (up.get("rx_metadata") or [{}])
-        rx0 = rx0[0] if isinstance(rx0, list) and rx0 else {}
-        rows.append({
-            "received_at": _best_ts(o),
-            "device_id":   dev,
-            "f_port":      up.get("f_port"),
-            "rssi":        rx0.get("rssi"),
-            "snr":         rx0.get("snr"),
-            "payload_json": json.dumps(up.get("decoded_payload", {}), ensure_ascii=False)
-        })
+    all_rows, ndjson_chunks = [], []
+    while True:
+        params = {
+            "limit": str(limit),
+            "after": current_after.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        }
+        r = requests.get(url, headers=HDRS, params=params, timeout=30)
+        if r.status_code == 204 or not r.text.strip():
+            break
+        r.raise_for_status()
+        raw_text = r.text
+        ndjson_chunks.append(raw_text)
 
-    df_new = pd.DataFrame(rows)
+        objs = _robust_json_lines(raw_text)
+        if not objs:
+            break
 
-    # wenn leer, ggf. Altbestand zurückgeben
-    if df_new.empty:
-        return pd.read_parquet(parq) if parq.exists() else df_new
+        batch_rows, max_ts = [], None
+        for o in objs:
+            up  = o.get("uplink_message", {}) if isinstance(o, dict) else {}
+            rx0 = (up.get("rx_metadata") or [{}])
+            rx0 = rx0[0] if isinstance(rx0, list) and rx0 else {}
+            ts  = _best_ts(o)
+            batch_rows.append({
+                "received_at": ts,
+                "device_id":   dev,
+                "f_port":      up.get("f_port"),
+                "rssi":        rx0.get("rssi"),
+                "snr":         rx0.get("snr"),
+                "payload_json": json.dumps(up.get("decoded_payload", {}), ensure_ascii=False)
+            })
+            if ts:
+                tsv = pd.to_datetime(ts, utc=True, errors="coerce")
+                if pd.notna(tsv):
+                    max_ts = tsv if max_ts is None or tsv > max_ts else max_ts
 
-    # Zeit + Fenster
-    df_new["received_at"] = pd.to_datetime(df_new["received_at"], utc=True, errors="coerce")
-    df_new = df_new.dropna(subset=["received_at"]).sort_values("received_at")
-    window_start = pd.to_datetime(AFTER, utc=True)
-    df_new = df_new[df_new["received_at"] >= window_start]
+        all_rows.extend(batch_rows)
 
-    if df_new.empty:
-        return pd.read_parquet(parq) if parq.exists() else df_new
+        # Wenn weniger als limit kamen → fertig; sonst „after“ weiterschieben
+        if len(objs) < limit or max_ts is None:
+            break
+        current_after = max_ts + pd.Timedelta(microseconds=1)
 
-    df_new.to_parquet(parq, index=False)
-    return df_new
+    # Debug-Raw schreiben (alles zusammen)
+    if ndjson_chunks:
+        raw.write_text("".join(ndjson_chunks), encoding="utf-8")
+
+    # DataFrame aus den neuen Zeilen
+    df_new = pd.DataFrame(all_rows)
+    if not df_new.empty:
+        df_new["received_at"] = pd.to_datetime(df_new["received_at"], utc=True, errors="coerce")
+        df_new = df_new.dropna(subset=["received_at"]).sort_values("received_at")
+
+    # Mit Altbestand mergen
+    if parq.exists():
+        try:
+            df_old = pd.read_parquet(parq)
+            df_old["received_at"] = pd.to_datetime(df_old["received_at"], utc=True, errors="coerce")
+            df = pd.concat([df_old, df_new], ignore_index=True) if not df_new.empty else df_old
+        except Exception:
+            df = df_new
+    else:
+        df = df_new
+
+    # Duplikate entfernen
+    if not df.empty:
+        subset_cols = [c for c in ["device_id","received_at","f_port","payload_json"] if c in df.columns]
+        df = df.drop_duplicates(subset=subset_cols).sort_values("received_at")
+
+    # Persistieren
+    if not df.empty:
+        df.to_parquet(parq, index=False)
+
+    return df if not df.empty else pd.DataFrame(columns=["device_id","received_at"])
+
 
 # ===== Flatten & Normalisierung =====
 def flatten_payload(df: pd.DataFrame) -> pd.DataFrame:
