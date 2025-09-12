@@ -1,85 +1,109 @@
 ---
-title: "Daten Repo"
-format:  html
-# 
+title: "Daten Repository"
+format:
+  html:
+    toc: true
+    code-fold: false
+    smooth-scroll: true
 ---
 
-
-## Allgmeine Formate im Repo
+## Allgemeine Formate im Repo
 
 **NDJSON** und **Parquet** sind beides Datenformate, die sich gut ergänzen:
 
-* **NDJSON** (Newline Delimited JSON) speichert Ereignisse zeilenweise als JSON-Objekte.
-  → Ideal für **Streaming und APIs**, weil jede Zeile ein eigenständiger Datensatz ist, der sofort verarbeitet werden kann.
+- **NDJSON** (Newline Delimited JSON) speichert Ereignisse zeilenweise als JSON-Objekte.  
+  → Ideal für **Streaming und APIs**, weil jede Zeile ein eigenständiger Datensatz ist.  
   → Lässt sich mit Tools wie `jq`, `pandas.read_json(lines=True)` oder `jsonlite::stream_in()` direkt auswerten.
 
-* **Parquet** ist ein **spaltenorientiertes, binäres Format** für große Datenmengen.
-  → Optimiert für **Analysen und Abfragen**, sehr platzsparend und schnell.
-  → Standard in Big-Data-Systemen (Spark, Hadoop, BigQuery, DuckDB, GDAL/GeoParquet).
+- **Parquet** ist ein **spaltenorientiertes, binäres Format** für große Datenmengen.  
+  → Optimiert für **Analysen und Abfragen**, sehr platzsparend und schnell.  
+  → Standard in Big-Data-Ecosystemen (Spark, Hadoop, DuckDB, BigQuery, GDAL/GeoParquet).
 
-Typischer Workflow: **NDJSON für die rohe, zeilenweise Speicherung eingehender Sensordaten** → später in **Parquet für effiziente Archivierung und Analyse** konvertieren.
+**Typischer Workflow:** Rohdaten zunächst als **NDJSON** persistieren → für Analyse/Archiv in **Parquet** konvertieren.
 
+## Sensoren
 
-### Sensoren
-* DDS75-LB (dds75-lb-*.parquet): Zeitreihen eines Ultraschall-Pegelsensors mit distance_cm (bzw. Distance_mm), temperature (DS18B20), battery sowie optionalen Flags (interrupt_flag, sensor_flag).
-* PS-LB (burgwald-ps-lb-*.parquet): Zeitreihen eines 4–20-mA/Pressure-Sensors mit water_cm bzw. pressure_kpa/_mpa, zusätzlich idc_input_ma, vdc_input_v, battery und digitalen Eingangsflags.
-* SenseCAP Wetterstation (burgwald-sensecap-*.parquet): Zeitreihen mit temperature, humidity, pressure_hpa, illumination sowie ggf. uv_index, wind_speed, wind_dir, rainfall.
+- **DDS75-LB** (`dds75-lb-*.parquet`): `distance_cm` (bzw. `Distance_mm`), `temperature`, `battery`, Flags (`interrupt_flag`, `sensor_flag`).
+- **PS-LB** (`burgwald-ps-lb-*.parquet`): `water_cm` bzw. `pressure_kpa/_mpa`, zusätzlich `idc_input_ma`, `vdc_input_v`, `battery`, digitale Eingänge.
+- **SenseCAP** (`burgwald-sensecap-*.parquet`): `temperature`, `humidity`, `pressure_hpa`, `illumination`, ggf. `uv_index`, `wind_speed`, `wind_dir`, `rainfall`.
 
+---
 
-<div id="data-list">Lade Datenliste …</div>
+## Dateien in `data/`
 
 <div id="data-list">Lade Datenliste …</div>
 
 <script>
-(function(){
-  const mount = document.getElementById("data-list");
-  const url   = "/data/index.json?v=" + Date.now(); // Cache-Buster
+// --- Hilfsfunktionen ---
+function humanSize(n){
+  const u=["B","KiB","MiB","GiB","TiB"];
+  let i=0, f=Number(n)||0;
+  while (f>=1024 && i<u.length-1){ f/=1024; i++; }
+  return `${f.toFixed(f<10&&i>0?1:0)} ${u[i]}`;
+}
+function fmtDate(ts){
+  try { return new Date((Number(ts)||0)*1000).toISOString().replace('T',' ').replace('Z','Z'); }
+  catch { return ""; }
+}
 
-  function humanSize(n){
-    const u=["B","KiB","MiB","GiB","TiB"];
-    let i=0, f=Number(n)||0;
-    while(f>=1024 && i<u.length-1){ f/=1024; i++; }
-    return `${f.toFixed(f<10&&i>0?1:0)} ${u[i]}`;
+// --- Render-Funktion ---
+function renderTable(mount, items){
+  if (!Array.isArray(items) || items.length===0){
+    mount.innerHTML = "<em>(Keine passenden Dateien gefunden)</em>";
+    return;
   }
-  function fmtDate(ts){
-    try { return new Date(ts*1000).toISOString().replace('T',' ').replace('Z','Z'); }
-    catch { return ""; }
-  }
-
-  fetch(url).then(r=>{
-    if(!r.ok) throw new Error(r.status+" "+r.statusText);
-    return r.json();
-  }).then(items=>{
-    if(!Array.isArray(items) || items.length===0){
-      mount.innerHTML = "<em>(Keine passenden Dateien gefunden)</em>";
-      return;
+  const css = `<style>
+    #data-list table{width:100%;border-collapse:collapse}
+    #data-list th,#data-list td{padding:.5rem .6rem;border:1px solid #ddd;text-align:left}
+    #data-list th{background:#f7f7f7}
+    @media (prefers-color-scheme: dark){
+      #data-list th{background:#1f2937;color:#e5e7eb}
+      #data-list th,#data-list td{border-color:#374151;color:#e5e7eb}
+      #data-list a{color:#93c5fd}
     }
-    const css = `<style>
-      #data-list table{width:100%;border-collapse:collapse}
-      #data-list th,#data-list td{padding:.45rem .6rem;border:1px solid #ddd;text-align:left}
-      #data-list th{background:#f7f7f7}
-      @media (prefers-color-scheme: dark){
-        #data-list th{background:#222;color:#eee}
-        #data-list th,#data-list td{border-color:#333}
+  </style>`;
+  const head = `
+    <thead><tr>
+      <th>Datei</th><th>Größe</th><th>Typ</th><th>Letzte Änderung (UTC)</th>
+    </tr></thead>`;
+  const body = items.map(it=>{
+    const name = String(it.name||"");
+    const href = "{{< relpath \"data/\" >}}" + encodeURIComponent(name);
+    return `<tr>
+      <td><a href="${href}">${name}</a></td>
+      <td>${humanSize(it.size)}</td>
+      <td>${it.type||""}</td>
+      <td>${fmtDate(it.mtime)}</td>
+    </tr>`;
+  }).join("");
+  mount.innerHTML = `${css}<table>${head}<tbody>${body}</tbody></table>`;
+}
+
+// --- Laden von index.json (Pfad via relpath, cache-busting) ---
+(async function(){
+  const mount = document.getElementById("data-list");
+  // Quarto setzt hier einen korrekten relativen Pfad – funktioniert lokal & auf Pages
+  const baseUrl = "{{< relpath \"data/index.json\" >}}";
+  const url     = baseUrl + (baseUrl.includes("?") ? "&" : "?") + "v=" + Date.now();
+  try {
+    const res = await fetch(url, {cache: "no-store"});
+    if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+    const items = await res.json();
+    // (Optional) sortieren: Parquet zuerst, dann NDJSON, innerhalb alphabetisch
+    items.sort((a,b)=>{
+      const ta = (a.type||"").toLowerCase(), tb = (b.type||"").toLowerCase();
+      if (ta!==tb){
+        if (ta==="parquet") return -1;
+        if (tb==="parquet") return 1;
       }
-    </style>`;
-    const head = `
-      <thead><tr>
-        <th>Datei</th><th>Größe</th><th>Typ</th><th>Letzte Änderung (UTC)</th>
-      </tr></thead>`;
-    const body = items.map(it=>{
-      const href = `/data/${encodeURIComponent(it.name)}`;
-      return `<tr>
-        <td><a href="${href}">${it.name}</a></td>
-        <td>${humanSize(it.size)}</td>
-        <td>${it.type||""}</td>
-        <td>${fmtDate(it.mtime||0)}</td>
-      </tr>`;
-    }).join("");
-    mount.innerHTML = `${css}<table>${head}<tbody>${body}</tbody></table>`;
-  }).catch(err=>{
+      return String(a.name).localeCompare(String(b.name));
+    });
+    renderTable(mount, items);
+  } catch (err){
     console.error(err);
-    mount.innerHTML = `<div style="color:#b00">Konnte /data/index.json nicht laden: ${String(err.message||err)}</div>`;
-  });
+    mount.innerHTML =
+      `<div style="color:#b00">Konnte <code>${baseUrl}</code> nicht laden: ${String(err.message||err)}</div>
+       <div style="margin-top:.5rem"><small>Ist der Workflow gelaufen und wurde <code>docs/data/index.json</code> erzeugt?</small></div>`;
+  }
 })();
 </script>

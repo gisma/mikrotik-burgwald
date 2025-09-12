@@ -1,21 +1,21 @@
-burgwald-ps-lb-01        |   117 rec | last: 2025-09-12 19:20:37Z | OK
-burgwald-sensecap-01     |  1110 rec | last: 2025-09-12 19:28:52Z | OK
-dds75-lb-001             |   134 rec | last: 2025-09-12 19:06:17Z | OK
-dds75-lb-02              |   125 rec | last: 2025-09-12 19:28:35Z | OK
-dds75-lb-03              |   122 rec | last: 2025-09-12 19:32:20Z | OK
-dds75-lb-04              |   134 rec | last: 2025-09-12 19:24:45Z | OK
-dds75-lb-05              |   126 rec | last: 2025-09-12 19:27:29Z | OK
-dds75-lb-06              |   126 rec | last: 2025-09-12 19:21:07Z | OK
-dds75-lb-07              |   124 rec | last: 2025-09-12 19:15:30Z | OK
-dds75-lb-08              |    20 rec | last: 2025-09-12 19:17:13Z | OK
-dds75-lb-09              |    20 rec | last: 2025-09-12 19:21:01Z | OK
-dds75-lb-10              |    20 rec | last: 2025-09-12 19:17:48Z | OK
-dds75-lb-11              |     1 rec | last: 2025-09-12 19:28:51Z | OK
-dds75-lb-12              |    15 rec | last: 2025-09-12 19:14:39Z | OK
-dds75-lb-13              |    16 rec | last: 2025-09-12 19:13:54Z | OK
-dds75-lb-14              |    16 rec | last: 2025-09-12 19:15:20Z | OK
-dds75-lb-15              |    14 rec | last: 2025-09-12 19:14:46Z | OK
-dds75-lb-16              |    16 rec | last: 2025-09-12 19:15:44Z | OK
-dds75-lb-17              |    16 rec | last: 2025-09-12 19:15:19Z | OK
-dds75-lb-18              |    16 rec | last: 2025-09-12 19:22:21Z | OK
-dds75-lb-19              |    14 rec | last: 2025-09-12 19:02:07Z | OK
+burgwald-ps-lb-01
+burgwald-sensecap-01
+dds75-lb-001
+dds75-lb-02
+dds75-lb-03
+dds75-lb-04
+dds75-lb-05
+dds75-lb-06
+dds75-lb-07
+dds75-lb-08
+dds75-lb-09
+dds75-lb-10
+dds75-lb-11
+dds75-lb-12
+dds75-lb-13
+dds75-lb-14
+dds75-lb-15
+dds75-lb-16
+dds75-lb-17
+dds75-lb-18
+dds75-lb-19
