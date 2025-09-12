@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import os, re, json, pathlib, requests, pandas as pd
+import os, json, pathlib, requests, pandas as pd
 import plotly.express as px, plotly.io as pio
 from datetime import datetime, timedelta, timezone
 from urllib.parse import quote
@@ -15,8 +15,9 @@ AFTER_DAYS = int(os.environ.get("TTN_AFTER_DAYS", "2"))
 AFTER = (datetime.now(timezone.utc) - timedelta(days=AFTER_DAYS)).strftime("%Y-%m-%dT%H:%M:%SZ")
 HDRS  = {"Authorization": f"Bearer {KEY}"}     # wir parsen NDJSON & SSE robust
 
-DOCS  = pathlib.Path("docs"); DOCS.mkdir(exist_ok=True, parents=True)
-DATA  = pathlib.Path("data"); DATA.mkdir(exist_ok=True, parents=True)
+# Ordner
+DATA   = pathlib.Path("data");   DATA.mkdir(exist_ok=True, parents=True)     # Parquet/NDJSON
+ASSETS = pathlib.Path("assets"); ASSETS.mkdir(exist_ok=True, parents=True)   # HTML-Ausgaben
 
 # ===== Parser-Utils =====
 def _robust_json_lines(raw_text: str):
@@ -200,16 +201,17 @@ def normalize_all(df: pd.DataFrame) -> pd.DataFrame:
 # ===== Typ-Erkennung & Rendering =====
 def detect_sensor_type(df: pd.DataFrame, device_id: str) -> str:
     """Bestimme Sensortyp für Gruppierung."""
-    # Hinweise aus Payload
-    for col, val in [("node_type", None), ("Node_type", None), ("sensor_model", None), ("SENSOR_MODEL", None)]:
+    for col in ("node_type", "Node_type", "sensor_model", "SENSOR_MODEL"):
         if col in df.columns:
-            v = str(df[col].dropna().iloc[-1]) if not df[col].dropna().empty else ""
-            if v: return v
+            vser = df[col].dropna()
+            if not vser.empty:
+                v = str(vser.iloc[-1])
+                if v:
+                    return v
     name = device_id.lower()
     if "sensecap" in name: return "SenseCAP"
     if "dds75" in name:    return "DDS75-LB"
     if "ps-lb" in name:    return "PS-LB"
-    # Heuristik über Spalten
     cols = set(df.columns)
     if {"illumination","uv_index","wind_speed","pressure_hpa"} & cols: return "SenseCAP"
     if {"distance_cm","TempC_DS18B20","Interrupt_flag"} & cols:        return "DDS75-LB"
@@ -225,7 +227,6 @@ def to_plot_html(df: pd.DataFrame, y: str, title: str) -> str | None:
     return pio.to_html(fig, include_plotlyjs="cdn", full_html=False,
                        default_width="100%", default_height="350px")
 
-# Welche Metriken je Typ bevorzugt gezeigt werden (bis zu 4 pro Gerät)
 PREFERRED_BY_TYPE = {
     "DDS75-LB": ["distance_cm","temperature","battery","rssi"],
     "PS-LB":    ["water_cm","idc_input_ma","vdc_input_v","battery"],
@@ -235,7 +236,6 @@ PREFERRED_BY_TYPE = {
 
 # ===== Main =====
 overview_rows, debug_cards = [], []
-# Typ -> Liste von (device_id, df)
 by_type: dict[str, list[tuple[str, pd.DataFrame]]] = {}
 
 for dev in DEVS:
@@ -247,7 +247,6 @@ for dev in DEVS:
         df = normalize_all(df)
         last_ts = pd.to_datetime(df["received_at"], utc=True, errors="coerce").max()
         overview_rows.append({"device_id": dev, "records": len(df), "last_seen_utc": last_ts})
-
         typ = detect_sensor_type(df, dev)
         by_type.setdefault(typ, []).append((dev, df))
 
@@ -275,7 +274,6 @@ overview_html = ov.sort_values("device_id").to_html(index=False) if not ov.empty
 # ===== HTML bauen: große Typ-Kacheln → zweispaltige Gerätekacheln
 stamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%SZ")
 
-# CSS: Typ-Kachel ganz, darin zweispaltige Device-Kacheln
 style = """
 <style>
 body{font-family:system-ui,Segoe UI,Roboto,Ubuntu,Arial,sans-serif;margin:20px}
@@ -298,7 +296,6 @@ for typ, items in by_type.items():
     device_tiles = []
     preferred = PREFERRED_BY_TYPE.get(typ, PREFERRED_BY_TYPE["Other"])
     for dev, df in sorted(items, key=lambda x: x[0]):
-        # wähle bis zu 4 Plots passend zum Typ
         numeric_cols = [c for c in df.columns if pd.api.types.is_numeric_dtype(df[c]) and c not in {"f_port"}]
         ordered = [c for c in preferred if c in numeric_cols] + [c for c in numeric_cols if c not in preferred]
         plots, used = [], set()
@@ -308,7 +305,7 @@ for typ, items in by_type.items():
             if html_plot:
                 plots.append(f'<div class="plot-wrap">{html_plot}</div>')
                 used.add(col)
-            if len(plots) >= 4:  # max 4 Plots pro Gerät
+            if len(plots) >= 4:
                 break
         if not plots:
             plots.append('<div class="plot-wrap"><em>Keine numerischen Felder gefunden.</em></div>')
@@ -326,12 +323,13 @@ html = f"""<!doctype html>
 {"".join(type_cards_html) if type_cards_html else '<div class="card">Keine Daten zum Anzeigen.</div>'}
 </div>
 """
-( "data.html").write_text(html, encoding="utf-8")
 
-# Debug-Seite
 dbg = f"""<!doctype html><meta charset="utf-8"><title>Debug</title>
 <style>body{{font-family:system-ui;margin:20px}} .card{{border:1px solid #eee;border-radius:12px;padding:12px;margin:12px 0}}</style>
 <h1>Debug – Pull & Persist</h1>
 {"".join(debug_cards)}
 """
-( "debug.html").write_text(dbg, encoding="utf-8")
+
+# --- Dateien nach assets/ schreiben ---
+(ASSETS / "data.html").write_text(html, encoding="utf-8")
+(ASSETS / "debug.html").write_text(dbg, encoding="utf-8")
