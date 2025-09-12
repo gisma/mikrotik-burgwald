@@ -20,3 +20,5 @@ data/*.parquet
 data/*_raw.ndjson
 data/*.parquet
 data/*_raw.ndjson
+data/*.parquet
+data/*_raw.ndjson
