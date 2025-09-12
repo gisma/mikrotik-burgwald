@@ -2,13 +2,13 @@ name: TTN all devices → Pages
 
 on:
   schedule:
-    - cron: "*/15 * * * *"
+    - cron: "*/15 * * * *"     # alle 15 Minuten
   workflow_dispatch:
 
 permissions:
   contents: write
 
-# ⬇️ verhindert parallele Läufe, die sich gegenseitig wegpushen
+# Nur ein Lauf gleichzeitig (verhindert Push-Rennen)
 concurrency:
   group: ttn-pages
   cancel-in-progress: true
@@ -21,7 +21,7 @@ jobs:
       TTN_APP_ID:  ${{ secrets.TTN_APP_ID }}
       TTN_REGION:  ${{ secrets.TTN_REGION }}
       TTN_API_KEY: ${{ secrets.TTN_API_KEY }}
-      # optional: Standard-Theme
+      # optional: Standard-Theme fürs Dashboard ("light"|"dark")
       THEME_DEFAULT: "light"
 
     steps:
@@ -35,19 +35,49 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install deps
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install requests pandas plotly pyarrow python-dotenv
 
       - name: Build dashboard (pull all devices)
         run: |
+          # baut assets/data.html, assets/debug.html, assets/theme-ecowitt.css etc.
           python scripts/pull_all_devices.py
-          mkdir -p docs/assets
-          cp -r assets/* docs/assets/
 
-      # ⬇️ sicher committen: erst rebase, dann push
-      - name: Commit /docs and /data (with rebase)
+          # nach docs/assets kopieren (wird von Pages ausgeliefert)
+          mkdir -p docs/assets
+          cp -r assets/* docs/assets/ || true
+
+      - name: Publish data to docs/data
+        run: |
+          mkdir -p docs/data
+          # nur gewünschte Dateitypen übernehmen
+          cp -a data/*.parquet docs/data/ 2>/dev/null || true
+          cp -a data/*.ndjson  docs/data/ 2>/dev/null || true
+
+      - name: Build data index (JSON)
+        run: |
+          python - << 'PY'
+          import json, pathlib
+          d = pathlib.Path("docs/data")
+          d.mkdir(parents=True, exist_ok=True)
+          items = []
+          for p in sorted(d.glob("*")):
+              if p.suffix.lower() not in (".parquet", ".ndjson"):
+                  continue
+              st = p.stat()
+              items.append({
+                  "name": p.name,
+                  "size": st.st_size,
+                  "mtime": int(st.st_mtime),
+                  "type": "Parquet" if p.suffix.lower()==".parquet" else "NDJSON"
+              })
+          (d / "index.json").write_text(json.dumps(items, ensure_ascii=False), encoding="utf-8")
+          PY
+
+      # Sicheres Committen mit Rebase vor Push
+      - name: Commit docs/ and data/ (with rebase)
         env:
           BRANCH: ${{ github.ref_name }}
         run: |
@@ -55,15 +85,13 @@ jobs:
           git config user.name  "ttn-bot"
           git config user.email "ttn-bot@example.com"
 
-          # falls Runner auf detached HEAD steht, Branch sicherstellen
+          # Branch sicherstellen (Runner ist oft detached)
           git checkout "$BRANCH"
 
-          # remote-Änderungen holen & REBASE statt Merge
+          # Remote-Änderungen einziehen (ohne Merge-Commit)
           git pull --rebase origin "$BRANCH" || true
 
           git add docs/ data/ || true
-          # keine Fehlermeldung, wenn nichts zu committen ist
           git commit -m "update all-devices $(date -u +%FT%TZ)" || echo "no changes"
 
-          # finaler Push
           git push origin "$BRANCH"
