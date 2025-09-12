@@ -36,12 +36,14 @@ website:
         contents:
           - text: "Hub & Sensoren"
             href: lorawan_doku.qmd
-      - section: "Daten Vorschau"
+      - section: "Messnetz-Daten"
         contents:
-          - text: "Live Daten"
-            href: live-data.qmd 
           - text: "Daten Repository"
             href: index_data.qmd
+          - text: "Dashboard"
+            href: live-data.qmd 
+          - text: "Dashboard Doku"
+            href: dashboard_doku_de.qmd
 
 format:
   html:

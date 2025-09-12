@@ -21,6 +21,7 @@ diagram:
   mermaid:
     engine: kroki
     kroki-url: https://kroki.io
+---
 
 # TTN Dashboard – Nutzung, Konfiguration und Deployment
 
