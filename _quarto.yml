@@ -7,7 +7,8 @@ project:
     - "*.qmd"
   resources:
     - "data/**" 
-    - "data.html"
+    - "assets/**"
+    - "theme-ecowitt.css"
 
 
 website:
