@@ -2,7 +2,7 @@ name: TTN all devices → Pages
 
 on:
   schedule:
-    - cron: "*/15 * * * *"   # alle 15 Minuten
+    - cron: "*/15 * * * *"     # alle 15 Minuten
   workflow_dispatch:
 
 permissions:
@@ -12,11 +12,16 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    # ← ENV gehört hierhin (job-weit für alle Steps)
     env:
+      # Secrets
+      TTN_API_KEY: ${{ secrets.TTN_API_KEY }}
+      # Vars (oder ebenfalls als Secrets, wenn du magst)
       TTN_APP_ID:  ${{ secrets.TTN_APP_ID }}
       TTN_REGION:  ${{ secrets.TTN_REGION }}
-      TTN_API_KEY: ${{ secrets.TTN_API_KEY }}
+      TTN_AFTER_DAYS: "2"
+      RUN_DASH: "1"
+      DELAY_BETWEEN_DEVICES: "0.4"
+      # Geräte-Liste: Zeilenumbrüche sind ok, dein Skript splittet auf whitespace
       DEVICES: >-
         burgwald-sensecap-01
         dds75-lb-001
@@ -27,6 +32,17 @@ jobs:
         dds75-lb-05
         dds75-lb-06
         dds75-lb-07
+        dds75-lb-08
+        dds75-lb-09
+        dds75-lb-10
+        dds75-lb-12
+        dds75-lb-13
+        dds75-lb-14
+        dds75-lb-15
+        dds75-lb-16
+        dds75-lb-17
+        dds75-lb-18
+        dds75-lb-19
 
     steps:
       - uses: actions/checkout@v4
@@ -34,20 +50,34 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: "3.12"
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: ${{ runner.os }}-pip-
 
       - name: Install deps
         run: |
           python -m pip install --upgrade pip
-          pip install requests pandas plotly pyarrow
+          # falls du keine requirements.txt pflegst:
+          pip install requests pandas plotly pyarrow fastparquet python-dotenv
 
-      - name: Pull all devices & build dashboard
-        run: python scripts/pull_all_devices.py
+      - name: Build dashboard
+        run: |
+          python scripts/pull_all_devices.py
+          # Pages erwartet /docs; Script schreibt nach assets/
+          mkdir -p docs
+          cp -r assets/* docs/
+          # optional: Übersicht der verwendeten Devices mitpublishen
+          if [ -f assets/devices_used.txt ]; then cp assets/devices_used.txt docs/; fi
 
-      - name: Commit /docs and /data
+      - name: Commit docs/ and data/
         run: |
           git config user.name  "ttn-bot"
           git config user.email "ttn-bot@example.com"
           git add docs/ data/ || true
-          git commit -m "update all-devices $(date -u +%FT%TZ)" || echo "no changes"
+          git diff --cached --quiet || git commit -m "update all-devices $(date -u +%FT%TZ)"
           git push
