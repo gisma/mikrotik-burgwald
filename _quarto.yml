@@ -6,7 +6,8 @@ project:
   render:
     - "*.qmd"
   resources:
-    - "data/**"             # kopiert alle Dateien in data/ mit ins Output
+    - "data/**" 
+    - "data.html"
 
 
 website:
