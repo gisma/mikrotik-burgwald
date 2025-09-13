@@ -1,6 +1,6 @@
 burgwald-ps-lb-01        |   119 rec | last: 2025-09-13 17:24:58Z | OK
 dds75-lb-001             |   107 rec | last: 2025-09-13 17:25:27Z | OK
-dds75-lb-02              |   105 rec | last: 2025-09-13 17:09:36Z | OK
+dds75-lb-02              |   106 rec | last: 2025-09-13 17:29:36Z | OK
 dds75-lb-03              |   106 rec | last: 2025-09-13 17:03:26Z | OK
 dds75-lb-04              |   111 rec | last: 2025-09-13 17:05:49Z | OK
 dds75-lb-05              |   108 rec | last: 2025-09-13 17:25:51Z | OK
@@ -10,8 +10,8 @@ dds75-lb-08              |    85 rec | last: 2025-09-13 17:26:18Z | OK
 dds75-lb-09              |    83 rec | last: 2025-09-13 17:06:21Z | OK
 dds75-lb-10              |    84 rec | last: 2025-09-13 17:27:08Z | OK
 dds75-lb-11              |    64 rec | last: 2025-09-13 17:26:47Z | OK
-dds75-lb-12              |    79 rec | last: 2025-09-13 17:07:59Z | OK
-dds75-lb-13              |    78 rec | last: 2025-09-13 17:09:10Z | OK
+dds75-lb-12              |    80 rec | last: 2025-09-13 17:27:58Z | OK
+dds75-lb-13              |    79 rec | last: 2025-09-13 17:29:10Z | OK
 dds75-lb-14              |    80 rec | last: 2025-09-13 17:23:53Z | OK
 dds75-lb-15              |    80 rec | last: 2025-09-13 17:25:00Z | OK
 dds75-lb-16              |    81 rec | last: 2025-09-13 17:22:34Z | OK
