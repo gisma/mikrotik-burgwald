@@ -29,7 +29,7 @@ diagram:
 
 -   **TDC** = Sendeintervall (Sekunden)
 -   **PROBE=0002** = Wassertiefe-Profil 0–2 m
--   **12 V = 8000 ms** = kurz Sonde speisen (optional)
+-   **12 V = 8000 ms** = kurz Sonde speisen
 
 ------------------------------------------------------------------------
 
@@ -39,7 +39,7 @@ diagram:
 Schritt | Hex       | Zweck
 1      | 0100003C  | TDC = 60 s (hochtakten)
 2      | 080002    | PROBE = 0002 (0–2 m)
-3      | 07031F40  | 12 V = 8000 ms (optional)
+3      | 07031F40  | 12 V = 8000 ms 
 4      | 0100003C  | TDC = 60 s (final)
 ```
 
@@ -49,7 +49,7 @@ Schritt | Hex       | Zweck
 Schritt | Hex       | Zweck
 1      | 0100003C  | TDC = 60 s (hochtakten)
 2      | 080002    | PROBE = 0002 (0–2 m)
-3      | 07031F40  | 12 V = 8000 ms (optional)
+3      | 07031F40  | 12 V = 8000 ms 
 4      | 0100012C  | TDC = 300 s (5 min)
 ```
 
@@ -59,7 +59,7 @@ Schritt | Hex       | Zweck
 Schritt | Hex       | Zweck
 1      | 0100003C  | TDC = 60 s (hochtakten)
 2      | 080002    | PROBE = 0002 (0–2 m)
-3      | 07031F40  | 12 V = 8000 ms (optional)
+3      | 07031F40  | 12 V = 8000 ms 
 4      | 01000384  | TDC = 900 s (15 min)
 ```
 
@@ -69,7 +69,7 @@ Schritt | Hex       | Zweck
 Schritt | Hex       | Zweck
 1      | 0100003C  | TDC = 60 s (hochtakten)
 2      | 080002    | PROBE = 0002 (0–2 m)
-3      | 07031F40  | 12 V = 8000 ms (optional)
+3      | 07031F40  | 12 V = 8000 ms 
 4      | 01000708  | TDC = 1800 s (30 min)
 ```
 
@@ -79,7 +79,7 @@ Schritt | Hex       | Zweck
 Schritt | Hex       | Zweck
 1      | 0100003C  | TDC = 60 s (hochtakten)
 2      | 080002    | PROBE = 0002 (0–2 m)
-3      | 07031F40  | 12 V = 8000 ms (optional)
+3      | 07031F40  | 12 V = 8000 ms 
 4      | 01000E10  | TDC = 3600 s (60 min)
 ```
 
