@@ -33,7 +33,7 @@ Es erkennt automatisch alle Devices, zieht deren Uplinks, schreibt pro Gerät Pa
 
 1. (Optional) Erstelle `scripts/.env`:
 
-   ```env
+```env
    TTN_APP_ID=gisma-hydro-testbed
    TTN_REGION=eu1
    TTN_API_KEY=NNSXS_...
@@ -44,7 +44,7 @@ Es erkennt automatisch alle Devices, zieht deren Uplinks, schreibt pro Gerät Pa
    # STALE_HOURS=3
    # DEV_INCLUDE=dds75-lb-.*
    # DEV_EXCLUDE=
-````
+```
 
 2. Ausführen:
 
@@ -131,51 +131,123 @@ name: TTN all devices → Pages
 
 on:
   schedule:
-    - cron: "*/15 * * * *"
+    - cron: "*/30 * * * *"     # alle 30 Minuten (UTC)
   workflow_dispatch:
 
 permissions:
   contents: write
 
+concurrency:
+  group: ttn-pages
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
+
     env:
-      TTN_API_KEY:  ${{ secrets.TTN_API_KEY }}
-      TTN_APP_ID:   ${{ secrets.TTN_APP_ID }}
-      TTN_REGION:   ${{ secrets.TTN_REGION }}
-      TTN_AFTER_DAYS: "2"
-      RUN_DASH: "1"
-      DELAY_BETWEEN_DEVICES: "0.4"
-      # DEVICES leer lassen = Auto-Discovery
-      # Optional STALE_HOURS / DEV_INCLUDE / DEV_EXCLUDE hier setzen
+      TTN_APP_ID:  ${{ secrets.TTN_APP_ID }}
+      TTN_REGION:  ${{ secrets.TTN_REGION }}
+      TTN_API_KEY: ${{ secrets.TTN_API_KEY }}
+      THEME_DEFAULT: "light"                 # optionales Theme fürs Dashboard
+      DEBUG_RECENT_MINUTES: "90"             # steuert die Debug-Tabelle (zuletzt X Minuten)
 
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Python einrichten
-        uses: actions/setup-python@v5
+      - name: Checkout (full history)
+        uses: actions/checkout@v4
         with:
-          python-version: "3.12"
+          fetch-depth: 0
 
-      - name: Dependencies installieren
-        run: |
-          python -m pip install --upgrade pip
-          pip install requests pandas plotly pyarrow fastparquet python-dotenv
-
-      - name: Dashboard bauen
-        run: |
-          python scripts/pull_all_devices.py
-          mkdir -p docs
-          cp -r assets/* docs/
-
-      - name: Commit docs/ und data/
+      - name: Sync branch (rebase)
+        env:
+          BRANCH: ${{ github.ref_name }}
         run: |
           git config user.name  "ttn-bot"
           git config user.email "ttn-bot@example.com"
+          git checkout "$BRANCH"
+          git pull --rebase origin "$BRANCH" || true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests pandas plotly pyarrow python-dotenv
+
+      # Erzwingt HTML-Build und genügend Storage-Fenster
+      - name: Build dashboard (pull all devices)
+        run: |
+          RUN_DASH=1 TTN_AFTER_DAYS=7 python scripts/pull_all_devices.py
+
+          # Nach Build: frisch erzeugte Assets loggen
+          test -f assets/data.html  && ls -l --time-style=full-iso assets/data.html  || true
+          test -f assets/debug.html && ls -l --time-style=full-iso assets/debug.html || true
+
+          # In Pages-Verzeichnis spiegeln
+          mkdir -p docs/assets
+          cp -r assets/* docs/assets/ || true
+
+      - name: Publish data artifacts to docs/data
+        run: |
+          mkdir -p docs/data
+          cp -a data/*.parquet docs/data/ 2>/dev/null || true
+          cp -a data/*.ndjson  docs/data/ 2>/dev/null || true
+
+      - name: Build data index (JSON)
+        run: |
+          python - << 'PY'
+          import json, pathlib
+          d = pathlib.Path("docs/data")
+          d.mkdir(parents=True, exist_ok=True)
+          items = []
+          for p in sorted(d.glob("*")):
+              if p.suffix.lower() not in (".parquet", ".ndjson"):
+                  continue
+              st = p.stat()
+              items.append({
+                  "name": p.name,
+                  "size": st.st_size,
+                  "mtime": int(st.st_mtime),
+                  "type": "Parquet" if p.suffix.lower()==".parquet" else "NDJSON"
+              })
+          (d / "index.json").write_text(json.dumps(items, ensure_ascii=False), encoding="utf-8")
+          PY
+
+      - name: Ensure GitHub Pages flags
+        run: |
+          mkdir -p docs
+          touch docs/.nojekyll
+
+      - name: Sanity check before commit
+        run: |
+          echo "Listing freshly built assets:"
+          ls -l --time-style=full-iso docs/assets/ || true
+          echo "Listing data artifacts:"
+          ls -l --time-style=full-iso docs/data/ || true
+
+      - name: Commit docs/ and data/ (stash + rebase + push)
+        env:
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          set -e
+          git config user.name  "ttn-bot"
+          git config user.email "ttn-bot@example.com"
+          git checkout "$BRANCH"
+
+          git add -A
+          git stash push --include-untracked --message "ci-wip" || true
+
+          git pull --rebase origin "$BRANCH" || true
+
+          git stash pop || true
+
           git add docs/ data/ || true
-          git diff --cached --quiet || git commit -m "update all-devices $(date -u +%FT%TZ)"
-          git push
+          git commit -m "update all-devices $(date -u +%FT%TZ)" || echo "no changes"
+          git push origin "$BRANCH"
+
 ```
 
 **Repo-Einstellungen:**

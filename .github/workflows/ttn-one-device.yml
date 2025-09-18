@@ -1,190 +1,120 @@
-    overview_rows, debug_cards = [], []
-    by_type: Dict[str, List[Tuple[str, pd.DataFrame]]] = {}
+name: TTN all devices → Pages
 
-    for dev in DEVS:
-        status = "ok"
-        last_ts = None
-        try:
-            df = device_pull(dev)
-            if df.empty:
-                status = "empty"
-            else:
-                df = flatten_payload(df)
-                df = normalize_all(df)
-                last_ts = pd.to_datetime(df["received_at"], utc=True, errors="coerce").max()
-                typ = detect_sensor_type(df, dev)
-                by_type.setdefault(typ, []).append((dev, df))
-        except Exception as e:
-            status = "error"
-            print(f"[{dev}] ERROR: {e!r}")
-            df = pd.DataFrame()
+on:
+  schedule:
+    - cron: "*/30 * * * *"     # alle 30 Minuten (UTC)
+  workflow_dispatch:
 
-        # Overview row for table + health
-        overview_rows.append({
-            "device_id": dev,
-            "records": 0 if df.empty else len(df),
-            "last_seen_utc": last_ts,
-            "status": status
-        })
+permissions:
+  contents: write
 
-        # Debug card (raw sample + head of parquet if available)
-        raw = DATA / f"{dev}_raw.ndjson"
-        sample = ""
-        if raw.exists():
-            sample = "".join(raw.read_text(encoding="utf-8").splitlines(True)[:5])
-            sample = sample.replace("<", "&lt;").replace(">", "&gt;")
-        head_html = (pd.read_parquet(DATA / f"{dev}.parquet").head(3).to_html(index=False)
-                     if (DATA / f"{dev}.parquet").exists() else "<i>no parquet yet</i>")
-        debug_cards.append(f"""
-        <div class="card">
-          <h3>{dev}</h3>
-          <pre style="white-space:pre-wrap;max-height:220px;overflow:auto">{sample}</pre>
-          {head_html}
-        </div>""")
+concurrency:
+  group: ttn-pages
+  cancel-in-progress: true
 
-        # Gentle rate limiting
-        time.sleep(DELAY_BETWEEN_DEVICES)
+jobs:
+  build:
+    runs-on: ubuntu-latest
 
-    # Overview table (for HTML)
-    ov = pd.DataFrame(overview_rows)
-    def _badge(s: str) -> str:
-       cls = "badge"
-       if s == "ok": cls += " ok"
-       elif s.startswith("STALE"): cls += " stale"
-       elif s == "empty": cls += " empty"
-       elif s == "error": cls += " err"
-       return f'<span class="{cls}">{s}</span>'
+    env:
+      TTN_APP_ID:  ${{ secrets.TTN_APP_ID }}
+      TTN_REGION:  ${{ secrets.TTN_REGION }}
+      TTN_API_KEY: ${{ secrets.TTN_API_KEY }}
+      THEME_DEFAULT: "light"                 # optionales Theme fürs Dashboard
+      DEBUG_RECENT_MINUTES: "90"             # steuert die Debug-Tabelle (zuletzt X Minuten)
 
-    if not ov.empty:
-       ov["status"] = ov["status"].apply(_badge)
-       ov["last_seen_utc"] = pd.to_datetime(ov["last_seen_utc"], utc=True, errors="coerce").dt.strftime("%Y-%m-%d %H:%M:%SZ")
+    steps:
+      - name: Checkout (full history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    overview_html = ov[["device_id","records","last_seen_utc","status"]].sort_values("device_id") \
-        .to_html(index=False, escape=False)  # wichtig: escape=False für HTML-Badges
-    # Build HTML dashboard
-    stamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%SZ")
+      - name: Sync branch (rebase)
+        env:
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          git config user.name  "ttn-bot"
+          git config user.email "ttn-bot@example.com"
+          git checkout "$BRANCH"
+          git pull --rebase origin "$BRANCH" || true
 
-    style = """
-    <style>
-    body{font-family:system-ui,Segoe UI,Roboto,Ubuntu,Arial,sans-serif;margin:20px}
-    .card{background:#fff;border:1px solid #eee;border-radius:12px;box-shadow:0 1px 6px rgba(0,0,0,.05);padding:16px;margin:16px 0}
-    .card h2{margin:0 0 .25rem}
-    .card h3{margin:.25rem 0 .5rem}
-    table{border-collapse:collapse;width:100%} th,td{border:1px solid #ddd;padding:6px 8px;text-align:left}
-    .type-grid{display:grid;grid-template-columns:1fr;gap:16px}
-    .device-grid{display:grid;grid-template-columns:repeat(2,minmax(280px,1fr));gap:14px;margin-top:12px}
-    .device-tile{border:1px solid #ddd;border-radius:12px;padding:10px}
-    .device-tile h4{margin:.2rem 0 .6rem;font-size:15px}
-    .plot-wrap{border:1px solid #eee;border-radius:10px;padding:4px;margin-bottom:8px}
-    @media (max-width:800px){ .device-grid{grid-template-columns:1fr} }
-    </style>
-    """
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
 
-    type_cards_html = []
-    for typ, items in by_type.items():
-        device_tiles = []
-        preferred = PREFERRED_BY_TYPE.get(typ, PREFERRED_BY_TYPE["Other"])
-        for dev, df in sorted(items, key=lambda x: x[0]):
-            numeric_cols = [c for c in df.columns if pd.api.types.is_numeric_dtype(df[c]) and c not in {"f_port"}]
-            ordered = [c for c in preferred if c in numeric_cols] + [c for c in numeric_cols if c not in preferred]
-            plots, used = [], set()
-            for col in ordered:
-                if col in used: continue
-                html_plot = to_plot_html(df, col, f"{col}")
-                if html_plot:
-                    plots.append(f'<div class="plot-wrap">{html_plot}</div>')
-                    used.add(col)
-                if len(plots) >= 4:
-                    break
-            if not plots:
-                plots.append('<div class="plot-wrap"><em>No numeric fields found.</em></div>')
-            device_tiles.append(f'<div class="device-tile"><h4>{dev}</h4>{"".join(plots)}</div>')
-        type_cards_html.append(f'<div class="card"><h2>{typ}</h2><div class="device-grid">{"".join(device_tiles)}</div></div>')
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests pandas plotly pyarrow python-dotenv
 
-    html = f"""<!doctype html>
-    <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>TTN – All Devices (grouped by sensor type)</title>
-    {style}
-    <link rel="stylesheet" href="./theme-ecowitt.css?v={stamp}">link rel="stylesheet" href="theme-ecowitt.css">
-    <script>document.documentElement.classList.add('light');</script>
-    <h1>TTN Dashboard – Grouped by Sensor Type</h1>
-    <small>As of: {stamp} • Source: TTN Storage ({APP}@{REG}) • Window: last {AFTER_DAYS} days • AFTER={AFTER}</small>
-   <!-- Theme-Toggle -->
-<div style="display:flex;gap:10px;align-items:center;margin:10px 0 16px">
-  <button id="themeBtn">Theme wechseln</button>
-  <small>Aktuell: <span id="themeName">Dark</span></small>
-</div>
-<script>
-  const body = document.documentElement;
-  const btn  = document.getElementById('themeBtn');
-  const name = document.getElementById('themeName');
-  let dark = true;
-  btn.onclick = () => {{
-    dark = !dark;
-    body.classList.toggle('light', !dark);
-    name.textContent = dark ? 'Dark' : 'Light';
-  }};
-</script>
+      # Erzwingt HTML-Build und genügend Storage-Fenster
+      - name: Build dashboard (pull all devices)
+        run: |
+          RUN_DASH=1 TTN_AFTER_DAYS=7 python scripts/pull_all_devices.py
 
-<div class="card"><h2>Übersicht</h2>{overview_html}<p style="margin-top:8px">Parquet: <code>data/&lt;device&gt;.parquet</code></p></div>
-<div class="type-grid">
-{"".join(type_cards_html) if type_cards_html else '<div class="card">Keine Daten zum Anzeigen.</div>'}
-</div>
-""" 
+          # Nach Build: frisch erzeugte Assets loggen
+          test -f assets/data.html  && ls -l --time-style=full-iso assets/data.html  || true
+          test -f assets/debug.html && ls -l --time-style=full-iso assets/debug.html || true
 
+          # In Pages-Verzeichnis spiegeln
+          mkdir -p docs/assets
+          cp -r assets/* docs/assets/ || true
 
-    dbg = f"""<!doctype html><meta charset="utf-8"><title>Debug</title>
-    <style>body{{font-family:system-ui;margin:20px}} .card{{border:1px solid #eee;border-radius:12px;padding:12px;margin:12px 0}}</style>
-    <h1>Status – Pull & Persist</h1>
-    {"".join(debug_cards)}
-    """
+      - name: Publish data artifacts to docs/data
+        run: |
+          mkdir -p docs/data
+          cp -a data/*.parquet docs/data/ 2>/dev/null || true
+          cp -a data/*.ndjson  docs/data/ 2>/dev/null || true
 
-    # Write HTML files
-    (ASSETS / "data.html").write_text(html, encoding="utf-8")
-    (ASSETS / "debug.html").write_text(dbg, encoding="utf-8")
+      - name: Build data index (JSON)
+        run: |
+          python - << 'PY'
+          import json, pathlib
+          d = pathlib.Path("docs/data")
+          d.mkdir(parents=True, exist_ok=True)
+          items = []
+          for p in sorted(d.glob("*")):
+              if p.suffix.lower() not in (".parquet", ".ndjson"):
+                  continue
+              st = p.stat()
+              items.append({
+                  "name": p.name,
+                  "size": st.st_size,
+                  "mtime": int(st.st_mtime),
+                  "type": "Parquet" if p.suffix.lower()==".parquet" else "NDJSON"
+              })
+          (d / "index.json").write_text(json.dumps(items, ensure_ascii=False), encoding="utf-8")
+          PY
 
-    # ===== Health report (text + CSV) =====
-    import re
-    inc_re = re.compile(DEV_INCLUDE)
-    exc_re = re.compile(DEV_EXCLUDE) if DEV_EXCLUDE else None
+      - name: Ensure GitHub Pages flags
+        run: |
+          mkdir -p docs
+          touch docs/.nojekyll
 
-    # Convert last_seen_utc back to machine-friendly for age calculation
-    ov_for_health = ov.copy()
-    if not ov_for_health.empty:
-        ov_for_health["last_seen_utc"] = pd.to_datetime(ov_for_health["last_seen_utc"], utc=True, errors="coerce")
+      - name: Sanity check before commit
+        run: |
+          echo "Listing freshly built assets:"
+          ls -l --time-style=full-iso docs/assets/ || true
+          echo "Listing data artifacts:"
+          ls -l --time-style=full-iso docs/data/ || true
 
-    health_rows = []
-    for _, row in ov_for_health.iterrows():
-        dev = row["device_id"]
-        if not inc_re.search(dev):
-            continue
-        if exc_re and exc_re.search(dev):
-            continue
+      - name: Commit docs/ and data/ (stash + rebase + push)
+        env:
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          set -e
+          git config user.name  "ttn-bot"
+          git config user.email "ttn-bot@example.com"
+          git checkout "$BRANCH"
 
-        last_seen = row.get("last_seen_utc")
-        records   = int(row.get("records", 0))
+          git add -A
+          git stash push --include-untracked --message "ci-wip" || true
 
-        status = "OK"
-        last_seen_str = None
-        if pd.isna(last_seen):
-            status = "NO DATA"
-            last_seen_str = "–"
-        else:
-            last_seen_str = last_seen.strftime("%Y-%m-%d %H:%M:%SZ")
-            age_h = (datetime.now(timezone.utc) - last_seen).total_seconds() / 3600
-            if age_h > STALE_HOURS:
-                status = f"STALE ({age_h:.1f}h)"
+          git pull --rebase origin "$BRANCH" || true
 
-        health_rows.append({
-            "device_id": dev,
-            "records": records,
-            "last_seen": last_seen_str,
-            "status": status
-        })
+          git stash pop || true
 
-    # Human-readable text summary
-    health_txt = "\n".join(
-        f"{r['device_id']:24s} | {r['records']:5d} rec | last: {r['last_seen'] or '–':20s} | {r['status']}"
-        for r in health_rows
-    )
-    (ASSETS / "devices_used.txt").write_text(health_txt, encoding="utf-8")
+          git add docs/ data/ || true
+          git commit -m "update all-devices $(date -u +%FT%TZ)" || echo "no changes"
+          git push origin "$BRANCH"
