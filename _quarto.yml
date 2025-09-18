@@ -31,7 +31,7 @@ website:
       - section: "Über..."
         contents:
           - index.qmd
-      - section: "Messnetz-Daten"
+      - section: "Daten-Interface"
         contents:
           # - text: "Daten Repository"
           #   href: index_data.qmd
