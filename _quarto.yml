@@ -39,8 +39,8 @@ website:
             href: lorawan_dragino.qmd
       - section: "Messnetz-Daten"
         contents:
-          - text: "Daten Repository"
-            href: index_data.qmd
+          # - text: "Daten Repository"
+          #   href: index_data.qmd
           - text: "Status Informationen"
             href: debug-data.qmd
           - text: "Dashboard"
