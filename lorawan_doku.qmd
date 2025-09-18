@@ -1,5 +1,5 @@
 ---
-title: "LoraWan Doku"
+title: "Mikrotek Setup in der TTN"
 subtitle: "version 0.1"
 author: "Chris Reudenbach"
 format:
@@ -56,7 +56,7 @@ The Things Network (TTN) ist ein öffentliches, community-betriebenes LoRaWAN-Ne
     -   **AWS IoT Core for LoRaWAN**: pay-as-you-go, tiefe AWS-Integration.
     -   **ChirpStack (self-hosted)**: Lizenz 0 €, aber voller Betriebs-/Sicherheits-/HA-Aufwand.
 
-# Kurzanleitung
+# Setup Mikrotek Fast Track
 
 ## Script hochladen
 
@@ -80,14 +80,14 @@ The Things Network (TTN) ist ein öffentliches, community-betriebenes LoRaWAN-Ne
   /ping 8.8.8.8 count=4
 ```
 
--   LoRa (falls enthalten):
+-   LoRa :
 
 ``` bash
   /lora print detail
   /tool sniffer quick port=1700
 ```
 
-## Grundlagen MikroTik-Konnektivität, MAC-Zugriff und Hotspot-Einstellungen
+### Im einzelnen: MikroTik-Konnektivität, MAC-Zugriff und Hotspot-Einstellungen
 
 ### Hardware-Aufbau
 
@@ -149,7 +149,7 @@ The Things Network (TTN) ist ein öffentliches, community-betriebenes LoRaWAN-Ne
 
 👉 Damit ist die Konfiguration in einem Rutsch aufgespielt.
 
-# Langversion
+# Die Langversion falls es klemmt
 
 ## Topologie und Begriffe
 
