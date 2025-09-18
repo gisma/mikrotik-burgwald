@@ -1,332 +1,63 @@
 [
   {
-    "objectID": "lorawan_doku.html",
-    "href": "lorawan_doku.html",
-    "title": "LoraWan Doku",
+    "objectID": "lorawan_dragino.html",
+    "href": "lorawan_dragino.html",
+    "title": "LoraWan Dragino Doku",
     "section": "",
-    "text": "Hier folgt eine basale Anleitung für den Betrieb eines MikroTik-LoRaWAN-Gateways (RBwAPR-2nD) über WLAN mit TTN (EU1) sowie der Einbindung der Sensoren Dragino PS-LB, Dragino DDS-75LB und Seeed SenseCAP S2120. Die konkreten Decoder sind nicht enthalte aber auf dem Gateway bereits aktiv. Zusätzlich werden praxistaugliche Wege zum Dauerbetrieb (Storage, MQTT→CSV/DB, InfluxDB/Grafana) und No-Code-Speicherung (Webhooks) skizziert. Beispiele und Snippets sind so gehalten, dass sie direkt übernommen werden können.",
+    "text": "(Mehrere) Dragino PS-LB/LS Sensoren per TTN mit binären Downlinks (Hex) auf Port 2 konfigurieren\n\n\n\nPfad: Applications → deine App → End devices → dein Gerät → Messaging → Downlink\nPro Gerät:\n\nOben: Payload formatter → Downlink = None (falls nicht schon so).\nBereich Schedule downlink:\n\nFPort: 2\nPayload type: Bytes\nBytes (Hex ohne Leerzeichen), nacheinander schedulen:\n\n0100003C (TDC = 60 s)\n080002 (PROBE = 0002, 0–2 m)\n07031F40 (optional, 12 V 8 s, nur wenn PS-LB speist)\n01000384 (TDC = 900 s = 15 min)\n\nConfirmed: an (schadet nicht)\nSchedule klicken\n\nUplink auslösen (Taste kurz) oder auf Intervall warten – Class A liefert Downlinks jeweils nach einem Uplink (FIFO).\n\n\n\n\n\n\n\nSpalten: device_id, interval_min, ext_power\n\ninterval_min: End-Intervall in Minuten (z. B. 5, 15, 20 …)\next_power: 1 = Sonde extern versorgt → ohne 12 V-Downlink; 0 = PS-LB soll kurz speisen → mit 12 V-Downlink\n\nBeispiel:\nps-lb-01,15,1\nps-lb-21,5,0\nps-lb-42,20,1\n\n\n\n\nNimmt nur Hex als Kommandos, wandelt intern in Base64.\nLegt pro Gerät einen down/replace mit bis zu 4 Downlinks (FIFO) ab.\nEnd-Intervall kommt aus der CSV (1–255 min unterstützt, typische Werte 5/15/20).\n\n#!/usr/bin/env bash\nset -euo pipefail\n\n# ===== KONFIG =====\nAPP=\"gisma-hydro-testbed\"                 # Application-ID\nKEY=\"NNSXS.xxxxx...\"                      # Application-API-Key (Write downlink)\nAPI=\"https://eu1.cloud.thethings.network/api/v3\"\nCSV=\"devices.csv\"                         # device_id,interval_min,ext_power\nFPORT=2\n\nneed(){ command -v \"$1\" &gt;/dev/null 2&gt;&1 || { echo \"Fehlt: $1\"; exit 1; }; }\nneed xxd; need base64; need curl; need jq; need awk\n\n# -- Hex-Helper --\nto_b64(){ printf \"%s\" \"$1\" | xxd -r -p | base64; }\n\n# TDC-Hex aus Minuten berechnen (3-Byte Big-Endian Sekunden)\n# Limitation: 1..65535 Sekunden; für unsere Intervalle (1..1440 min) ok.\ntdc_hex_from_minutes(){\n  local min=\"$1\"\n  local sec=$(( min*60 ))\n  # in 3 Bytes big-endian verpacken\n  printf \"%06X\" \"$sec\"\n}\n\n# Fixe Hex-Commands\nHEX_PROBE=\"080002\"           # Wassertiefe-Profil 0–2 m\nHEX_TDC_60S=\"0100003C\"       # TDC=60s (Schnellphase)\nHEX_12V_8S=\"07031F40\"        # 12V=8000ms (nur wenn PS-LB speist)\n\n[[ -f \"$CSV\" ]] || { echo \"CSV '$CSV' fehlt.\"; exit 1; }\n\n# Sanfte Drossel zwischen Geräten\nDELAY_BETWEEN_DEV=0.2\n\nwhile IFS=, read -r DEV MINUTES EXT; do\n  # Leerzeilen/Kommentare überspringen\n  [[ -z \"${DEV// }\" || \"$DEV\" =~ ^# ]] && continue\n\n  # Whitespace trim\n  DEV=\"$(echo \"$DEV\" | awk '{$1=$1};1')\"\n  MINUTES=\"$(echo \"$MINUTES\" | awk '{$1=$1};1')\"\n  EXT=\"$(echo \"$EXT\" | awk '{$1=$1};1')\"\n\n  # End-TDC aus Minuten → Sekunden → 3-Byte Hex → komplettes Setz-Command (01 + 3 Byte)\n  TDC3=$(tdc_hex_from_minutes \"$MINUTES\")      # z.B. 15min -&gt; 000384\n  HEX_TDC_FINAL=\"01${TDC3}\"\n\n  # In Base64 umwandeln\n  P_TDC60=$(to_b64 \"$HEX_TDC_60S\")\n  P_PROBE=$(to_b64 \"$HEX_PROBE\")\n  P_12V8=$(to_b64 \"$HEX_12V_8S\")\n  P_TDCF=$(to_b64 \"$HEX_TDC_FINAL\")\n\n  echo \"== $DEV (Endintervall ${MINUTES} min, ext_power=${EXT}) ==\"\n\n  # Downlink-Liste zusammenbauen (FIFO: TDC60 -&gt; PROBE -&gt; optional 12V -&gt; TDCfinal)\n  if [[ \"$EXT\" == \"0\" ]]; then\n    JSON=$(jq -n --arg p1 \"$P_TDC60\" --arg p2 \"$P_PROBE\" --arg p3 \"$P_12V8\" --arg p4 \"$P_TDCF\" --argjson fp $FPORT \\\n      '{downlinks:[\n        {f_port:$fp, frm_payload:$p1, confirmed:true, priority:\"NORMAL\"},\n        {f_port:$fp, frm_payload:$p2, confirmed:true, priority:\"NORMAL\"},\n        {f_port:$fp, frm_payload:$p3, confirmed:true, priority:\"NORMAL\"},\n        {f_port:$fp, frm_payload:$p4, confirmed:true, priority:\"NORMAL\"}\n      ]}')\n  else\n    JSON=$(jq -n --arg p1 \"$P_TDC60\" --arg p2 \"$P_PROBE\" --arg p4 \"$P_TDCF\" --argjson fp $FPORT \\\n      '{downlinks:[\n        {f_port:$fp, frm_payload:$p1, confirmed:true, priority:\"NORMAL\"},\n        {f_port:$fp, frm_payload:$p2, confirmed:true, priority:\"NORMAL\"},\n        {f_port:$fp, frm_payload:$p4, confirmed:true, priority:\"NORMAL\"}\n      ]}')\n  fi\n\n  # Ein API-Call pro Gerät: down/replace\n  HTTP=$(curl -sS -o /tmp/resp.json -w \"%{http_code}\" \\\n    -X POST \"$API/as/applications/$APP/devices/$DEV/down/replace\" \\\n    -H \"Authorization: Bearer $KEY\" -H \"Content-Type: application/json\" \\\n    -d \"$JSON\")\n\n  echo \"HTTP: $HTTP\"\n  cat /tmp/resp.json; echo\n  [[ \"$HTTP\" =~ ^2 ]] || { echo \"Fehler bei $DEV – siehe oben.\"; exit 1; }\n\n  sleep \"$DELAY_BETWEEN_DEV\"\ndone &lt; \"$CSV\"\n\necho \"Hinweis: Class A → Downlinks kommen NACH dem nächsten Uplink (FIFO, meist 1 pro Uplink).\nLass TDC=60s aktiv, bis die Queue bei jedem Gerät abgearbeitet ist.\"\n\nMinimal-Sequenz ist im Webinterface unter Messaging → Downlink (siehe oben).\nDas Script baut für jedes Gerät die gleiche Start-Sequenz (60 s → PROBE → optional 12 V) und setzt dann das End-Intervall aus der CSV.\nUnterstützt beliebige Minutenwerte (z. B. 5/15/20).\nWenn deine Sonden dauerhaft extern versorgt sind, setze in der CSV ext_power=1 → es wird kein 12 V-Downlink hinzugefügt.\n\n\n\n\n\nDownlinks „kommen nicht“ → Es braucht einen Uplink (Taste kurz), Queue FIFO.\nRate-Limit → nur ein down/replace pro Gerät; im Batch kleine Pause.\nTiefe bleibt 0 & Uplink zeigt IDC=0000 → keine 4–20 mA-Schleife:\n\nVerdrahtung in Serie über IDC+ / IDC− prüfen\nTest: 07031F40 + Uplink → IDC &gt; 4 mA oder VDC &gt; 0\nA/B-Tausch Sonde ↔︎ Gerät, um Sensor/Board zu isolieren\n\nRemote-Reset → 04FF, danach Sequenz erneut senden.\nStatusframe (zur Kontrolle) → 2601 (nächster Uplink auf FPort 5 zeigt Modell/FW/Band/BAT)",
     "crumbs": [
       "Impressum",
       "MikroTik Setup",
-      "Hub & Sensoren"
+      "Dragino Sensoren"
     ]
   },
   {
-    "objectID": "lorawan_doku.html#script-hochladen",
-    "href": "lorawan_doku.html#script-hochladen",
-    "title": "LoraWan Doku",
-    "section": "1.1 Script hochladen",
-    "text": "1.1 Script hochladen\n\nIn WinBox → Files: Setup-Datei burgwald_all.rsc einfach per Drag&Drop auf das Gerät laden. WinBox Download (MikroTik)",
-    "crumbs": [
-      "Impressum",
-      "MikroTik Setup",
-      "Hub & Sensoren"
-    ]
-  },
-  {
-    "objectID": "lorawan_doku.html#script-importieren",
-    "href": "lorawan_doku.html#script-importieren",
-    "title": "LoraWan Doku",
-    "section": "1.2 Script importieren",
-    "text": "1.2 Script importieren\n\nIn WinBox → New Terminal ausführen:\n\n  /import file-name=gisma_base2.rsc",
-    "crumbs": [
-      "Impressum",
-      "MikroTik Setup",
-      "Hub & Sensoren"
-    ]
-  },
-  {
-    "objectID": "lorawan_doku.html#funktion-testen",
-    "href": "lorawan_doku.html#funktion-testen",
-    "title": "LoraWan Doku",
-    "section": "1.3 Funktion testen",
-    "text": "1.3 Funktion testen\n\nWLAN/DHCP:\n\n  /interface wireless monitor wlan1 once\n  /ip dhcp-client print detail\n  /ping 8.8.8.8 count=4\n\nLoRa (falls enthalten):\n\n  /lora print detail\n  /tool sniffer quick port=1700",
-    "crumbs": [
-      "Impressum",
-      "MikroTik Setup",
-      "Hub & Sensoren"
-    ]
-  },
-  {
-    "objectID": "lorawan_doku.html#grundlagen-mikrotik-konnektivität-mac-zugriff-und-hotspot-einstellungen",
-    "href": "lorawan_doku.html#grundlagen-mikrotik-konnektivität-mac-zugriff-und-hotspot-einstellungen",
-    "title": "LoraWan Doku",
-    "section": "1.4 Grundlagen MikroTik-Konnektivität, MAC-Zugriff und Hotspot-Einstellungen",
-    "text": "1.4 Grundlagen MikroTik-Konnektivität, MAC-Zugriff und Hotspot-Einstellungen\n\n1.4.1 Hardware-Aufbau\n\nMikroTik RBwAPR-2nD mit Netzteil/PoE versorgen.\nEthernet vom PC/Laptop an ether1 des MikroTik stecken.\nOptional: LoRa-Antenne montieren und fest verschrauben.\n\n\n\n1.4.2 Erstverbindung per WinBox (Layer-2 / MAC)\n\nWinBox starten → Neighbors: RBwAPR sollte automatisch erscheinen.\nVerbinden über MAC Address (funktioniert ohne IP).\nLogin: ab Werk admin (ggf. ohne Passwort) → bei erster Anmeldung Passwort setzen.\nBei älteren QuickSet-Resten: System → Reset Configuration (ohne Default-Skripte), danach erneut per MAC verbinden.\n\n\n\n1.4.3 Hotspot-/WLAN-Voraussetzungen\n\nBand: 2,4 GHz (802.11b/g/n). Station-Pseudobridge ist bei 5 GHz oft nicht zuverlässig.\nSicherheitsmodus: WPA2-PSK (empfohlen), Kennwort ohne Sonderfälle.\nSSID: sichtbar, statischer Name (keine Auto-Umschaltung).\nKanalbreite: 20 MHz genügt; Auto-Kanal ist ok.\nCaptive Portal: deaktivieren. Portale blockieren Headless-Geräte.\nMAC-Filter: falls aktiv, MAC von wlan1 freigeben (siehe Interfaces → wlan1).\nDHCP am Hotspot: aktiv, ausreichend Adressbereich (z. B. 192.168.1.100–200).\nInternet-Durchleitung (NAT) im Hotspot aktiv lassen.\n\n\n\n1.4.4 WLAN-Client (GUI-Weg, WinBox)\n\nWireless → Security Profiles\n\nWPA2-PSK mit Kennwort anlegen/ändern.\n\nWireless → wlan1\n\nMode: station-pseudobridge\n\nBand: 2ghz-b/g/n\n\nSSID: Hotspot-SSID eintragen\n\nApply, dann Enable.\n\nBridge\n\nBridge → + bridgeLocal anlegen.\n\nBridge → Ports: wlan1 und ether1 zur bridgeLocal hinzufügen.\n\nDHCP-Client\n\nIP → DHCP Client → +\n\nInterface: bridgeLocal, Enabled.\n\n\nDNS (optional)\n\nIP → DNS: Public Resolver (z. B. 8.8.8.8, 1.1.1.1), „Allow Remote Requests“ aktivieren.\n\n\n\n\n1.4.5 Kontrolle & Umstieg auf IP-Zugriff\n\nIP-Bezug prüfen: IP → DHCP Client zeigt „bound“ mit zugewiesener IP.\nRouting/Internet testen: New Terminal → /ping 8.8.8.8 count=4\nDanach in WinBox statt über MAC über die IP verbinden (stabiler, schneller).\n\n\n\n1.4.6 Tests (Terminal, minimal)\n/interface wireless monitor wlan1 once\n/ip dhcp-client print detail\n/ping 8.8.8.8 count=4\n/ip route print\n/ip dns print\n👉 Damit ist die Konfiguration in einem Rutsch aufgespielt.",
-    "crumbs": [
-      "Impressum",
-      "MikroTik Setup",
-      "Hub & Sensoren"
-    ]
-  },
-  {
-    "objectID": "lorawan_doku.html#topologie-und-begriffe",
-    "href": "lorawan_doku.html#topologie-und-begriffe",
-    "title": "LoraWan Doku",
-    "section": "2.1 Topologie und Begriffe",
-    "text": "2.1 Topologie und Begriffe\nKurzüberblick über alle Bausteine (Sensoren, Gateway, Netzwerk, TTN, Decoder) und wie sie zusammenspielen. Begriffe werden so eingeführt, dass die folgenden Schritte leichter nachvollziehbar sind.\n\n2.1.1 Gesamtbild\nEine End-to-End-Skizze vom Sensor (LoRaWAN) bis zur Datennutzung (Speicher/Visualisierung). Hilft, die Rolle jeder Komponente zu verstehen.\n\n\n\n\n\n%%{init: {'themeVariables': { 'fontSize': '12px' }}}%%\nflowchart TB\n  A[\"Sensor&lt;br/&gt;(LoRaWAN, EU868)\"]\n  B[\"LoRa-Gateway&lt;br/&gt;MikroTik RBwAPR-2nD\"]\n  C[\"WLAN-Hotspot&lt;br/&gt;(Internet)\"]\n  D[\"TTN (EU1)\"]\n  E[\"Decoder&lt;br/&gt;(in TTN Application)\"]\n  F[\"Ablage / Visualisierung&lt;br/&gt;(Storage / MQTT / DB / Grafana / No-Code)\"]\n  A --&gt; B --&gt; C --&gt; D --&gt; E --&gt; F\n\n\n\n\n\n\n\n\n\n2.1.2 MikroTik als WLAN-Client\nDer MikroTik wird als WLAN-Station betrieben, nicht als Access Point. So hängt er sich in ein vorhandenes WLAN ein und leitet LoRaWAN-Pakete ins Internet.\n\nDer MikroTik arbeitet nicht als Access Point, sondern als Station im WLAN (vergleichbar mit einem Laptop).\nDer Modus station-pseudobridge sorgt dafür, dass WLAN und Ethernet im selben Layer-2-Segment erscheinen (Broadcast-Domain geteilt).\n\n\n\n2.1.3 Bridge (bridgeLocal)\nEine Layer‑2‑Bridge, die wlan1 und ether1 zu einem logischen Switch verbindet. Der DHCP-Client sitzt auf der Bridge, damit die IP für beide Ports gilt.\n\nDie Bridge bündelt Interfaces zu einem logischen Switch (hier: wlan1 + ether1).\nDHCP-Client hängt auf der Bridge und bezieht die IP vom Hotspot.\n\n\n\n2.1.4 „Alte Reste“\nWerkseinstellungen/QuickSet legen oft Regeln an, die im Client-Betrieb stören. Dieser Abschnitt erklärt, was entfernt bzw. nicht benötigt wird.\n\nWerkseinstellungen/QuickSet hinterlassen oft DHCP-Server/NAT/Firewall-Regeln, die im Client-Betrieb stören können.\nNach Reset wird nur das Nötige konfiguriert (WLAN-Client, Bridge, DHCP-Client, DNS).\n\n\n\n2.1.5 Sensoren/Decoder (ohne Details)\nÜberblick, welche Geräte eingebunden werden und wo deren Decoder liegen (TTN Application oder per Device-Override).\n\nDragino PS-LB und Dragino DDS-75LB werden identisch (OTAA) aufgenommen; Decoder unterscheiden sich, sind aber in der TTN-Application bereits aktiv.\nSenseCAP S2120 nutzt proprietäre Payloads (typisch FPort 199); der Decoder ist in der Application hinterlegt.\nVerwaltung: Application → Payload formatters (Uplink); auf Wunsch device-spezifisch via Device-Override.",
-    "crumbs": [
-      "Impressum",
-      "MikroTik Setup",
-      "Hub & Sensoren"
-    ]
-  },
-  {
-    "objectID": "lorawan_doku.html#mikrotik-soll-konfiguration-wlan-bridge-lora",
-    "href": "lorawan_doku.html#mikrotik-soll-konfiguration-wlan-bridge-lora",
-    "title": "LoraWan Doku",
-    "section": "2.2 MikroTik – Soll-Konfiguration (WLAN & Bridge & LoRa)",
-    "text": "2.2 MikroTik – Soll-Konfiguration (WLAN & Bridge & LoRa)\nSchritt‑für‑Schritt‑Konfiguration des MikroTik: WLAN-Client, Bridge, IP/DNS und LoRa‑Gateway‑Weiterleitung zu TTN EU1.\n\nDie folgenden Snippets setzen die bekannte funktionierende Basis um (WLAN-Client auf SSID „GISMA-NET“, WPA2-PSK, Pseudobridge, TTN EU1/UDP, EU-868).\n\n\n2.2.1 WLAN-Security\nSicherheitsprofil für WPA/WPA2‑PSK. Hinterlegt Schlüssel und Cipher.\n/interface wireless security-profiles set [find default=yes] \\\n    mode=dynamic-keys \\\n    authentication-types=wpa-psk,wpa2-psk \\\n    unicast-ciphers=tkip,aes-ccm \\\n    group-ciphers=tkip,aes-ccm \\\n    supplicant-identity=MikroTik \\\n    wpa-pre-shared-key=36171669 \\\n    wpa2-pre-shared-key=36171669\n\n\n2.2.2 WLAN als Client (Pseudobridge)\nVersetzt wlan1 in den Station‑Modus mit Pseudobridge, um im gleichen Layer‑2 wie der Hotspot zu sein.\n/interface wireless set [find default-name=wlan1] \\\n    band=2ghz-b/g/n \\\n    wireless-protocol=802.11 \\\n    mode=station-pseudobridge \\\n    ssid=GISMA-NET \\\n    frequency=auto \\\n    disabled=no\n\n\n2.2.3 Bridge + Ports\nErstellt bridgeLocal und fügt wlan1 und ether1 als Ports hinzu.\n/interface bridge add name=bridgeLocal\n/interface bridge port add bridge=bridgeLocal interface=wlan1\n/interface bridge port add bridge=bridgeLocal interface=ether1\n\n\n2.2.4 IP-Bezug & DNS\nAktiviert einen DHCP‑Client auf der Bridge und setzt Resolver für DNS.\n/ip dhcp-client add interface=bridgeLocal disabled=no\n/ip dns set allow-remote-requests=yes servers=8.8.8.8,1.1.1.1\n\n\n2.2.5 LoRa – TTN EU1 (Semtech UDP) & EU-868\nAktiviert das eingebaute LoRa‑Gateway, stellt EU‑868 ein und konfiguriert den Semtech‑UDP‑Forwarder zu TTN EU1.\n/lora disable 0\n/lora set 0 servers=\"TTN V3 (eu1)\" channel-plan=eu-868 \\\n    network=public forward=crc-valid,crc-error\n/lora enable 0\nPrüfung:\nSchnelle Checks: LoRa‑Status und ob UDP‑Pakete auf Port 1700 rausgehen.\n/lora print detail\n/tool sniffer quick port=1700",
-    "crumbs": [
-      "Impressum",
-      "MikroTik Setup",
-      "Hub & Sensoren"
-    ]
-  },
-  {
-    "objectID": "lorawan_doku.html#winboxterminal-diagnoseleitfaden",
-    "href": "lorawan_doku.html#winboxterminal-diagnoseleitfaden",
-    "title": "LoraWan Doku",
-    "section": "2.3 WinBox/Terminal – Diagnoseleitfaden",
-    "text": "2.3 WinBox/Terminal – Diagnoseleitfaden\nSammlung typischer Diagnose‑Befehle, um WLAN, IP‑Vergabe, Routing und LoRa‑Weiterleitung zu prüfen.\n\n2.3.1 WLAN & IP\nBefehle zum Scannen/Überwachen des WLANs und zum Prüfen der IP‑Konfiguration/Konnektivität.\n\nWLAN-Scan:\n\n  /interface wireless scan wlan1\n\nMonitor des Clients (Status, Kanal, Rauschpegel):\n\n  /interface wireless monitor wlan1\n\nDHCP-Client-Status:\n\n  /ip dhcp-client print detail\n\nRouting:\n\n  /ip route print\n\nKonnektivitätstest:\n\n  /ping 8.8.8.8\n\n\n2.3.2 Bridge/Ports\nDruckt Bridge und Port‑Zugehörigkeiten, um Fehlverdrahtungen auszuschließen.\n/interface bridge print\n/interface bridge port print\n\n\n2.3.3 LoRa-Gateway\nPrüft LoRa‑Gateway‑Parameter (EUI, Server, Plan) und ob Forwarder‑Traffic sichtbar ist.\n\nStatus/EUI/Server/Plan:\n\n  /lora print detail\n\nUDP-Forwarding sichtbar?\n\n  /tool sniffer quick port=1700\n\n\n2.3.4 Export/Sicherung\nExportiert die Konfiguration textuell (Backup der Einstellungen) bzw. erstellt ein binäres Voll‑Backup.\n\nTerse-Export (menschenlesbar):\n\n  /export terse\n\nBinary-Backup (voll):\n\n  /system backup save name=running.backup",
-    "crumbs": [
-      "Impressum",
-      "MikroTik Setup",
-      "Hub & Sensoren"
-    ]
-  },
-  {
-    "objectID": "lorawan_doku.html#ttn-konsole-gateway-application-geräte",
-    "href": "lorawan_doku.html#ttn-konsole-gateway-application-geräte",
-    "title": "LoraWan Doku",
-    "section": "2.4 TTN-Konsole – Gateway, Application, Geräte",
-    "text": "2.4 TTN-Konsole – Gateway, Application, Geräte\nSchritte in der TTN‑Konsole: Gateway registrieren, Application anlegen, Geräte per OTAA hinzufügen und Decoder prüfen.\n\n2.4.1 Gateway\nRegistrierung des Gateways in TTN inkl. Cluster und Frequency‑Plan.\n\nRegistrierung mit Gateway-EUI (siehe /lora print detail).\nCluster: eu1.cloud.thethings.network.\nFrequency Plan: EU_863_870_TTN.\n\n\n\n2.4.2 Application & Geräte (OTAA)\nGeräte anlegen (OTAA‑Daten), Decoder aktivieren/prüfen und Live‑Daten kontrollieren.\n\nApplication (z. B. gisma-hydro-testbed) vorhanden.\nGeräte hinzufügen (PS-LB, DDS-75LB, S2120): DevEUI, JoinEUI/AppEUI, AppKey (jeweils 16 Byte Hex).\nDecoder sind aktiv (Application-Ebene bzw. Device-Override).\nKontrolle unter End device → Live data: Uplinks sichtbar, decoded_payload gefüllt.\n\n\n\n\n\n\n\nNoteDatenablage – einfache Wege ohne eigenen Server\n\n\n\n\n\n\n2.5 Datenablage – einfache Wege ohne eigenen Server\nDrei niedrigschwellige Optionen, um Daten ohne eigene Server‑Software zu speichern (Storage, MQTT→Datei, Webhooks).\n\n2.5.1 TTS-Storage (eingebaut, “kein Server nötig”)\nTTN‑interner Speicher mit einfachem HTTP‑Abruf (NDJSON). Ideal für erste Tests/Archivierung.\nAktivierung: Application → Integrations → Storage → Enable.\nAbruf (NDJSON):\nAPP_ID=\"gisma-hydro-testbed\"\nREGION=\"eu1\"\nAPI_KEY=\"NNSXS.***api_key***\"\n\ncurl -s -H \"Authorization: Bearer $API_KEY\" \\\n\"https://${REGION}.cloud.thethings.network/api/v3/as/applications/${APP_ID}/packages/storage/uplink_message?limit=100\" \\\n&gt; uplinks.ndjson\nNach CSV destillieren (allgemein):\njq -r '\n  .end_device_ids.device_id as $id\n  | .received_at as $ts\n  | .uplink_message.f_port as $fport\n  | (.uplink_message.decoded_payload // {}) as $dec\n  | [$ts,$id,$fport,($dec|tostring)]\n  | @csv\n' uplinks.ndjson &gt; uplinks.csv\nHinweis: Speicherfrist je nach Tarif begrenzt → regelmäßig abholen.\n\n\n2.5.2 MQTT → Datei/CSV (ohne Programmierung)\nAbonnieren des TTN‑MQTT‑Feeds und direkte Umwandlung in CSV mit jq.\nAbonnieren:\nAPP_ID=\"gisma-hydro-testbed\"\nREGION=\"eu1\"\nAPI_KEY=\"NNSXS.***api_key***\"\n\nmosquitto_sub -h \"${REGION}.cloud.thethings.network\" -p 8883 \\\n  -u \"${APP_ID}\" -P \"${API_KEY}\" --cafile /etc/ssl/certs/ca-certificates.crt \\\n  -t \"v3/${APP_ID}@ttn/devices/+/up\" &gt; live.ndjson\nOn-the-fly CSV:\nmosquitto_sub ... | jq -r '\n  .end_device_ids.device_id as $id\n  | .received_at as $ts\n  | .uplink_message.f_port as $fport\n  | (.uplink_message.decoded_payload // {}) as $dec\n  | [$ts,$id,$fport,($dec|tostring)]\n  | @csv\n' &gt;&gt; live.csv\n\n\n2.5.3 No-Code via Webhooks\nWeiterleitung der Uplinks per HTTP an Dienste wie Make.com, n8n oder Zapier, die ohne Programmierung in Tabellen/DBs schreiben.\n\nApplication → Integrations → Webhooks → Add → „Custom“ oder Vorlage.\nZiel-URL eines Make.com, n8n Cloud oder Zapier Flows eintragen.\nJSON in Google Sheets, Airtable, Notion oder S3/Datenbank speichern.\n\n\n\n\n\n2.6 Dauerbetrieb – robuste Pipelines (MQTT→DB, Grafana)\nProduktionsreife Wege, um kontinuierlich Daten zu sammeln, in eine Zeitreihendatenbank zu schreiben und mit Grafana zu visualisieren.\n\n2.6.1 Minimal-Python (MQTT→CSV/JSON)\nKleines Python‑Skript mit paho-mqtt, das Uplinks liest und als CSV/JSON speichert.\n# mqtt_to_csv.py\nimport ssl, json, csv\nfrom paho.mqtt.client import Client\n\nAPP_ID  = \"gisma-hydro-testbed\"\nREGION  = \"eu1\"\nAPI_KEY = \"NNSXS.***api_key***\"\nTOPIC   = f\"v3/{APP_ID}@ttn/devices/+/up\"\nBROKER  = f\"{REGION}.cloud.thethings.network\"\n\ndef on_connect(c,u,f,rc):\n    c.subscribe(TOPIC, qos=0)\n\ndef on_message(c,u,msg):\n    up = json.loads(msg.payload.decode())\n    ts  = up.get(\"received_at\")\n    dev = up.get(\"end_device_ids\",{}).get(\"device_id\")\n    fpt = up.get(\"uplink_message\",{}).get(\"f_port\")\n    dec = up.get(\"uplink_message\",{}).get(\"decoded_payload\", {})\n    with open(\"uplinks.csv\",\"a\",newline=\"\") as f:\n        csv.writer(f).writerow([ts,dev,fpt,json.dumps(dec,ensure_ascii=False)])\n\ncli = Client(client_id=APP_ID)\ncli.username_pw_set(APP_ID, API_KEY)\ncli.tls_set(cert_reqs=ssl.CERT_REQUIRED)\ncli.on_connect = on_connect\ncli.on_message = on_message\ncli.connect(BROKER, 8883, keepalive=60)\ncli.loop_forever()\nStart:\npip install paho-mqtt\npython mqtt_to_csv.py\n\n\n2.6.2 InfluxDB v2 + Grafana (Docker-Variante)\nStack aus InfluxDB (Zeitreihendatenbank), Telegraf (Ingest/Parsing) und Grafana (Dashboards) als Docker‑Compose.\ndocker-compose.yml (Beispiel, lokal)\nversion: \"3.8\"\nservices:\n  influxdb:\n    image: influxdb:2\n    ports: [ \"8086:8086\" ]\n    volumes: [ \"influx:/var/lib/influxdb2\" ]\n    environment:\n      - DOCKER_INFLUXDB_INIT_MODE=setup\n      - DOCKER_INFLUXDB_INIT_USERNAME=admin\n      - DOCKER_INFLUXDB_INIT_PASSWORD=adminpass\n      - DOCKER_INFLUXDB_INIT_ORG=gisma\n      - DOCKER_INFLUXDB_INIT_BUCKET=lorawan\n  telegraf:\n    image: telegraf:1.29\n    depends_on: [ influxdb ]\n    volumes:\n      - ./telegraf.conf:/etc/telegraf/telegraf.conf:ro\n  grafana:\n    image: grafana/grafana:10\n    ports: [ \"3000:3000\" ]\n    volumes: [ \"grafana:/var/lib/grafana\" ]\nvolumes:\n  influx:\n  grafana:\ntelegraf.conf (MQTT→InfluxDB Line Protocol)\n[agent]\n  omit_hostname = true\n\n# TTN MQTT input\n[[inputs.mqtt_consumer]]\n  servers = [\"ssl://eu1.cloud.thethings.network:8883\"]\n  topics  = [\"v3/gisma-hydro-testbed@ttn/devices/+/up\"]\n  username = \"gisma-hydro-testbed\"\n  password = \"NNSXS.***api_key***\"\n  data_format = \"json\"\n  json_time_key = \"received_at\"\n  json_time_format = \"2006-01-02T15:04:05Z07:00\"\n  # Felder extrahieren\n  json_string_fields = [\"uplink_message.decoded_payload\"]\n\n  # Umformung per tagexclude/fieldpass kann nach Bedarf ergänzt werden\n\n# InfluxDB v2 output\n[[outputs.influxdb_v2]]\n  urls = [\"http://influxdb:8086\"]\n  token = \"admin:adminpass\"      # bei Influx v2 Setup eigenen Token verwenden\n  organization = \"gisma\"\n  bucket = \"lorawan\"\nGrafana:\nVisualisierungsschicht. In Grafana die InfluxDB‑Datenquelle setzen und Panels für relevante Messreihen anlegen.\n\nDatenquelle InfluxDB v2 auf http://influxdb:8086, Org/Bucket/Token setzen.\nDashboard erstellen; z. B. Messungen pressure_cmH2O, distance_cm, battery, temperature (abhängig von Decoderfeldern in decoded_payload).\nAlternativ: TTN → InfluxDB Cloud per Webhook-Vorlage (Konsole → Integrations → Webhooks → InfluxDB Cloud).",
-    "crumbs": [
-      "Impressum",
-      "MikroTik Setup",
-      "Hub & Sensoren"
-    ]
-  },
-  {
-    "objectID": "lorawan_doku.html#datenablage-einfache-wege-ohne-eigenen-server",
-    "href": "lorawan_doku.html#datenablage-einfache-wege-ohne-eigenen-server",
-    "title": "LoraWan Doku",
-    "section": "2.5 Datenablage – einfache Wege ohne eigenen Server",
-    "text": "2.5 Datenablage – einfache Wege ohne eigenen Server\nDrei niedrigschwellige Optionen, um Daten ohne eigene Server‑Software zu speichern (Storage, MQTT→Datei, Webhooks).\n\n2.5.1 TTS-Storage (eingebaut, “kein Server nötig”)\nTTN‑interner Speicher mit einfachem HTTP‑Abruf (NDJSON). Ideal für erste Tests/Archivierung.\nAktivierung: Application → Integrations → Storage → Enable.\nAbruf (NDJSON):\nAPP_ID=\"gisma-hydro-testbed\"\nREGION=\"eu1\"\nAPI_KEY=\"NNSXS.***api_key***\"\n\ncurl -s -H \"Authorization: Bearer $API_KEY\" \\\n\"https://${REGION}.cloud.thethings.network/api/v3/as/applications/${APP_ID}/packages/storage/uplink_message?limit=100\" \\\n&gt; uplinks.ndjson\nNach CSV destillieren (allgemein):\njq -r '\n  .end_device_ids.device_id as $id\n  | .received_at as $ts\n  | .uplink_message.f_port as $fport\n  | (.uplink_message.decoded_payload // {}) as $dec\n  | [$ts,$id,$fport,($dec|tostring)]\n  | @csv\n' uplinks.ndjson &gt; uplinks.csv\nHinweis: Speicherfrist je nach Tarif begrenzt → regelmäßig abholen.\n\n\n2.5.2 MQTT → Datei/CSV (ohne Programmierung)\nAbonnieren des TTN‑MQTT‑Feeds und direkte Umwandlung in CSV mit jq.\nAbonnieren:\nAPP_ID=\"gisma-hydro-testbed\"\nREGION=\"eu1\"\nAPI_KEY=\"NNSXS.***api_key***\"\n\nmosquitto_sub -h \"${REGION}.cloud.thethings.network\" -p 8883 \\\n  -u \"${APP_ID}\" -P \"${API_KEY}\" --cafile /etc/ssl/certs/ca-certificates.crt \\\n  -t \"v3/${APP_ID}@ttn/devices/+/up\" &gt; live.ndjson\nOn-the-fly CSV:\nmosquitto_sub ... | jq -r '\n  .end_device_ids.device_id as $id\n  | .received_at as $ts\n  | .uplink_message.f_port as $fport\n  | (.uplink_message.decoded_payload // {}) as $dec\n  | [$ts,$id,$fport,($dec|tostring)]\n  | @csv\n' &gt;&gt; live.csv\n\n\n2.5.3 No-Code via Webhooks\nWeiterleitung der Uplinks per HTTP an Dienste wie Make.com, n8n oder Zapier, die ohne Programmierung in Tabellen/DBs schreiben.\n\nApplication → Integrations → Webhooks → Add → „Custom“ oder Vorlage.\nZiel-URL eines Make.com, n8n Cloud oder Zapier Flows eintragen.\nJSON in Google Sheets, Airtable, Notion oder S3/Datenbank speichern.",
-    "crumbs": [
-      "Impressum",
-      "MikroTik Setup",
-      "Hub & Sensoren"
-    ]
-  },
-  {
-    "objectID": "lorawan_doku.html#dauerbetrieb-robuste-pipelines-mqttdb-grafana",
-    "href": "lorawan_doku.html#dauerbetrieb-robuste-pipelines-mqttdb-grafana",
-    "title": "LoraWan Doku",
-    "section": "2.6 Dauerbetrieb – robuste Pipelines (MQTT→DB, Grafana)",
-    "text": "2.6 Dauerbetrieb – robuste Pipelines (MQTT→DB, Grafana)\nProduktionsreife Wege, um kontinuierlich Daten zu sammeln, in eine Zeitreihendatenbank zu schreiben und mit Grafana zu visualisieren.\n\n2.6.1 Minimal-Python (MQTT→CSV/JSON)\nKleines Python‑Skript mit paho-mqtt, das Uplinks liest und als CSV/JSON speichert.\n# mqtt_to_csv.py\nimport ssl, json, csv\nfrom paho.mqtt.client import Client\n\nAPP_ID  = \"gisma-hydro-testbed\"\nREGION  = \"eu1\"\nAPI_KEY = \"NNSXS.***api_key***\"\nTOPIC   = f\"v3/{APP_ID}@ttn/devices/+/up\"\nBROKER  = f\"{REGION}.cloud.thethings.network\"\n\ndef on_connect(c,u,f,rc):\n    c.subscribe(TOPIC, qos=0)\n\ndef on_message(c,u,msg):\n    up = json.loads(msg.payload.decode())\n    ts  = up.get(\"received_at\")\n    dev = up.get(\"end_device_ids\",{}).get(\"device_id\")\n    fpt = up.get(\"uplink_message\",{}).get(\"f_port\")\n    dec = up.get(\"uplink_message\",{}).get(\"decoded_payload\", {})\n    with open(\"uplinks.csv\",\"a\",newline=\"\") as f:\n        csv.writer(f).writerow([ts,dev,fpt,json.dumps(dec,ensure_ascii=False)])\n\ncli = Client(client_id=APP_ID)\ncli.username_pw_set(APP_ID, API_KEY)\ncli.tls_set(cert_reqs=ssl.CERT_REQUIRED)\ncli.on_connect = on_connect\ncli.on_message = on_message\ncli.connect(BROKER, 8883, keepalive=60)\ncli.loop_forever()\nStart:\npip install paho-mqtt\npython mqtt_to_csv.py\n\n\n2.6.2 InfluxDB v2 + Grafana (Docker-Variante)\nStack aus InfluxDB (Zeitreihendatenbank), Telegraf (Ingest/Parsing) und Grafana (Dashboards) als Docker‑Compose.\ndocker-compose.yml (Beispiel, lokal)\nversion: \"3.8\"\nservices:\n  influxdb:\n    image: influxdb:2\n    ports: [ \"8086:8086\" ]\n    volumes: [ \"influx:/var/lib/influxdb2\" ]\n    environment:\n      - DOCKER_INFLUXDB_INIT_MODE=setup\n      - DOCKER_INFLUXDB_INIT_USERNAME=admin\n      - DOCKER_INFLUXDB_INIT_PASSWORD=adminpass\n      - DOCKER_INFLUXDB_INIT_ORG=gisma\n      - DOCKER_INFLUXDB_INIT_BUCKET=lorawan\n  telegraf:\n    image: telegraf:1.29\n    depends_on: [ influxdb ]\n    volumes:\n      - ./telegraf.conf:/etc/telegraf/telegraf.conf:ro\n  grafana:\n    image: grafana/grafana:10\n    ports: [ \"3000:3000\" ]\n    volumes: [ \"grafana:/var/lib/grafana\" ]\nvolumes:\n  influx:\n  grafana:\ntelegraf.conf (MQTT→InfluxDB Line Protocol)\n[agent]\n  omit_hostname = true\n\n# TTN MQTT input\n[[inputs.mqtt_consumer]]\n  servers = [\"ssl://eu1.cloud.thethings.network:8883\"]\n  topics  = [\"v3/gisma-hydro-testbed@ttn/devices/+/up\"]\n  username = \"gisma-hydro-testbed\"\n  password = \"NNSXS.***api_key***\"\n  data_format = \"json\"\n  json_time_key = \"received_at\"\n  json_time_format = \"2006-01-02T15:04:05Z07:00\"\n  # Felder extrahieren\n  json_string_fields = [\"uplink_message.decoded_payload\"]\n\n  # Umformung per tagexclude/fieldpass kann nach Bedarf ergänzt werden\n\n# InfluxDB v2 output\n[[outputs.influxdb_v2]]\n  urls = [\"http://influxdb:8086\"]\n  token = \"admin:adminpass\"      # bei Influx v2 Setup eigenen Token verwenden\n  organization = \"gisma\"\n  bucket = \"lorawan\"\nGrafana:\nVisualisierungsschicht. In Grafana die InfluxDB‑Datenquelle setzen und Panels für relevante Messreihen anlegen.\n\nDatenquelle InfluxDB v2 auf http://influxdb:8086, Org/Bucket/Token setzen.\nDashboard erstellen; z. B. Messungen pressure_cmH2O, distance_cm, battery, temperature (abhängig von Decoderfeldern in decoded_payload).\nAlternativ: TTN → InfluxDB Cloud per Webhook-Vorlage (Konsole → Integrations → Webhooks → InfluxDB Cloud).",
-    "crumbs": [
-      "Impressum",
-      "MikroTik Setup",
-      "Hub & Sensoren"
-    ]
-  },
-  {
-    "objectID": "lorawan_doku.html#betriebshilfen-auto-heal-checks",
-    "href": "lorawan_doku.html#betriebshilfen-auto-heal-checks",
-    "title": "LoraWan Doku",
-    "section": "2.7 Betriebshilfen (Auto-Heal, Checks)",
-    "text": "2.7 Betriebshilfen (Auto-Heal, Checks)\nZusatzfunktionen für stabilen Dauerbetrieb: automatischer WLAN‑Reconnect und korrekte Systemzeit.\n\n2.7.1 Netwatch (WLAN neu verbinden bei Ausfall)\nÜberwacht einen Zielhost und startet wlan1 neu, wenn keine Verbindung besteht.\n/tool netwatch add host=8.8.8.8 interval=60s timeout=5s \\\n    up-script=\"\" \\\n    down-script=\"/interface wireless disable wlan1; :delay 2s; /interface wireless enable wlan1\"\n\n\n2.7.2 NTP & Zeitzone (Logs mit korrekter Uhrzeit)\nStellt Zeitzone und NTP‑Server ein, damit Logs/Zeitstempel stimmen.\n/system clock set time-zone-name=Europe/Berlin\n/system ntp client set enabled=yes primary-ntp=1.1.1.1 secondary-ntp=8.8.8.8",
-    "crumbs": [
-      "Impressum",
-      "MikroTik Setup",
-      "Hub & Sensoren"
-    ]
-  },
-  {
-    "objectID": "lorawan_doku.html#sensecap-besonderheiten-ohne-decoder-code",
-    "href": "lorawan_doku.html#sensecap-besonderheiten-ohne-decoder-code",
-    "title": "LoraWan Doku",
-    "section": "2.8 SenseCAP-Besonderheiten (ohne Decoder-Code)",
-    "text": "2.8 SenseCAP-Besonderheiten (ohne Decoder-Code)\nHinweise zu Pairing, FPorts und Decoder‑Einsatz für den SenseCAP S2120.\n\nPairing/BT-PIN: häufig 000000.\nDevEUI/JoinEUI/AppKey: auf Label, App oder Herstellerportal.\nFPort: typischerweise 199.\nIn TTN Gerät anlegen (OTAA) → Live Data prüfen → decoded_payload wird angezeigt (Decoder ist bereits aktiv).\nBei fehlender Decodierung: Application-Level Decoder prüfen; falls mehrere Hersteller parallel verwendet werden, device-spezifische Overrides setzen.",
-    "crumbs": [
-      "Impressum",
-      "MikroTik Setup",
-      "Hub & Sensoren"
-    ]
-  },
-  {
-    "objectID": "lorawan_doku.html#dragino-ps-lb-dds-75lb-ohne-decoder-code",
-    "href": "lorawan_doku.html#dragino-ps-lb-dds-75lb-ohne-decoder-code",
-    "title": "LoraWan Doku",
-    "section": "2.9 Dragino PS-LB & DDS-75LB (ohne Decoder-Code)",
-    "text": "2.9 Dragino PS-LB & DDS-75LB (ohne Decoder-Code)\nKurzanleitung für die Aufnahme per OTAA und Decoder‑Kontrolle der Dragino‑Geräte.\n\nBeide über OTAA identisch aufnehmen (DevEUI/JoinEUI/AppKey).\nDecoder unterscheiden sich (Druck vs. Distanz) – bereits aktiv.\nKontrolle via Live Data; Werte erscheinen im decoded_payload.\nTypischer FPort 2 (Herstellerdoku beachten).",
-    "crumbs": [
-      "Impressum",
-      "MikroTik Setup",
-      "Hub & Sensoren"
-    ]
-  },
-  {
-    "objectID": "lorawan_doku.html#faqs-troubleshooting",
-    "href": "lorawan_doku.html#faqs-troubleshooting",
-    "title": "LoraWan Doku",
-    "section": "2.10 FAQs & Troubleshooting",
-    "text": "2.10 FAQs & Troubleshooting\nKurze Checkliste typischer Fehlerbilder und ihrer Ursachen.\n\nUplinks kommen nicht in TTN an: /lora print detail (Enabled?), /tool sniffer quick port=1700 (UDP-Traffic?), /ip dhcp-client print (IP bekommen?), /ping 8.8.8.8.\nWLAN sichtbar, aber keine IP: Bridge-Ports korrekt? DHCP-Client auf bridgeLocal? WPA-Key/SSID korrekt? monitor wlan1 zeigt „searching-for-network“ → Kanal/Entfernung prüfen.\nDecoder greift nicht: FPort prüfen; Application-Decoder vs. Device-Override; für SenseCAP meist Port 199.\nSpeicherung/Visualisierung fehlt: Storage aktivieren oder MQTT→CSV/DB/Grafana implementieren (siehe Kapitel 5 & 6).\n\n\n\n2.10.1 To-Do-Leitfaden\nMinimalliste, um schnell von „Gerät online“ zu „Daten gesichert und sichtbar“ zu kommen.\n\nTTN Storage aktivieren und per HTTP + jq regelmäßig ziehen (Archiv/CSV).\nFür Live-Dashboards MQTT → InfluxDB → Grafana (Docker-Stack) oder Webhook → InfluxDB Cloud/Datacake/Ubidots.\nNetwatch auf dem MikroTik setzen (WLAN-Selbstheilung).\nBinary-Backup auf dem MikroTik anlegen und extern sichern.",
-    "crumbs": [
-      "Impressum",
-      "MikroTik Setup",
-      "Hub & Sensoren"
-    ]
-  },
-  {
-    "objectID": "lorawan_doku.html#anmerkungen",
-    "href": "lorawan_doku.html#anmerkungen",
-    "title": "LoraWan Doku",
-    "section": "2.11 Anmerkungen",
-    "text": "2.11 Anmerkungen\nErgänzende Hinweise zur Konfiguration und zum Betrieb (EU‑868, Semtech‑UDP, Datenpfade) in kompakter Form.\n\nDie Decoder für PS-LB, DDS-75LB und SenseCAP S2120 sind in der TTN-Application hinterlegt und aktiv.\nDer MikroTik arbeitet im WLAN-Client/Pseudobridge-Modus, erhält IP per DHCP auf bridgeLocal und forwardet LoRa-Pakete via Semtech-UDP (Port 1700) an TTN EU1 mit EU-868 Frequency-Plan.\nDaten können über Storage/MQTT/Webhook ohne eigenen Server gespeichert und mit Grafana visualisiert werden.",
-    "crumbs": [
-      "Impressum",
-      "MikroTik Setup",
-      "Hub & Sensoren"
-    ]
-  },
-  {
-    "objectID": "lorawan_doku.html#downloads-handbücher",
-    "href": "lorawan_doku.html#downloads-handbücher",
-    "title": "LoraWan Doku",
-    "section": "2.12 Downloads & Handbücher",
-    "text": "2.12 Downloads & Handbücher\n\nWinBox Download (MikroTik)\nOffizielle Seite zum Herunterladen von WinBox (Windows/Linux mit Wine).\nMikroTik RouterOS LoRa Dokumentation\nMikroTik-Doku zu LoRaWAN, Forwarding-Protokoll und Frequency Plans.\n\n\n\nDragino Wiki (Übersicht)\nZentrale Dokumentation und Manuals für alle Dragino-Geräte.\nDragino Decoder Repository (GitHub)\nSammlung offizieller Payload-Decoder für End-Nodes (z. B. PS-LB, DDS-75LB).\n\n\n\nSeeed SenseCAP S2120 Getting Started (Wiki)\nSchritt-für-Schritt-Anleitung zur Inbetriebnahme (App, LoRaWAN-Parameter, Join).\nSeeed SenseCAP S2120 User Guide (PDF)\nVollständiges Benutzerhandbuch als PDF.\nSeeed S2120 TTN Decoder (GitHub, JS)\nJavaScript-Decoder für TTN/ChirpStack zur Auswertung der SenseCAP-Daten.",
-    "crumbs": [
-      "Impressum",
-      "MikroTik Setup",
-      "Hub & Sensoren"
-    ]
-  },
-  {
-    "objectID": "index_data.html",
-    "href": "index_data.html",
-    "title": "Daten Repository",
+    "objectID": "lorawan_dragino.html#ziel",
+    "href": "lorawan_dragino.html#ziel",
+    "title": "LoraWan Dragino Doku",
     "section": "",
-    "text": "NDJSON und Parquet sind beides Datenformate, die sich gut ergänzen:\n\nNDJSON (Newline Delimited JSON) speichert Ereignisse zeilenweise als JSON-Objekte.\n→ Ideal für Streaming und APIs, weil jede Zeile ein eigenständiger Datensatz ist.\n→ Lässt sich mit Tools wie jq, pandas.read_json(lines=True) oder jsonlite::stream_in() direkt auswerten.\nParquet ist ein spaltenorientiertes, binäres Format für große Datenmengen.\n→ Optimiert für Analysen und Abfragen, sehr platzsparend und schnell.\n→ Standard in Big-Data-Ecosystemen (Spark, Hadoop, DuckDB, BigQuery, GDAL/GeoParquet).\n\nTypischer Workflow: Rohdaten zunächst als NDJSON persistieren → für Analyse/Archiv in Parquet konvertieren.",
+    "text": "(Mehrere) Dragino PS-LB/LS Sensoren per TTN mit binären Downlinks (Hex) auf Port 2 konfigurieren",
     "crumbs": [
       "Impressum",
-      "Messnetz-Daten",
-      "Daten Repository"
+      "MikroTik Setup",
+      "Dragino Sensoren"
     ]
   },
   {
-    "objectID": "index_data.html#allgemeine-formate-im-repo",
-    "href": "index_data.html#allgemeine-formate-im-repo",
-    "title": "Daten Repository",
+    "objectID": "lorawan_dragino.html#wo-im-webinterface-die-minimal-sequenz-eingegeben-wird-ttntts",
+    "href": "lorawan_dragino.html#wo-im-webinterface-die-minimal-sequenz-eingegeben-wird-ttntts",
+    "title": "LoraWan Dragino Doku",
     "section": "",
-    "text": "NDJSON und Parquet sind beides Datenformate, die sich gut ergänzen:\n\nNDJSON (Newline Delimited JSON) speichert Ereignisse zeilenweise als JSON-Objekte.\n→ Ideal für Streaming und APIs, weil jede Zeile ein eigenständiger Datensatz ist.\n→ Lässt sich mit Tools wie jq, pandas.read_json(lines=True) oder jsonlite::stream_in() direkt auswerten.\nParquet ist ein spaltenorientiertes, binäres Format für große Datenmengen.\n→ Optimiert für Analysen und Abfragen, sehr platzsparend und schnell.\n→ Standard in Big-Data-Ecosystemen (Spark, Hadoop, DuckDB, BigQuery, GDAL/GeoParquet).\n\nTypischer Workflow: Rohdaten zunächst als NDJSON persistieren → für Analyse/Archiv in Parquet konvertieren.",
+    "text": "Pfad: Applications → deine App → End devices → dein Gerät → Messaging → Downlink\nPro Gerät:\n\nOben: Payload formatter → Downlink = None (falls nicht schon so).\nBereich Schedule downlink:\n\nFPort: 2\nPayload type: Bytes\nBytes (Hex ohne Leerzeichen), nacheinander schedulen:\n\n0100003C (TDC = 60 s)\n080002 (PROBE = 0002, 0–2 m)\n07031F40 (optional, 12 V 8 s, nur wenn PS-LB speist)\n01000384 (TDC = 900 s = 15 min)\n\nConfirmed: an (schadet nicht)\nSchedule klicken\n\nUplink auslösen (Taste kurz) oder auf Intervall warten – Class A liefert Downlinks jeweils nach einem Uplink (FIFO).",
     "crumbs": [
       "Impressum",
-      "Messnetz-Daten",
-      "Daten Repository"
+      "MikroTik Setup",
+      "Dragino Sensoren"
     ]
   },
   {
-    "objectID": "index_data.html#sensoren",
-    "href": "index_data.html#sensoren",
-    "title": "Daten Repository",
-    "section": "Sensoren",
-    "text": "Sensoren\n\nDDS75-LB (dds75-lb-*.parquet): distance_cm (bzw. Distance_mm), temperature, battery, Flags (interrupt_flag, sensor_flag).\nPS-LB (burgwald-ps-lb-*.parquet): water_cm bzw. pressure_kpa/_mpa, zusätzlich idc_input_ma, vdc_input_v, battery, digitale Eingänge.\nSenseCAP (burgwald-sensecap-*.parquet): temperature, humidity, pressure_hpa, illumination, ggf. uv_index, wind_speed, wind_dir, rainfall.",
+    "objectID": "lorawan_dragino.html#batch-script-mit-per-gerät-intervall-csv",
+    "href": "lorawan_dragino.html#batch-script-mit-per-gerät-intervall-csv",
+    "title": "LoraWan Dragino Doku",
+    "section": "",
+    "text": "Spalten: device_id, interval_min, ext_power\n\ninterval_min: End-Intervall in Minuten (z. B. 5, 15, 20 …)\next_power: 1 = Sonde extern versorgt → ohne 12 V-Downlink; 0 = PS-LB soll kurz speisen → mit 12 V-Downlink\n\nBeispiel:\nps-lb-01,15,1\nps-lb-21,5,0\nps-lb-42,20,1\n\n\n\n\nNimmt nur Hex als Kommandos, wandelt intern in Base64.\nLegt pro Gerät einen down/replace mit bis zu 4 Downlinks (FIFO) ab.\nEnd-Intervall kommt aus der CSV (1–255 min unterstützt, typische Werte 5/15/20).\n\n#!/usr/bin/env bash\nset -euo pipefail\n\n# ===== KONFIG =====\nAPP=\"gisma-hydro-testbed\"                 # Application-ID\nKEY=\"NNSXS.xxxxx...\"                      # Application-API-Key (Write downlink)\nAPI=\"https://eu1.cloud.thethings.network/api/v3\"\nCSV=\"devices.csv\"                         # device_id,interval_min,ext_power\nFPORT=2\n\nneed(){ command -v \"$1\" &gt;/dev/null 2&gt;&1 || { echo \"Fehlt: $1\"; exit 1; }; }\nneed xxd; need base64; need curl; need jq; need awk\n\n# -- Hex-Helper --\nto_b64(){ printf \"%s\" \"$1\" | xxd -r -p | base64; }\n\n# TDC-Hex aus Minuten berechnen (3-Byte Big-Endian Sekunden)\n# Limitation: 1..65535 Sekunden; für unsere Intervalle (1..1440 min) ok.\ntdc_hex_from_minutes(){\n  local min=\"$1\"\n  local sec=$(( min*60 ))\n  # in 3 Bytes big-endian verpacken\n  printf \"%06X\" \"$sec\"\n}\n\n# Fixe Hex-Commands\nHEX_PROBE=\"080002\"           # Wassertiefe-Profil 0–2 m\nHEX_TDC_60S=\"0100003C\"       # TDC=60s (Schnellphase)\nHEX_12V_8S=\"07031F40\"        # 12V=8000ms (nur wenn PS-LB speist)\n\n[[ -f \"$CSV\" ]] || { echo \"CSV '$CSV' fehlt.\"; exit 1; }\n\n# Sanfte Drossel zwischen Geräten\nDELAY_BETWEEN_DEV=0.2\n\nwhile IFS=, read -r DEV MINUTES EXT; do\n  # Leerzeilen/Kommentare überspringen\n  [[ -z \"${DEV// }\" || \"$DEV\" =~ ^# ]] && continue\n\n  # Whitespace trim\n  DEV=\"$(echo \"$DEV\" | awk '{$1=$1};1')\"\n  MINUTES=\"$(echo \"$MINUTES\" | awk '{$1=$1};1')\"\n  EXT=\"$(echo \"$EXT\" | awk '{$1=$1};1')\"\n\n  # End-TDC aus Minuten → Sekunden → 3-Byte Hex → komplettes Setz-Command (01 + 3 Byte)\n  TDC3=$(tdc_hex_from_minutes \"$MINUTES\")      # z.B. 15min -&gt; 000384\n  HEX_TDC_FINAL=\"01${TDC3}\"\n\n  # In Base64 umwandeln\n  P_TDC60=$(to_b64 \"$HEX_TDC_60S\")\n  P_PROBE=$(to_b64 \"$HEX_PROBE\")\n  P_12V8=$(to_b64 \"$HEX_12V_8S\")\n  P_TDCF=$(to_b64 \"$HEX_TDC_FINAL\")\n\n  echo \"== $DEV (Endintervall ${MINUTES} min, ext_power=${EXT}) ==\"\n\n  # Downlink-Liste zusammenbauen (FIFO: TDC60 -&gt; PROBE -&gt; optional 12V -&gt; TDCfinal)\n  if [[ \"$EXT\" == \"0\" ]]; then\n    JSON=$(jq -n --arg p1 \"$P_TDC60\" --arg p2 \"$P_PROBE\" --arg p3 \"$P_12V8\" --arg p4 \"$P_TDCF\" --argjson fp $FPORT \\\n      '{downlinks:[\n        {f_port:$fp, frm_payload:$p1, confirmed:true, priority:\"NORMAL\"},\n        {f_port:$fp, frm_payload:$p2, confirmed:true, priority:\"NORMAL\"},\n        {f_port:$fp, frm_payload:$p3, confirmed:true, priority:\"NORMAL\"},\n        {f_port:$fp, frm_payload:$p4, confirmed:true, priority:\"NORMAL\"}\n      ]}')\n  else\n    JSON=$(jq -n --arg p1 \"$P_TDC60\" --arg p2 \"$P_PROBE\" --arg p4 \"$P_TDCF\" --argjson fp $FPORT \\\n      '{downlinks:[\n        {f_port:$fp, frm_payload:$p1, confirmed:true, priority:\"NORMAL\"},\n        {f_port:$fp, frm_payload:$p2, confirmed:true, priority:\"NORMAL\"},\n        {f_port:$fp, frm_payload:$p4, confirmed:true, priority:\"NORMAL\"}\n      ]}')\n  fi\n\n  # Ein API-Call pro Gerät: down/replace\n  HTTP=$(curl -sS -o /tmp/resp.json -w \"%{http_code}\" \\\n    -X POST \"$API/as/applications/$APP/devices/$DEV/down/replace\" \\\n    -H \"Authorization: Bearer $KEY\" -H \"Content-Type: application/json\" \\\n    -d \"$JSON\")\n\n  echo \"HTTP: $HTTP\"\n  cat /tmp/resp.json; echo\n  [[ \"$HTTP\" =~ ^2 ]] || { echo \"Fehler bei $DEV – siehe oben.\"; exit 1; }\n\n  sleep \"$DELAY_BETWEEN_DEV\"\ndone &lt; \"$CSV\"\n\necho \"Hinweis: Class A → Downlinks kommen NACH dem nächsten Uplink (FIFO, meist 1 pro Uplink).\nLass TDC=60s aktiv, bis die Queue bei jedem Gerät abgearbeitet ist.\"\n\nMinimal-Sequenz ist im Webinterface unter Messaging → Downlink (siehe oben).\nDas Script baut für jedes Gerät die gleiche Start-Sequenz (60 s → PROBE → optional 12 V) und setzt dann das End-Intervall aus der CSV.\nUnterstützt beliebige Minutenwerte (z. B. 5/15/20).\nWenn deine Sonden dauerhaft extern versorgt sind, setze in der CSV ext_power=1 → es wird kein 12 V-Downlink hinzugefügt.\n\n\n\n\n\nDownlinks „kommen nicht“ → Es braucht einen Uplink (Taste kurz), Queue FIFO.\nRate-Limit → nur ein down/replace pro Gerät; im Batch kleine Pause.\nTiefe bleibt 0 & Uplink zeigt IDC=0000 → keine 4–20 mA-Schleife:\n\nVerdrahtung in Serie über IDC+ / IDC− prüfen\nTest: 07031F40 + Uplink → IDC &gt; 4 mA oder VDC &gt; 0\nA/B-Tausch Sonde ↔︎ Gerät, um Sensor/Board zu isolieren\n\nRemote-Reset → 04FF, danach Sequenz erneut senden.\nStatusframe (zur Kontrolle) → 2601 (nächster Uplink auf FPort 5 zeigt Modell/FW/Band/BAT)",
     "crumbs": [
       "Impressum",
-      "Messnetz-Daten",
-      "Daten Repository"
+      "MikroTik Setup",
+      "Dragino Sensoren"
     ]
   },
   {
-    "objectID": "index_data.html#dateien-in-data",
-    "href": "index_data.html#dateien-in-data",
-    "title": "Daten Repository",
-    "section": "Dateien in data/",
-    "text": "Dateien in data/\n\nLade Datenliste …",
-    "crumbs": [
-      "Impressum",
-      "Messnetz-Daten",
-      "Daten Repository"
-    ]
-  },
-  {
-    "objectID": "impressum.html#content-responsibility",
-    "href": "impressum.html#content-responsibility",
-    "title": "Impressum",
-    "section": "Content Responsibility",
-    "text": "Content Responsibility\nThe responsibility for the content rests with the instructors. Statements, opinions and/or conclusions are the ones from the instructors and do not necessarily reflect the opinion of the representatives of Marburg University."
-  },
-  {
-    "objectID": "impressum.html#content-license",
-    "href": "impressum.html#content-license",
-    "title": "Impressum",
-    "section": "Content License",
-    "text": "Content License\nThis work is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License.\n\nPrivacy Policy\n\n\nAs of 21. October 2021\n\n\nIntroduction\n\n\nWith the following data protection declaration, we would like to inform you about the types of your personal data (hereinafter also referred to as “data” for short) that we process, for what purposes and to what extent. The privacy policy applies to all processing of personal data carried out by us, both in the context of the provision of our services and in particular on our websites, in mobile applications and within external online presences, such as our social media profiles (hereinafter collectively referred to as “Online Offerings”).\n\n\nThe terms used are not gender-specific.\n\n\nResponsible\n\n\nDr Christoph ReudenbachDeutschhaustr 1035037 Marburg\n\n\nEmail address: reudenbach@uni-marburg.de.\n\n\nImprint: https://www.uni-marburg.de/de/impressum.\n\n\nOverview of Processing\n\n\nThe following overview summarizes the types of data processed and the purposes of their processing, and refers to the data subjects.\n\n\nTypes of Data Processed\n\n\n\nContent data (e.g. input in online forms).\n\n\nContact data (e.g. email, phone numbers).\n\n\nMeta/communication data (e.g. device information, IP addresses).\n\n\nUse data (e.g. websites visited, interest in content, access times).\n\n\n\nCategories of data subjects\n\n\n\nCommunication partners.\n\n\nUsers (e.g.. Website visitors, users of online services).\n\n\n\nPurposes of processing\n\n\n\nDirect marketing (e.g., by email or postal mail).\n\n\nContact requests and communications.\n\n\n\nRelevant legal basis\n\n\nThe following is an overview of the legal basis of the GDPR on the basis of which we process personal data. Please note that in addition to the provisions of the GDPR, national data protection regulations may apply in your or our country of residence or domicile. Furthermore, should more specific legal bases be decisive in individual cases, we will inform you of these in the data protection declaration.\n\n \n\n\nConsent (Art. 6 para. 1 p. 1 lit. a. DSGVO) - The data subject has given his or her consent to the processing of personal data concerning him or her for a specific purpose or purposes.\n\n\nRegistered interests (Art. 6 para. 1 p. 1 lit. f. DSGVO) - Processing is necessary to protect the legitimate interests of the controller or a third party, unless such interests are overridden by the interests or fundamental rights and freedoms of the data subject which require the protection of personal data.\n\n\n\nNational data protection regulations in Germany: In addition to the data protection regulations of the General Data Protection Regulation, national regulations on data protection apply in Germany. These include, in particular, the Act on Protection against Misuse of Personal Data in Data Processing (Federal Data Protection Act - BDSG). In particular, the BDSG contains special regulations on the right to information, the right to erasure, the right to object, the processing of special categories of personal data, processing for other purposes and transmission, as well as automated decision-making in individual cases, including profiling. Furthermore, it regulates data processing for employment purposes (Section 26 BDSG), in particular with regard to the establishment, implementation or termination of employment relationships as well as the consent of employees. Furthermore, state data protection laws of the individual federal states may apply.\n\n \n\nSecurity measures\n\n\nWe take appropriate technical and organizational measures in accordance with the legal requirements, taking into account the state of the art, the implementation costs and the nature, scope, circumstances and purposes of the processing, as well as the different probabilities of occurrence and the extent of the threat to the rights and freedoms of natural persons, in order to ensure a level of protection appropriate to the risk.\n\n.\n\nMeasures include, in particular, ensuring the confidentiality, integrity, and availability of data by controlling physical and electronic access to data as well as access to, entry into, disclosure of, assurance of availability of, and segregation of data concerning them. Furthermore, we have established procedures to ensure the exercise of data subjects’ rights, the deletion of data, and responses to data compromise. Furthermore, we take the protection of personal data into account as early as the development or selection of hardware, software as well as procedures in accordance with the principle of data protection, through technology design and through data protection-friendly default settings.\n\n \n\nDeletion of data\n\n\nThe data processed by us will be deleted in accordance with legal requirements as soon as their consents permitted for processing are revoked or other permissions cease to apply (e.g. if the purpose of processing this data has ceased to apply or it is not necessary for the purpose).\n\n \n\nIf the data are not deleted because they are required for other and legally permissible purposes, their processing will be limited to these purposes. That is, the data will be blocked and not processed for other purposes. This applies, for example, to data that must be retained for reasons of commercial or tax law or whose storage is necessary for the assertion, exercise or defense of legal claims or for the protection of the rights of another natural person or legal entity.\n\n \n\nOur privacy notices may also include further information on the retention and deletion of data that takes precedence for the processing operations in question.\n\n \n\nUse of cookies\n\n\nCookies are text files that contain data from websites or domains visited and are stored by a browser on the user’s computer. The primary purpose of a cookie is to store information about a user during or after their visit within an online site. Stored information may include, for example, language settings on a website, login status, a shopping cart, or where a video was watched. We further include in the term cookies other technologies that perform the same functions as cookies (e.g., when user details are stored using pseudonymous online identifiers, also referred to as “user IDs”)\n\n.\n\nThe following cookie types and functions are distinguished:\n\n\n\nTemporary cookies (also: session or session cookies): Temporary cookies are deleted at the latest after a user has left an online offer and closed his browser.\n\n\nPermanent cookies: Permanent cookies remain stored even after closing the browser. For example, the login status can be saved or preferred content can be displayed directly when the user revisits a website. Likewise, the interests of users used for range measurement or marketing purposes can be stored in such a cookie.\n\n\nFirst-party cookies: First-party cookies are set by ourselves.\n\n\nThird-party cookies (also: third-party cookies): Third-party cookies are mainly used by advertisers (so-called third parties) to process user information.\n\n\nNecessary (also: essential or absolutely necessary) cookies: Cookies may be absolutely necessary for the operation of a website (e.g. to store logins or other user input or for security reasons).\n\n\nStatistics, marketing and personalization cookies: Furthermore, cookies are usually also used in the context of range measurement and when the interests of a user or his behavior (e.g. viewing certain content, use of functions, etc.) on individual web pages are stored in a user profile. Such profiles are used, for example, to show users content that matches their potential interests. This process is also referred to as “tracking”, i.e., tracking the potential interests of users. Insofar as we use cookies or “tracking” technologies, we will inform you separately in our privacy policy or in the context of obtaining consent.\n\n\n\nNotes on legal bases: On which legal basis we process your personal data using cookies depends on whether we ask you for consent. If this is the case and you consent to the use of cookies, the legal basis for the processing of your data is the declared consent. Otherwise, the data processed with the help of cookies is processed on the basis of our legitimate interests (e.g. in a business operation of our online offer and its improvement) or, if the use of cookies is necessary to fulfill our contractual obligations.\n\n.\n\nDuration of storage: If we do not provide you with explicit information about the storage period of permanent cookies (e.g. in the context of a so-called cookie opt-in), please assume that the storage period can be up to two years.\n\n.\n\nGeneral information on revocation and objection (opt-out):  Depending on whether the processing is based on consent or legal permission, you have the option at any time to revoke any consent given or to object to the processing of your data by cookie technologies (collectively referred to as “opt-out”). You can initially declare your objection by means of your browser settings, e.g. by deactivating the use of cookies (whereby this may also restrict the functionality of our online offer). An objection to the use of cookies for online marketing purposes can also be declared by means of a variety of services, especially in the case of tracking, via the websites https://optout.aboutads.info and https://www.youronlinechoices.com/. In addition, you can receive further objection notices in the context of the information on the service providers and cookies used.\n\n.\n\nProcessing of cookie data on the basis of consent: We use a cookie consent management procedure, in the context of which the consent of users to the use of cookies, or the processing and providers mentioned in the cookie consent management procedure can be obtained and managed and revoked by users. Here, the declaration of consent is stored in order not to have to repeat its query and to be able to prove the consent in accordance with the legal obligation. The storage can take place on the server side and/or in a cookie (so-called opt-in cookie, or with the help of comparable technologies), in order to be able to assign the consent to a user or their device. Subject to individual information on the providers of cookie management services, the following information applies: The duration of the storage of consent can be up to two years. Here, a pseudonymous user identifier is formed and stored with the time of consent, information on the scope of consent (e.g., which categories of cookies and/or service providers) as well as the browser, system and end device used.\n\n.\n\n\nTypes of data processed: Usage data (e.g. websites visited, interest in content, access times), meta/communication data (e.g. device information, IP addresses).\n\n\nPersons concerned: Users (e.g. website visitors, users of online services).\n\n\nLegal basis: Consent (Art. 6 para. 1 p. 1 lit. a. DSGVO), Legitimate Interests (Art. 6 para. 1 p. 1 lit. f. DSGVO).\n\n\n\nSurveys and polls\n\n\nThe surveys and polls (hereinafter “surveys”) conducted by us are evaluated anonymously. Personal data is only processed insofar as this is necessary for the provision and technical implementation of the surveys (e.g. processing of the IP address to display the survey in the user’s browser or to enable a resumption of the survey with the help of a temporary cookie (session cookie)) or users have consented.\n\n.\n\nNotes on legal basis: If we ask participants for consent to process their data, this is the legal basis of the processing, otherwise the processing of participants’ data is based on our legitimate interests in conducting an objective survey.\n\n \n\n\nTypes of data processed: Contact data (e.g. email, phone numbers), content data (e.g. input in online forms), usage data (e.g. web pages visited, interest in content, access times), meta/communication data (e.g. device information, IP addresses).\n\n\nParticipants concerned: Communication partners.\n\n\nPurposes of processing: Contact requests and communication, direct marketing (e.g. by e-mail or postal mail).\n\n\nLegal basis: Consent (Art. 6 para. 1 p. 1 lit. a. DSGVO), Legitimate Interests (Art. 6 para. 1 p. 1 lit. f. DSGVO).\n\n\n\nChange and Update Privacy Policy\n\n\nWe encourage you to periodically review the contents of our Privacy Policy. We adapt the Privacy Policy as soon as the changes in the data processing activities we carry out make it necessary. We will inform you as soon as the changes require an act of cooperation on your part (e.g. consent) or other individual notification.\n\n.\n\nWhere we provide addresses and contact information for companies and organizations in this Privacy Policy, please note that addresses may change over time and please check the information before contacting us.\n\n.\n\nRights of data subjects\n\n\nAs a data subject, you are entitled to various rights under the GDPR, which arise in particular from Art. 15 to 21 DSGVO:\n\n\n\nRight to object: You have the right to object at any time, on grounds relating to your particular situation, to the processing of personal data relating to you which is carried out on the basis of Art. 6(1)(e) or (f) DSGVO; this also applies to profiling based on these provisions. If the personal data concerning you is processed for the purpose of direct marketing, you have the right to object at any time to the processing of personal data concerning you for the purpose of such marketing; this also applies to profiling, insofar as it is associated with such direct marketing.\n\n\nRight of withdrawal in the case of consent: You have the right to withdraw any consent you have given at any time.\n\n\nRight of access: You have the right to request confirmation as to whether data in question is being processed and to information about this data, as well as further information and copy of the data in accordance with the legal requirements.\n\n\nRight of rectification: You have the right, in accordance with the legal requirements, to request the completion of the data concerning you or the correction of incorrect data concerning you.\n\n\nRight to erasure and restriction of processing: You have, in accordance with the law, the right to request that data concerning you be erased without undue delay, or alternatively, in accordance with the law, to request restriction of the processing of the data.\n\n\nRight to data portability: You have the right to receive data concerning you, which you have provided to us, in a structured, common and machine-readable format in accordance with the legal requirements, or to demand its transfer to another responsible party.\n\n\nComplaint to supervisory authority: Without prejudice to any other administrative or judicial remedy, you have the right to lodge a complaint with a supervisory authority, in particular in the Member State of your habitual residence, place of work or the place of the alleged infringement, if you consider that the processing of personal data concerning you infringes the requirements of the GDPR.\n\n\n.\n\nDefinitions of Terms\n\n\nThis section provides you with an overview of the terms used in this Privacy Policy. Many of the terms are taken from the law and defined primarily in Article 4 of the GDPR. The legal definitions are binding. The following explanations, on the other hand, are primarily intended to aid understanding. The terms are sorted alphabetically.\n\n \n\n\nPersonal data: “Personal data” means any information relating to an identified or identifiable natural person (hereinafter “data subject”); an identifiable natural person is one who can be identified, directly or indirectly, in particular by reference to an identifier such as a name, an identification number, location data, an online identifier (eg. e.g. cookie) or to one or more special characteristics that are an expression of the physical, physiological, genetic, mental, economic, cultural or social identity of that natural person.\n\n\nController: The “controller” is the natural or legal person, public authority, agency or other body which alone or jointly with others determines the purposes and means of the processing of personal data.\n\n\nProcessing: “Processing” means any operation or set of operations which is performed upon personal data, whether or not by automatic means. The term is broad and includes virtually any handling of data, whether collecting, evaluating, storing, transmitting or deleting.\n\n\n\nCreated with free Datenschutz-Generator.de by Dr. Thomas Schwenke"
-  },
-  {
-    "objectID": "dashboard_doku_en.html",
-    "href": "dashboard_doku_en.html",
-    "title": "README dashboard",
-    "section": "",
-    "text": "This repo contains a Python script that builds an HTML dashboard from The Things Network (TTN) Storage.\nIt auto-discovers devices, fetches uplinks, writes per-device Parquet files, and renders interactive plots.\n\n\n\n\n(Optional) Create scripts/.env:\nTTN_APP_ID=gisma-hydro-testbed\nTTN_REGION=eu1\nTTN_API_KEY=NNSXS_...\nRUN_DASH=1\nTTN_AFTER_DAYS=2\nDELAY_BETWEEN_DEVICES=0.3\n# Health report (optional):\n# STALE_HOURS=3\n# DEV_INCLUDE=dds75-lb-.*\n# DEV_EXCLUDE=\nRun:\npython scripts/pull_all_devices.py\nOpen the dashboard at:\n\nassets/data.html (main)\nassets/debug.html (raw samples & heads)\nHealth summary: assets/devices_used.txt and assets/devices_used.csv\n\n\n\n\n\n\nSet these in .env, your shell, or GitHub Actions env:. If missing, defaults (in parentheses) are used.\n\n\n\nTTN_APP_ID — your TTN application id (e.g., gisma-hydro-testbed)\nTTN_REGION — TTN cluster (e.g., eu1)\nTTN_API_KEY — NNSXS key with scopes:\n\nView end devices (auto-discovery)\nView application packages and associations (Storage)\n(helpful) View application info, Read application traffic/data\n\n\n\n\n\n\nRUN_DASH (\"1\") 1 = build HTML dashboard; 0 = CLI smoke-test mode (see below).\nTTN_AFTER_DAYS (\"2\") Sliding storage window: now − N days. If Parquet exists, the script resumes from the last saved timestamp.\nDELAY_BETWEEN_DEVICES (\"0.3\") Seconds to sleep between device pulls (avoid rate limits).\nDEVICES (unset) Whitespace-separated list. If unset, the script auto-discovers all devices in the app.\n\n\n\n\n\nSTALE_HOURS (\"3\") — mark as STALE (xh) if last_seen older than this.\nDEV_INCLUDE (\".*\") — regex include (e.g., dds75-lb-.*).\nDEV_EXCLUDE (empty) — regex exclude (e.g., dds75-lb-11).\n\n\n\n\n\n\n\ndata/ — per-device Parquet files: data/&lt;device&gt;.parquet\nassets/\n\ndata.html — interactive dashboard\ndebug.html — debug cards with raw NDJSON samples & parquet heads\ndevices_used.txt — human-readable health summary\ndevices_used.csv — machine-readable health table\n\n\n\nNote: At start, devices_used.txt may temporarily contain only the discovered device list; it’s overwritten at the end with the full health summary.\n\n\n\n\n\nRun an ad-hoc pull for one device without building the full dashboard:\nRUN_DASH=0 python scripts/pull_all_devices.py --device dds75-lb-13 --hours 6 -v\n\n--hours overrides TTN_AFTER_DAYS for this run only.\nData is merged into data/&lt;device&gt;.parquet with de-duplication.\n\n\n\n\n\nUse a workflow like:\nname: TTN all devices → Pages\n\non:\n  schedule:\n    - cron: \"*/15 * * * *\"\n  workflow_dispatch:\n\npermissions:\n  contents: write\n\njobs:\n  build:\n    runs-on: ubuntu-latest\n    env:\n      TTN_API_KEY:  ${{ secrets.TTN_API_KEY }}\n      TTN_APP_ID:   ${{ secrets.TTN_APP_ID }}\n      TTN_REGION:   ${{ secrets.TTN_REGION }}\n      TTN_AFTER_DAYS: \"2\"\n      RUN_DASH: \"1\"\n      DELAY_BETWEEN_DEVICES: \"0.4\"\n      # Leave DEVICES unset for auto-discovery.\n      # Optionally add STALE_HOURS / DEV_INCLUDE / DEV_EXCLUDE here.\n\n    steps:\n      - uses: actions/checkout@v4\n\n      - name: Set up Python\n        uses: actions/setup-python@v5\n        with:\n          python-version: \"3.12\"\n\n      - name: Install deps\n        run: |\n          python -m pip install --upgrade pip\n          pip install requests pandas plotly pyarrow fastparquet python-dotenv\n\n      - name: Build dashboard\n        run: |\n          python scripts/pull_all_devices.py\n          mkdir -p docs\n          cp -r assets/* docs/\n\n      - name: Commit docs/ and data/\n        run: |\n          git config user.name  \"ttn-bot\"\n          git config user.email \"ttn-bot@example.com\"\n          git add docs/ data/ || true\n          git diff --cached --quiet || git commit -m \"update all-devices $(date -u +%FT%TZ)\"\n          git push\nRepo settings:\n\nAdd TTN_API_KEY (secret), TTN_APP_ID, TTN_REGION (secrets or variables).\nEnable GitHub Pages to serve the docs/ folder (or change the workflow to upload a Pages artifact).\n\n\n\n\n\n\nHTTP 400 invalid token Wrong key or missing scopes → create a new API key with the scopes listed above.\nHTTP 400 with after The script automatically retries with smaller limit and without after.\nMissing Parquet engine Install pyarrow or fastparquet (included in the workflow deps).\nNo data Check TTN Console: Storage Integration enabled? Device sent uplinks within window?\n429 rate limit Increase DELAY_BETWEEN_DEVICES to 0.6–1.0.\nToo many STALE devices Increase STALE_HOURS or adjust include/exclude regex.\n\n\n\n\n\n\nAuto-discovery (no device list maintenance).\nPer-device Parquet for incremental pulls & deduplication.\nRobust fetch with retries/backoff and conservative fallbacks.\nHealth report written as text & CSV for quick oversight."
-  },
-  {
-    "objectID": "dashboard_doku_en.html#quick-start-local",
-    "href": "dashboard_doku_en.html#quick-start-local",
-    "title": "README dashboard",
-    "section": "",
-    "text": "(Optional) Create scripts/.env:\nTTN_APP_ID=gisma-hydro-testbed\nTTN_REGION=eu1\nTTN_API_KEY=NNSXS_...\nRUN_DASH=1\nTTN_AFTER_DAYS=2\nDELAY_BETWEEN_DEVICES=0.3\n# Health report (optional):\n# STALE_HOURS=3\n# DEV_INCLUDE=dds75-lb-.*\n# DEV_EXCLUDE=\nRun:\npython scripts/pull_all_devices.py\nOpen the dashboard at:\n\nassets/data.html (main)\nassets/debug.html (raw samples & heads)\nHealth summary: assets/devices_used.txt and assets/devices_used.csv"
-  },
-  {
-    "objectID": "dashboard_doku_en.html#environment-variables",
-    "href": "dashboard_doku_en.html#environment-variables",
-    "title": "README dashboard",
-    "section": "",
-    "text": "Set these in .env, your shell, or GitHub Actions env:. If missing, defaults (in parentheses) are used.\n\n\n\nTTN_APP_ID — your TTN application id (e.g., gisma-hydro-testbed)\nTTN_REGION — TTN cluster (e.g., eu1)\nTTN_API_KEY — NNSXS key with scopes:\n\nView end devices (auto-discovery)\nView application packages and associations (Storage)\n(helpful) View application info, Read application traffic/data\n\n\n\n\n\n\nRUN_DASH (\"1\") 1 = build HTML dashboard; 0 = CLI smoke-test mode (see below).\nTTN_AFTER_DAYS (\"2\") Sliding storage window: now − N days. If Parquet exists, the script resumes from the last saved timestamp.\nDELAY_BETWEEN_DEVICES (\"0.3\") Seconds to sleep between device pulls (avoid rate limits).\nDEVICES (unset) Whitespace-separated list. If unset, the script auto-discovers all devices in the app.\n\n\n\n\n\nSTALE_HOURS (\"3\") — mark as STALE (xh) if last_seen older than this.\nDEV_INCLUDE (\".*\") — regex include (e.g., dds75-lb-.*).\nDEV_EXCLUDE (empty) — regex exclude (e.g., dds75-lb-11)."
-  },
-  {
-    "objectID": "dashboard_doku_en.html#outputs-layout",
-    "href": "dashboard_doku_en.html#outputs-layout",
-    "title": "README dashboard",
-    "section": "",
-    "text": "data/ — per-device Parquet files: data/&lt;device&gt;.parquet\nassets/\n\ndata.html — interactive dashboard\ndebug.html — debug cards with raw NDJSON samples & parquet heads\ndevices_used.txt — human-readable health summary\ndevices_used.csv — machine-readable health table\n\n\n\nNote: At start, devices_used.txt may temporarily contain only the discovered device list; it’s overwritten at the end with the full health summary."
-  },
-  {
-    "objectID": "dashboard_doku_en.html#cli-smoke-test",
-    "href": "dashboard_doku_en.html#cli-smoke-test",
-    "title": "README dashboard",
-    "section": "",
-    "text": "Run an ad-hoc pull for one device without building the full dashboard:\nRUN_DASH=0 python scripts/pull_all_devices.py --device dds75-lb-13 --hours 6 -v\n\n--hours overrides TTN_AFTER_DAYS for this run only.\nData is merged into data/&lt;device&gt;.parquet with de-duplication."
-  },
-  {
-    "objectID": "dashboard_doku_en.html#github-actions-pages-or-artifact",
-    "href": "dashboard_doku_en.html#github-actions-pages-or-artifact",
-    "title": "README dashboard",
-    "section": "",
-    "text": "Use a workflow like:\nname: TTN all devices → Pages\n\non:\n  schedule:\n    - cron: \"*/15 * * * *\"\n  workflow_dispatch:\n\npermissions:\n  contents: write\n\njobs:\n  build:\n    runs-on: ubuntu-latest\n    env:\n      TTN_API_KEY:  ${{ secrets.TTN_API_KEY }}\n      TTN_APP_ID:   ${{ secrets.TTN_APP_ID }}\n      TTN_REGION:   ${{ secrets.TTN_REGION }}\n      TTN_AFTER_DAYS: \"2\"\n      RUN_DASH: \"1\"\n      DELAY_BETWEEN_DEVICES: \"0.4\"\n      # Leave DEVICES unset for auto-discovery.\n      # Optionally add STALE_HOURS / DEV_INCLUDE / DEV_EXCLUDE here.\n\n    steps:\n      - uses: actions/checkout@v4\n\n      - name: Set up Python\n        uses: actions/setup-python@v5\n        with:\n          python-version: \"3.12\"\n\n      - name: Install deps\n        run: |\n          python -m pip install --upgrade pip\n          pip install requests pandas plotly pyarrow fastparquet python-dotenv\n\n      - name: Build dashboard\n        run: |\n          python scripts/pull_all_devices.py\n          mkdir -p docs\n          cp -r assets/* docs/\n\n      - name: Commit docs/ and data/\n        run: |\n          git config user.name  \"ttn-bot\"\n          git config user.email \"ttn-bot@example.com\"\n          git add docs/ data/ || true\n          git diff --cached --quiet || git commit -m \"update all-devices $(date -u +%FT%TZ)\"\n          git push\nRepo settings:\n\nAdd TTN_API_KEY (secret), TTN_APP_ID, TTN_REGION (secrets or variables).\nEnable GitHub Pages to serve the docs/ folder (or change the workflow to upload a Pages artifact)."
-  },
-  {
-    "objectID": "dashboard_doku_en.html#troubleshooting",
-    "href": "dashboard_doku_en.html#troubleshooting",
-    "title": "README dashboard",
-    "section": "",
-    "text": "HTTP 400 invalid token Wrong key or missing scopes → create a new API key with the scopes listed above.\nHTTP 400 with after The script automatically retries with smaller limit and without after.\nMissing Parquet engine Install pyarrow or fastparquet (included in the workflow deps).\nNo data Check TTN Console: Storage Integration enabled? Device sent uplinks within window?\n429 rate limit Increase DELAY_BETWEEN_DEVICES to 0.6–1.0.\nToo many STALE devices Increase STALE_HOURS or adjust include/exclude regex."
-  },
-  {
-    "objectID": "dashboard_doku_en.html#design-notes",
-    "href": "dashboard_doku_en.html#design-notes",
-    "title": "README dashboard",
-    "section": "",
-    "text": "Auto-discovery (no device list maintenance).\nPer-device Parquet for incremental pulls & deduplication.\nRobust fetch with retries/backoff and conservative fallbacks.\nHealth report written as text & CSV for quick oversight."
-  },
-  {
-    "objectID": "about.html",
-    "href": "about.html",
+    "objectID": "index.html",
+    "href": "index.html",
     "title": "Hydro-Messnetz Burgwald",
     "section": "",
-    "text": "Im Burgwald in Hessen wird ein hydrologisches Echtzeit-Monitoring eingerichtet, das kontinuierlich Daten zu Niederschlag, Bodenfeuchte, Grundwasser und Abfluss liefert. Sensoren erfassen die relevanten Größen und übertragen sie per Funk oder Mobilfunk in zentrale Datenbanken. So können Veränderungen in Moor- und Quellbereichen zeitnah erkannt und für Wasserhaushaltsanalysen genutzt werden. Diese Webseite dient der technischen und inhaltlichen Dokumentation des Monitorings und stellt perspektivisch auch die erhobenen Datensätze für Forschung, Praxis und Öffentlichkeit zur Verfügung."
+    "text": "Im Burgwald in Hessen wird ein hydrologisches Echtzeit-Monitoring eingerichtet, das kontinuierlich Daten zu Niederschlag, Bodenfeuchte, Grundwasser und Abfluss liefert. Sensoren erfassen die relevanten Größen und übertragen sie per Funk oder Mobilfunk in zentrale Datenbanken. So können Veränderungen in Moor- und Quellbereichen zeitnah erkannt und für Wasserhaushaltsanalysen genutzt werden. Diese Webseite dient der technischen und inhaltlichen Dokumentation des Monitorings und stellt perspektivisch auch die erhobenen Datensätze für Forschung, Praxis und Öffentlichkeit zur Verfügung.",
+    "crumbs": [
+      "Impressum",
+      "Über...",
+      "Hydro-Messnetz Burgwald"
+    ]
   },
   {
     "objectID": "dashboard_doku_de.html",
@@ -425,15 +156,332 @@
     ]
   },
   {
-    "objectID": "index.html",
-    "href": "index.html",
+    "objectID": "about.html",
+    "href": "about.html",
     "title": "Hydro-Messnetz Burgwald",
     "section": "",
-    "text": "Im Burgwald in Hessen wird ein hydrologisches Echtzeit-Monitoring eingerichtet, das kontinuierlich Daten zu Niederschlag, Bodenfeuchte, Grundwasser und Abfluss liefert. Sensoren erfassen die relevanten Größen und übertragen sie per Funk oder Mobilfunk in zentrale Datenbanken. So können Veränderungen in Moor- und Quellbereichen zeitnah erkannt und für Wasserhaushaltsanalysen genutzt werden. Diese Webseite dient der technischen und inhaltlichen Dokumentation des Monitorings und stellt perspektivisch auch die erhobenen Datensätze für Forschung, Praxis und Öffentlichkeit zur Verfügung.",
+    "text": "Im Burgwald in Hessen wird ein hydrologisches Echtzeit-Monitoring eingerichtet, das kontinuierlich Daten zu Niederschlag, Bodenfeuchte, Grundwasser und Abfluss liefert. Sensoren erfassen die relevanten Größen und übertragen sie per Funk oder Mobilfunk in zentrale Datenbanken. So können Veränderungen in Moor- und Quellbereichen zeitnah erkannt und für Wasserhaushaltsanalysen genutzt werden. Diese Webseite dient der technischen und inhaltlichen Dokumentation des Monitorings und stellt perspektivisch auch die erhobenen Datensätze für Forschung, Praxis und Öffentlichkeit zur Verfügung."
+  },
+  {
+    "objectID": "dashboard_doku_en.html",
+    "href": "dashboard_doku_en.html",
+    "title": "README dashboard",
+    "section": "",
+    "text": "This repo contains a Python script that builds an HTML dashboard from The Things Network (TTN) Storage.\nIt auto-discovers devices, fetches uplinks, writes per-device Parquet files, and renders interactive plots.\n\n\n\n\n(Optional) Create scripts/.env:\nTTN_APP_ID=gisma-hydro-testbed\nTTN_REGION=eu1\nTTN_API_KEY=NNSXS_...\nRUN_DASH=1\nTTN_AFTER_DAYS=2\nDELAY_BETWEEN_DEVICES=0.3\n# Health report (optional):\n# STALE_HOURS=3\n# DEV_INCLUDE=dds75-lb-.*\n# DEV_EXCLUDE=\nRun:\npython scripts/pull_all_devices.py\nOpen the dashboard at:\n\nassets/data.html (main)\nassets/debug.html (raw samples & heads)\nHealth summary: assets/devices_used.txt and assets/devices_used.csv\n\n\n\n\n\n\nSet these in .env, your shell, or GitHub Actions env:. If missing, defaults (in parentheses) are used.\n\n\n\nTTN_APP_ID — your TTN application id (e.g., gisma-hydro-testbed)\nTTN_REGION — TTN cluster (e.g., eu1)\nTTN_API_KEY — NNSXS key with scopes:\n\nView end devices (auto-discovery)\nView application packages and associations (Storage)\n(helpful) View application info, Read application traffic/data\n\n\n\n\n\n\nRUN_DASH (\"1\") 1 = build HTML dashboard; 0 = CLI smoke-test mode (see below).\nTTN_AFTER_DAYS (\"2\") Sliding storage window: now − N days. If Parquet exists, the script resumes from the last saved timestamp.\nDELAY_BETWEEN_DEVICES (\"0.3\") Seconds to sleep between device pulls (avoid rate limits).\nDEVICES (unset) Whitespace-separated list. If unset, the script auto-discovers all devices in the app.\n\n\n\n\n\nSTALE_HOURS (\"3\") — mark as STALE (xh) if last_seen older than this.\nDEV_INCLUDE (\".*\") — regex include (e.g., dds75-lb-.*).\nDEV_EXCLUDE (empty) — regex exclude (e.g., dds75-lb-11).\n\n\n\n\n\n\n\ndata/ — per-device Parquet files: data/&lt;device&gt;.parquet\nassets/\n\ndata.html — interactive dashboard\ndebug.html — debug cards with raw NDJSON samples & parquet heads\ndevices_used.txt — human-readable health summary\ndevices_used.csv — machine-readable health table\n\n\n\nNote: At start, devices_used.txt may temporarily contain only the discovered device list; it’s overwritten at the end with the full health summary.\n\n\n\n\n\nRun an ad-hoc pull for one device without building the full dashboard:\nRUN_DASH=0 python scripts/pull_all_devices.py --device dds75-lb-13 --hours 6 -v\n\n--hours overrides TTN_AFTER_DAYS for this run only.\nData is merged into data/&lt;device&gt;.parquet with de-duplication.\n\n\n\n\n\nUse a workflow like:\nname: TTN all devices → Pages\n\non:\n  schedule:\n    - cron: \"*/15 * * * *\"\n  workflow_dispatch:\n\npermissions:\n  contents: write\n\njobs:\n  build:\n    runs-on: ubuntu-latest\n    env:\n      TTN_API_KEY:  ${{ secrets.TTN_API_KEY }}\n      TTN_APP_ID:   ${{ secrets.TTN_APP_ID }}\n      TTN_REGION:   ${{ secrets.TTN_REGION }}\n      TTN_AFTER_DAYS: \"2\"\n      RUN_DASH: \"1\"\n      DELAY_BETWEEN_DEVICES: \"0.4\"\n      # Leave DEVICES unset for auto-discovery.\n      # Optionally add STALE_HOURS / DEV_INCLUDE / DEV_EXCLUDE here.\n\n    steps:\n      - uses: actions/checkout@v4\n\n      - name: Set up Python\n        uses: actions/setup-python@v5\n        with:\n          python-version: \"3.12\"\n\n      - name: Install deps\n        run: |\n          python -m pip install --upgrade pip\n          pip install requests pandas plotly pyarrow fastparquet python-dotenv\n\n      - name: Build dashboard\n        run: |\n          python scripts/pull_all_devices.py\n          mkdir -p docs\n          cp -r assets/* docs/\n\n      - name: Commit docs/ and data/\n        run: |\n          git config user.name  \"ttn-bot\"\n          git config user.email \"ttn-bot@example.com\"\n          git add docs/ data/ || true\n          git diff --cached --quiet || git commit -m \"update all-devices $(date -u +%FT%TZ)\"\n          git push\nRepo settings:\n\nAdd TTN_API_KEY (secret), TTN_APP_ID, TTN_REGION (secrets or variables).\nEnable GitHub Pages to serve the docs/ folder (or change the workflow to upload a Pages artifact).\n\n\n\n\n\n\nHTTP 400 invalid token Wrong key or missing scopes → create a new API key with the scopes listed above.\nHTTP 400 with after The script automatically retries with smaller limit and without after.\nMissing Parquet engine Install pyarrow or fastparquet (included in the workflow deps).\nNo data Check TTN Console: Storage Integration enabled? Device sent uplinks within window?\n429 rate limit Increase DELAY_BETWEEN_DEVICES to 0.6–1.0.\nToo many STALE devices Increase STALE_HOURS or adjust include/exclude regex.\n\n\n\n\n\n\nAuto-discovery (no device list maintenance).\nPer-device Parquet for incremental pulls & deduplication.\nRobust fetch with retries/backoff and conservative fallbacks.\nHealth report written as text & CSV for quick oversight."
+  },
+  {
+    "objectID": "dashboard_doku_en.html#quick-start-local",
+    "href": "dashboard_doku_en.html#quick-start-local",
+    "title": "README dashboard",
+    "section": "",
+    "text": "(Optional) Create scripts/.env:\nTTN_APP_ID=gisma-hydro-testbed\nTTN_REGION=eu1\nTTN_API_KEY=NNSXS_...\nRUN_DASH=1\nTTN_AFTER_DAYS=2\nDELAY_BETWEEN_DEVICES=0.3\n# Health report (optional):\n# STALE_HOURS=3\n# DEV_INCLUDE=dds75-lb-.*\n# DEV_EXCLUDE=\nRun:\npython scripts/pull_all_devices.py\nOpen the dashboard at:\n\nassets/data.html (main)\nassets/debug.html (raw samples & heads)\nHealth summary: assets/devices_used.txt and assets/devices_used.csv"
+  },
+  {
+    "objectID": "dashboard_doku_en.html#environment-variables",
+    "href": "dashboard_doku_en.html#environment-variables",
+    "title": "README dashboard",
+    "section": "",
+    "text": "Set these in .env, your shell, or GitHub Actions env:. If missing, defaults (in parentheses) are used.\n\n\n\nTTN_APP_ID — your TTN application id (e.g., gisma-hydro-testbed)\nTTN_REGION — TTN cluster (e.g., eu1)\nTTN_API_KEY — NNSXS key with scopes:\n\nView end devices (auto-discovery)\nView application packages and associations (Storage)\n(helpful) View application info, Read application traffic/data\n\n\n\n\n\n\nRUN_DASH (\"1\") 1 = build HTML dashboard; 0 = CLI smoke-test mode (see below).\nTTN_AFTER_DAYS (\"2\") Sliding storage window: now − N days. If Parquet exists, the script resumes from the last saved timestamp.\nDELAY_BETWEEN_DEVICES (\"0.3\") Seconds to sleep between device pulls (avoid rate limits).\nDEVICES (unset) Whitespace-separated list. If unset, the script auto-discovers all devices in the app.\n\n\n\n\n\nSTALE_HOURS (\"3\") — mark as STALE (xh) if last_seen older than this.\nDEV_INCLUDE (\".*\") — regex include (e.g., dds75-lb-.*).\nDEV_EXCLUDE (empty) — regex exclude (e.g., dds75-lb-11)."
+  },
+  {
+    "objectID": "dashboard_doku_en.html#outputs-layout",
+    "href": "dashboard_doku_en.html#outputs-layout",
+    "title": "README dashboard",
+    "section": "",
+    "text": "data/ — per-device Parquet files: data/&lt;device&gt;.parquet\nassets/\n\ndata.html — interactive dashboard\ndebug.html — debug cards with raw NDJSON samples & parquet heads\ndevices_used.txt — human-readable health summary\ndevices_used.csv — machine-readable health table\n\n\n\nNote: At start, devices_used.txt may temporarily contain only the discovered device list; it’s overwritten at the end with the full health summary."
+  },
+  {
+    "objectID": "dashboard_doku_en.html#cli-smoke-test",
+    "href": "dashboard_doku_en.html#cli-smoke-test",
+    "title": "README dashboard",
+    "section": "",
+    "text": "Run an ad-hoc pull for one device without building the full dashboard:\nRUN_DASH=0 python scripts/pull_all_devices.py --device dds75-lb-13 --hours 6 -v\n\n--hours overrides TTN_AFTER_DAYS for this run only.\nData is merged into data/&lt;device&gt;.parquet with de-duplication."
+  },
+  {
+    "objectID": "dashboard_doku_en.html#github-actions-pages-or-artifact",
+    "href": "dashboard_doku_en.html#github-actions-pages-or-artifact",
+    "title": "README dashboard",
+    "section": "",
+    "text": "Use a workflow like:\nname: TTN all devices → Pages\n\non:\n  schedule:\n    - cron: \"*/15 * * * *\"\n  workflow_dispatch:\n\npermissions:\n  contents: write\n\njobs:\n  build:\n    runs-on: ubuntu-latest\n    env:\n      TTN_API_KEY:  ${{ secrets.TTN_API_KEY }}\n      TTN_APP_ID:   ${{ secrets.TTN_APP_ID }}\n      TTN_REGION:   ${{ secrets.TTN_REGION }}\n      TTN_AFTER_DAYS: \"2\"\n      RUN_DASH: \"1\"\n      DELAY_BETWEEN_DEVICES: \"0.4\"\n      # Leave DEVICES unset for auto-discovery.\n      # Optionally add STALE_HOURS / DEV_INCLUDE / DEV_EXCLUDE here.\n\n    steps:\n      - uses: actions/checkout@v4\n\n      - name: Set up Python\n        uses: actions/setup-python@v5\n        with:\n          python-version: \"3.12\"\n\n      - name: Install deps\n        run: |\n          python -m pip install --upgrade pip\n          pip install requests pandas plotly pyarrow fastparquet python-dotenv\n\n      - name: Build dashboard\n        run: |\n          python scripts/pull_all_devices.py\n          mkdir -p docs\n          cp -r assets/* docs/\n\n      - name: Commit docs/ and data/\n        run: |\n          git config user.name  \"ttn-bot\"\n          git config user.email \"ttn-bot@example.com\"\n          git add docs/ data/ || true\n          git diff --cached --quiet || git commit -m \"update all-devices $(date -u +%FT%TZ)\"\n          git push\nRepo settings:\n\nAdd TTN_API_KEY (secret), TTN_APP_ID, TTN_REGION (secrets or variables).\nEnable GitHub Pages to serve the docs/ folder (or change the workflow to upload a Pages artifact)."
+  },
+  {
+    "objectID": "dashboard_doku_en.html#troubleshooting",
+    "href": "dashboard_doku_en.html#troubleshooting",
+    "title": "README dashboard",
+    "section": "",
+    "text": "HTTP 400 invalid token Wrong key or missing scopes → create a new API key with the scopes listed above.\nHTTP 400 with after The script automatically retries with smaller limit and without after.\nMissing Parquet engine Install pyarrow or fastparquet (included in the workflow deps).\nNo data Check TTN Console: Storage Integration enabled? Device sent uplinks within window?\n429 rate limit Increase DELAY_BETWEEN_DEVICES to 0.6–1.0.\nToo many STALE devices Increase STALE_HOURS or adjust include/exclude regex."
+  },
+  {
+    "objectID": "dashboard_doku_en.html#design-notes",
+    "href": "dashboard_doku_en.html#design-notes",
+    "title": "README dashboard",
+    "section": "",
+    "text": "Auto-discovery (no device list maintenance).\nPer-device Parquet for incremental pulls & deduplication.\nRobust fetch with retries/backoff and conservative fallbacks.\nHealth report written as text & CSV for quick oversight."
+  },
+  {
+    "objectID": "impressum.html#content-responsibility",
+    "href": "impressum.html#content-responsibility",
+    "title": "Impressum",
+    "section": "Content Responsibility",
+    "text": "Content Responsibility\nThe responsibility for the content rests with the instructors. Statements, opinions and/or conclusions are the ones from the instructors and do not necessarily reflect the opinion of the representatives of Marburg University."
+  },
+  {
+    "objectID": "impressum.html#content-license",
+    "href": "impressum.html#content-license",
+    "title": "Impressum",
+    "section": "Content License",
+    "text": "Content License\nThis work is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License.\n\nPrivacy Policy\n\n\nAs of 21. October 2021\n\n\nIntroduction\n\n\nWith the following data protection declaration, we would like to inform you about the types of your personal data (hereinafter also referred to as “data” for short) that we process, for what purposes and to what extent. The privacy policy applies to all processing of personal data carried out by us, both in the context of the provision of our services and in particular on our websites, in mobile applications and within external online presences, such as our social media profiles (hereinafter collectively referred to as “Online Offerings”).\n\n\nThe terms used are not gender-specific.\n\n\nResponsible\n\n\nDr Christoph ReudenbachDeutschhaustr 1035037 Marburg\n\n\nEmail address: reudenbach@uni-marburg.de.\n\n\nImprint: https://www.uni-marburg.de/de/impressum.\n\n\nOverview of Processing\n\n\nThe following overview summarizes the types of data processed and the purposes of their processing, and refers to the data subjects.\n\n\nTypes of Data Processed\n\n\n\nContent data (e.g. input in online forms).\n\n\nContact data (e.g. email, phone numbers).\n\n\nMeta/communication data (e.g. device information, IP addresses).\n\n\nUse data (e.g. websites visited, interest in content, access times).\n\n\n\nCategories of data subjects\n\n\n\nCommunication partners.\n\n\nUsers (e.g.. Website visitors, users of online services).\n\n\n\nPurposes of processing\n\n\n\nDirect marketing (e.g., by email or postal mail).\n\n\nContact requests and communications.\n\n\n\nRelevant legal basis\n\n\nThe following is an overview of the legal basis of the GDPR on the basis of which we process personal data. Please note that in addition to the provisions of the GDPR, national data protection regulations may apply in your or our country of residence or domicile. Furthermore, should more specific legal bases be decisive in individual cases, we will inform you of these in the data protection declaration.\n\n \n\n\nConsent (Art. 6 para. 1 p. 1 lit. a. DSGVO) - The data subject has given his or her consent to the processing of personal data concerning him or her for a specific purpose or purposes.\n\n\nRegistered interests (Art. 6 para. 1 p. 1 lit. f. DSGVO) - Processing is necessary to protect the legitimate interests of the controller or a third party, unless such interests are overridden by the interests or fundamental rights and freedoms of the data subject which require the protection of personal data.\n\n\n\nNational data protection regulations in Germany: In addition to the data protection regulations of the General Data Protection Regulation, national regulations on data protection apply in Germany. These include, in particular, the Act on Protection against Misuse of Personal Data in Data Processing (Federal Data Protection Act - BDSG). In particular, the BDSG contains special regulations on the right to information, the right to erasure, the right to object, the processing of special categories of personal data, processing for other purposes and transmission, as well as automated decision-making in individual cases, including profiling. Furthermore, it regulates data processing for employment purposes (Section 26 BDSG), in particular with regard to the establishment, implementation or termination of employment relationships as well as the consent of employees. Furthermore, state data protection laws of the individual federal states may apply.\n\n \n\nSecurity measures\n\n\nWe take appropriate technical and organizational measures in accordance with the legal requirements, taking into account the state of the art, the implementation costs and the nature, scope, circumstances and purposes of the processing, as well as the different probabilities of occurrence and the extent of the threat to the rights and freedoms of natural persons, in order to ensure a level of protection appropriate to the risk.\n\n.\n\nMeasures include, in particular, ensuring the confidentiality, integrity, and availability of data by controlling physical and electronic access to data as well as access to, entry into, disclosure of, assurance of availability of, and segregation of data concerning them. Furthermore, we have established procedures to ensure the exercise of data subjects’ rights, the deletion of data, and responses to data compromise. Furthermore, we take the protection of personal data into account as early as the development or selection of hardware, software as well as procedures in accordance with the principle of data protection, through technology design and through data protection-friendly default settings.\n\n \n\nDeletion of data\n\n\nThe data processed by us will be deleted in accordance with legal requirements as soon as their consents permitted for processing are revoked or other permissions cease to apply (e.g. if the purpose of processing this data has ceased to apply or it is not necessary for the purpose).\n\n \n\nIf the data are not deleted because they are required for other and legally permissible purposes, their processing will be limited to these purposes. That is, the data will be blocked and not processed for other purposes. This applies, for example, to data that must be retained for reasons of commercial or tax law or whose storage is necessary for the assertion, exercise or defense of legal claims or for the protection of the rights of another natural person or legal entity.\n\n \n\nOur privacy notices may also include further information on the retention and deletion of data that takes precedence for the processing operations in question.\n\n \n\nUse of cookies\n\n\nCookies are text files that contain data from websites or domains visited and are stored by a browser on the user’s computer. The primary purpose of a cookie is to store information about a user during or after their visit within an online site. Stored information may include, for example, language settings on a website, login status, a shopping cart, or where a video was watched. We further include in the term cookies other technologies that perform the same functions as cookies (e.g., when user details are stored using pseudonymous online identifiers, also referred to as “user IDs”)\n\n.\n\nThe following cookie types and functions are distinguished:\n\n\n\nTemporary cookies (also: session or session cookies): Temporary cookies are deleted at the latest after a user has left an online offer and closed his browser.\n\n\nPermanent cookies: Permanent cookies remain stored even after closing the browser. For example, the login status can be saved or preferred content can be displayed directly when the user revisits a website. Likewise, the interests of users used for range measurement or marketing purposes can be stored in such a cookie.\n\n\nFirst-party cookies: First-party cookies are set by ourselves.\n\n\nThird-party cookies (also: third-party cookies): Third-party cookies are mainly used by advertisers (so-called third parties) to process user information.\n\n\nNecessary (also: essential or absolutely necessary) cookies: Cookies may be absolutely necessary for the operation of a website (e.g. to store logins or other user input or for security reasons).\n\n\nStatistics, marketing and personalization cookies: Furthermore, cookies are usually also used in the context of range measurement and when the interests of a user or his behavior (e.g. viewing certain content, use of functions, etc.) on individual web pages are stored in a user profile. Such profiles are used, for example, to show users content that matches their potential interests. This process is also referred to as “tracking”, i.e., tracking the potential interests of users. Insofar as we use cookies or “tracking” technologies, we will inform you separately in our privacy policy or in the context of obtaining consent.\n\n\n\nNotes on legal bases: On which legal basis we process your personal data using cookies depends on whether we ask you for consent. If this is the case and you consent to the use of cookies, the legal basis for the processing of your data is the declared consent. Otherwise, the data processed with the help of cookies is processed on the basis of our legitimate interests (e.g. in a business operation of our online offer and its improvement) or, if the use of cookies is necessary to fulfill our contractual obligations.\n\n.\n\nDuration of storage: If we do not provide you with explicit information about the storage period of permanent cookies (e.g. in the context of a so-called cookie opt-in), please assume that the storage period can be up to two years.\n\n.\n\nGeneral information on revocation and objection (opt-out):  Depending on whether the processing is based on consent or legal permission, you have the option at any time to revoke any consent given or to object to the processing of your data by cookie technologies (collectively referred to as “opt-out”). You can initially declare your objection by means of your browser settings, e.g. by deactivating the use of cookies (whereby this may also restrict the functionality of our online offer). An objection to the use of cookies for online marketing purposes can also be declared by means of a variety of services, especially in the case of tracking, via the websites https://optout.aboutads.info and https://www.youronlinechoices.com/. In addition, you can receive further objection notices in the context of the information on the service providers and cookies used.\n\n.\n\nProcessing of cookie data on the basis of consent: We use a cookie consent management procedure, in the context of which the consent of users to the use of cookies, or the processing and providers mentioned in the cookie consent management procedure can be obtained and managed and revoked by users. Here, the declaration of consent is stored in order not to have to repeat its query and to be able to prove the consent in accordance with the legal obligation. The storage can take place on the server side and/or in a cookie (so-called opt-in cookie, or with the help of comparable technologies), in order to be able to assign the consent to a user or their device. Subject to individual information on the providers of cookie management services, the following information applies: The duration of the storage of consent can be up to two years. Here, a pseudonymous user identifier is formed and stored with the time of consent, information on the scope of consent (e.g., which categories of cookies and/or service providers) as well as the browser, system and end device used.\n\n.\n\n\nTypes of data processed: Usage data (e.g. websites visited, interest in content, access times), meta/communication data (e.g. device information, IP addresses).\n\n\nPersons concerned: Users (e.g. website visitors, users of online services).\n\n\nLegal basis: Consent (Art. 6 para. 1 p. 1 lit. a. DSGVO), Legitimate Interests (Art. 6 para. 1 p. 1 lit. f. DSGVO).\n\n\n\nSurveys and polls\n\n\nThe surveys and polls (hereinafter “surveys”) conducted by us are evaluated anonymously. Personal data is only processed insofar as this is necessary for the provision and technical implementation of the surveys (e.g. processing of the IP address to display the survey in the user’s browser or to enable a resumption of the survey with the help of a temporary cookie (session cookie)) or users have consented.\n\n.\n\nNotes on legal basis: If we ask participants for consent to process their data, this is the legal basis of the processing, otherwise the processing of participants’ data is based on our legitimate interests in conducting an objective survey.\n\n \n\n\nTypes of data processed: Contact data (e.g. email, phone numbers), content data (e.g. input in online forms), usage data (e.g. web pages visited, interest in content, access times), meta/communication data (e.g. device information, IP addresses).\n\n\nParticipants concerned: Communication partners.\n\n\nPurposes of processing: Contact requests and communication, direct marketing (e.g. by e-mail or postal mail).\n\n\nLegal basis: Consent (Art. 6 para. 1 p. 1 lit. a. DSGVO), Legitimate Interests (Art. 6 para. 1 p. 1 lit. f. DSGVO).\n\n\n\nChange and Update Privacy Policy\n\n\nWe encourage you to periodically review the contents of our Privacy Policy. We adapt the Privacy Policy as soon as the changes in the data processing activities we carry out make it necessary. We will inform you as soon as the changes require an act of cooperation on your part (e.g. consent) or other individual notification.\n\n.\n\nWhere we provide addresses and contact information for companies and organizations in this Privacy Policy, please note that addresses may change over time and please check the information before contacting us.\n\n.\n\nRights of data subjects\n\n\nAs a data subject, you are entitled to various rights under the GDPR, which arise in particular from Art. 15 to 21 DSGVO:\n\n\n\nRight to object: You have the right to object at any time, on grounds relating to your particular situation, to the processing of personal data relating to you which is carried out on the basis of Art. 6(1)(e) or (f) DSGVO; this also applies to profiling based on these provisions. If the personal data concerning you is processed for the purpose of direct marketing, you have the right to object at any time to the processing of personal data concerning you for the purpose of such marketing; this also applies to profiling, insofar as it is associated with such direct marketing.\n\n\nRight of withdrawal in the case of consent: You have the right to withdraw any consent you have given at any time.\n\n\nRight of access: You have the right to request confirmation as to whether data in question is being processed and to information about this data, as well as further information and copy of the data in accordance with the legal requirements.\n\n\nRight of rectification: You have the right, in accordance with the legal requirements, to request the completion of the data concerning you or the correction of incorrect data concerning you.\n\n\nRight to erasure and restriction of processing: You have, in accordance with the law, the right to request that data concerning you be erased without undue delay, or alternatively, in accordance with the law, to request restriction of the processing of the data.\n\n\nRight to data portability: You have the right to receive data concerning you, which you have provided to us, in a structured, common and machine-readable format in accordance with the legal requirements, or to demand its transfer to another responsible party.\n\n\nComplaint to supervisory authority: Without prejudice to any other administrative or judicial remedy, you have the right to lodge a complaint with a supervisory authority, in particular in the Member State of your habitual residence, place of work or the place of the alleged infringement, if you consider that the processing of personal data concerning you infringes the requirements of the GDPR.\n\n\n.\n\nDefinitions of Terms\n\n\nThis section provides you with an overview of the terms used in this Privacy Policy. Many of the terms are taken from the law and defined primarily in Article 4 of the GDPR. The legal definitions are binding. The following explanations, on the other hand, are primarily intended to aid understanding. The terms are sorted alphabetically.\n\n \n\n\nPersonal data: “Personal data” means any information relating to an identified or identifiable natural person (hereinafter “data subject”); an identifiable natural person is one who can be identified, directly or indirectly, in particular by reference to an identifier such as a name, an identification number, location data, an online identifier (eg. e.g. cookie) or to one or more special characteristics that are an expression of the physical, physiological, genetic, mental, economic, cultural or social identity of that natural person.\n\n\nController: The “controller” is the natural or legal person, public authority, agency or other body which alone or jointly with others determines the purposes and means of the processing of personal data.\n\n\nProcessing: “Processing” means any operation or set of operations which is performed upon personal data, whether or not by automatic means. The term is broad and includes virtually any handling of data, whether collecting, evaluating, storing, transmitting or deleting.\n\n\n\nCreated with free Datenschutz-Generator.de by Dr. Thomas Schwenke"
+  },
+  {
+    "objectID": "index_data.html",
+    "href": "index_data.html",
+    "title": "Daten Repository",
+    "section": "",
+    "text": "NDJSON und Parquet sind beides Datenformate, die sich gut ergänzen:\n\nNDJSON (Newline Delimited JSON) speichert Ereignisse zeilenweise als JSON-Objekte.\n→ Ideal für Streaming und APIs, weil jede Zeile ein eigenständiger Datensatz ist.\n→ Lässt sich mit Tools wie jq, pandas.read_json(lines=True) oder jsonlite::stream_in() direkt auswerten.\nParquet ist ein spaltenorientiertes, binäres Format für große Datenmengen.\n→ Optimiert für Analysen und Abfragen, sehr platzsparend und schnell.\n→ Standard in Big-Data-Ecosystemen (Spark, Hadoop, DuckDB, BigQuery, GDAL/GeoParquet).\n\nTypischer Workflow: Rohdaten zunächst als NDJSON persistieren → für Analyse/Archiv in Parquet konvertieren.",
     "crumbs": [
       "Impressum",
-      "Über...",
-      "Hydro-Messnetz Burgwald"
+      "Messnetz-Daten",
+      "Daten Repository"
+    ]
+  },
+  {
+    "objectID": "index_data.html#allgemeine-formate-im-repo",
+    "href": "index_data.html#allgemeine-formate-im-repo",
+    "title": "Daten Repository",
+    "section": "",
+    "text": "NDJSON und Parquet sind beides Datenformate, die sich gut ergänzen:\n\nNDJSON (Newline Delimited JSON) speichert Ereignisse zeilenweise als JSON-Objekte.\n→ Ideal für Streaming und APIs, weil jede Zeile ein eigenständiger Datensatz ist.\n→ Lässt sich mit Tools wie jq, pandas.read_json(lines=True) oder jsonlite::stream_in() direkt auswerten.\nParquet ist ein spaltenorientiertes, binäres Format für große Datenmengen.\n→ Optimiert für Analysen und Abfragen, sehr platzsparend und schnell.\n→ Standard in Big-Data-Ecosystemen (Spark, Hadoop, DuckDB, BigQuery, GDAL/GeoParquet).\n\nTypischer Workflow: Rohdaten zunächst als NDJSON persistieren → für Analyse/Archiv in Parquet konvertieren.",
+    "crumbs": [
+      "Impressum",
+      "Messnetz-Daten",
+      "Daten Repository"
+    ]
+  },
+  {
+    "objectID": "index_data.html#sensoren",
+    "href": "index_data.html#sensoren",
+    "title": "Daten Repository",
+    "section": "Sensoren",
+    "text": "Sensoren\n\nDDS75-LB (dds75-lb-*.parquet): distance_cm (bzw. Distance_mm), temperature, battery, Flags (interrupt_flag, sensor_flag).\nPS-LB (burgwald-ps-lb-*.parquet): water_cm bzw. pressure_kpa/_mpa, zusätzlich idc_input_ma, vdc_input_v, battery, digitale Eingänge.\nSenseCAP (burgwald-sensecap-*.parquet): temperature, humidity, pressure_hpa, illumination, ggf. uv_index, wind_speed, wind_dir, rainfall.",
+    "crumbs": [
+      "Impressum",
+      "Messnetz-Daten",
+      "Daten Repository"
+    ]
+  },
+  {
+    "objectID": "index_data.html#dateien-in-data",
+    "href": "index_data.html#dateien-in-data",
+    "title": "Daten Repository",
+    "section": "Dateien in data/",
+    "text": "Dateien in data/\n\nLade Datenliste …",
+    "crumbs": [
+      "Impressum",
+      "Messnetz-Daten",
+      "Daten Repository"
+    ]
+  },
+  {
+    "objectID": "lorawan_doku.html",
+    "href": "lorawan_doku.html",
+    "title": "LoraWan Doku",
+    "section": "",
+    "text": "Hier folgt eine basale Anleitung für den Betrieb eines MikroTik-LoRaWAN-Gateways (RBwAPR-2nD) über WLAN mit TTN (EU1) sowie der Einbindung der Sensoren Dragino PS-LB, Dragino DDS-75LB und Seeed SenseCAP S2120. Die konkreten Decoder sind nicht enthalte aber auf dem Gateway bereits aktiv. Zusätzlich werden praxistaugliche Wege zum Dauerbetrieb (Storage, MQTT→CSV/DB, InfluxDB/Grafana) und No-Code-Speicherung (Webhooks) skizziert. Beispiele und Snippets sind so gehalten, dass sie direkt übernommen werden können.",
+    "crumbs": [
+      "Impressum",
+      "MikroTik Setup",
+      "Hub & TNN"
+    ]
+  },
+  {
+    "objectID": "lorawan_doku.html#script-hochladen",
+    "href": "lorawan_doku.html#script-hochladen",
+    "title": "LoraWan Doku",
+    "section": "1.1 Script hochladen",
+    "text": "1.1 Script hochladen\n\nIn WinBox → Files: Setup-Datei burgwald_all.rsc einfach per Drag&Drop auf das Gerät laden. WinBox Download (MikroTik)",
+    "crumbs": [
+      "Impressum",
+      "MikroTik Setup",
+      "Hub & TNN"
+    ]
+  },
+  {
+    "objectID": "lorawan_doku.html#script-importieren",
+    "href": "lorawan_doku.html#script-importieren",
+    "title": "LoraWan Doku",
+    "section": "1.2 Script importieren",
+    "text": "1.2 Script importieren\n\nIn WinBox → New Terminal ausführen:\n\n  /import file-name=gisma_base2.rsc",
+    "crumbs": [
+      "Impressum",
+      "MikroTik Setup",
+      "Hub & TNN"
+    ]
+  },
+  {
+    "objectID": "lorawan_doku.html#funktion-testen",
+    "href": "lorawan_doku.html#funktion-testen",
+    "title": "LoraWan Doku",
+    "section": "1.3 Funktion testen",
+    "text": "1.3 Funktion testen\n\nWLAN/DHCP:\n\n  /interface wireless monitor wlan1 once\n  /ip dhcp-client print detail\n  /ping 8.8.8.8 count=4\n\nLoRa (falls enthalten):\n\n  /lora print detail\n  /tool sniffer quick port=1700",
+    "crumbs": [
+      "Impressum",
+      "MikroTik Setup",
+      "Hub & TNN"
+    ]
+  },
+  {
+    "objectID": "lorawan_doku.html#grundlagen-mikrotik-konnektivität-mac-zugriff-und-hotspot-einstellungen",
+    "href": "lorawan_doku.html#grundlagen-mikrotik-konnektivität-mac-zugriff-und-hotspot-einstellungen",
+    "title": "LoraWan Doku",
+    "section": "1.4 Grundlagen MikroTik-Konnektivität, MAC-Zugriff und Hotspot-Einstellungen",
+    "text": "1.4 Grundlagen MikroTik-Konnektivität, MAC-Zugriff und Hotspot-Einstellungen\n\n1.4.1 Hardware-Aufbau\n\nMikroTik RBwAPR-2nD mit Netzteil/PoE versorgen.\nEthernet vom PC/Laptop an ether1 des MikroTik stecken.\nOptional: LoRa-Antenne montieren und fest verschrauben.\n\n\n\n1.4.2 Erstverbindung per WinBox (Layer-2 / MAC)\n\nWinBox starten → Neighbors: RBwAPR sollte automatisch erscheinen.\nVerbinden über MAC Address (funktioniert ohne IP).\nLogin: ab Werk admin (ggf. ohne Passwort) → bei erster Anmeldung Passwort setzen.\nBei älteren QuickSet-Resten: System → Reset Configuration (ohne Default-Skripte), danach erneut per MAC verbinden.\n\n\n\n1.4.3 Hotspot-/WLAN-Voraussetzungen\n\nBand: 2,4 GHz (802.11b/g/n). Station-Pseudobridge ist bei 5 GHz oft nicht zuverlässig.\nSicherheitsmodus: WPA2-PSK (empfohlen), Kennwort ohne Sonderfälle.\nSSID: sichtbar, statischer Name (keine Auto-Umschaltung).\nKanalbreite: 20 MHz genügt; Auto-Kanal ist ok.\nCaptive Portal: deaktivieren. Portale blockieren Headless-Geräte.\nMAC-Filter: falls aktiv, MAC von wlan1 freigeben (siehe Interfaces → wlan1).\nDHCP am Hotspot: aktiv, ausreichend Adressbereich (z. B. 192.168.1.100–200).\nInternet-Durchleitung (NAT) im Hotspot aktiv lassen.\n\n\n\n1.4.4 WLAN-Client (GUI-Weg, WinBox)\n\nWireless → Security Profiles\n\nWPA2-PSK mit Kennwort anlegen/ändern.\n\nWireless → wlan1\n\nMode: station-pseudobridge\n\nBand: 2ghz-b/g/n\n\nSSID: Hotspot-SSID eintragen\n\nApply, dann Enable.\n\nBridge\n\nBridge → + bridgeLocal anlegen.\n\nBridge → Ports: wlan1 und ether1 zur bridgeLocal hinzufügen.\n\nDHCP-Client\n\nIP → DHCP Client → +\n\nInterface: bridgeLocal, Enabled.\n\n\nDNS (optional)\n\nIP → DNS: Public Resolver (z. B. 8.8.8.8, 1.1.1.1), „Allow Remote Requests“ aktivieren.\n\n\n\n\n1.4.5 Kontrolle & Umstieg auf IP-Zugriff\n\nIP-Bezug prüfen: IP → DHCP Client zeigt „bound“ mit zugewiesener IP.\nRouting/Internet testen: New Terminal → /ping 8.8.8.8 count=4\nDanach in WinBox statt über MAC über die IP verbinden (stabiler, schneller).\n\n\n\n1.4.6 Tests (Terminal, minimal)\n/interface wireless monitor wlan1 once\n/ip dhcp-client print detail\n/ping 8.8.8.8 count=4\n/ip route print\n/ip dns print\n👉 Damit ist die Konfiguration in einem Rutsch aufgespielt.",
+    "crumbs": [
+      "Impressum",
+      "MikroTik Setup",
+      "Hub & TNN"
+    ]
+  },
+  {
+    "objectID": "lorawan_doku.html#topologie-und-begriffe",
+    "href": "lorawan_doku.html#topologie-und-begriffe",
+    "title": "LoraWan Doku",
+    "section": "2.1 Topologie und Begriffe",
+    "text": "2.1 Topologie und Begriffe\nKurzüberblick über alle Bausteine (Sensoren, Gateway, Netzwerk, TTN, Decoder) und wie sie zusammenspielen. Begriffe werden so eingeführt, dass die folgenden Schritte leichter nachvollziehbar sind.\n\n2.1.1 Gesamtbild\nEine End-to-End-Skizze vom Sensor (LoRaWAN) bis zur Datennutzung (Speicher/Visualisierung). Hilft, die Rolle jeder Komponente zu verstehen.\n\n\n\n\n\n%%{init: {'themeVariables': { 'fontSize': '12px' }}}%%\nflowchart TB\n  A[\"Sensor&lt;br/&gt;(LoRaWAN, EU868)\"]\n  B[\"LoRa-Gateway&lt;br/&gt;MikroTik RBwAPR-2nD\"]\n  C[\"WLAN-Hotspot&lt;br/&gt;(Internet)\"]\n  D[\"TTN (EU1)\"]\n  E[\"Decoder&lt;br/&gt;(in TTN Application)\"]\n  F[\"Ablage / Visualisierung&lt;br/&gt;(Storage / MQTT / DB / Grafana / No-Code)\"]\n  A --&gt; B --&gt; C --&gt; D --&gt; E --&gt; F\n\n\n\n\n\n\n\n\n\n2.1.2 MikroTik als WLAN-Client\nDer MikroTik wird als WLAN-Station betrieben, nicht als Access Point. So hängt er sich in ein vorhandenes WLAN ein und leitet LoRaWAN-Pakete ins Internet.\n\nDer MikroTik arbeitet nicht als Access Point, sondern als Station im WLAN (vergleichbar mit einem Laptop).\nDer Modus station-pseudobridge sorgt dafür, dass WLAN und Ethernet im selben Layer-2-Segment erscheinen (Broadcast-Domain geteilt).\n\n\n\n2.1.3 Bridge (bridgeLocal)\nEine Layer‑2‑Bridge, die wlan1 und ether1 zu einem logischen Switch verbindet. Der DHCP-Client sitzt auf der Bridge, damit die IP für beide Ports gilt.\n\nDie Bridge bündelt Interfaces zu einem logischen Switch (hier: wlan1 + ether1).\nDHCP-Client hängt auf der Bridge und bezieht die IP vom Hotspot.\n\n\n\n2.1.4 „Alte Reste“\nWerkseinstellungen/QuickSet legen oft Regeln an, die im Client-Betrieb stören. Dieser Abschnitt erklärt, was entfernt bzw. nicht benötigt wird.\n\nWerkseinstellungen/QuickSet hinterlassen oft DHCP-Server/NAT/Firewall-Regeln, die im Client-Betrieb stören können.\nNach Reset wird nur das Nötige konfiguriert (WLAN-Client, Bridge, DHCP-Client, DNS).\n\n\n\n2.1.5 Sensoren/Decoder (ohne Details)\nÜberblick, welche Geräte eingebunden werden und wo deren Decoder liegen (TTN Application oder per Device-Override).\n\nDragino PS-LB und Dragino DDS-75LB werden identisch (OTAA) aufgenommen; Decoder unterscheiden sich, sind aber in der TTN-Application bereits aktiv.\nSenseCAP S2120 nutzt proprietäre Payloads (typisch FPort 199); der Decoder ist in der Application hinterlegt.\nVerwaltung: Application → Payload formatters (Uplink); auf Wunsch device-spezifisch via Device-Override.",
+    "crumbs": [
+      "Impressum",
+      "MikroTik Setup",
+      "Hub & TNN"
+    ]
+  },
+  {
+    "objectID": "lorawan_doku.html#mikrotik-soll-konfiguration-wlan-bridge-lora",
+    "href": "lorawan_doku.html#mikrotik-soll-konfiguration-wlan-bridge-lora",
+    "title": "LoraWan Doku",
+    "section": "2.2 MikroTik – Soll-Konfiguration (WLAN & Bridge & LoRa)",
+    "text": "2.2 MikroTik – Soll-Konfiguration (WLAN & Bridge & LoRa)\nSchritt‑für‑Schritt‑Konfiguration des MikroTik: WLAN-Client, Bridge, IP/DNS und LoRa‑Gateway‑Weiterleitung zu TTN EU1.\n\nDie folgenden Snippets setzen die bekannte funktionierende Basis um (WLAN-Client auf SSID „GISMA-NET“, WPA2-PSK, Pseudobridge, TTN EU1/UDP, EU-868).\n\n\n2.2.1 WLAN-Security\nSicherheitsprofil für WPA/WPA2‑PSK. Hinterlegt Schlüssel und Cipher.\n/interface wireless security-profiles set [find default=yes] \\\n    mode=dynamic-keys \\\n    authentication-types=wpa-psk,wpa2-psk \\\n    unicast-ciphers=tkip,aes-ccm \\\n    group-ciphers=tkip,aes-ccm \\\n    supplicant-identity=MikroTik \\\n    wpa-pre-shared-key=36171669 \\\n    wpa2-pre-shared-key=36171669\n\n\n2.2.2 WLAN als Client (Pseudobridge)\nVersetzt wlan1 in den Station‑Modus mit Pseudobridge, um im gleichen Layer‑2 wie der Hotspot zu sein.\n/interface wireless set [find default-name=wlan1] \\\n    band=2ghz-b/g/n \\\n    wireless-protocol=802.11 \\\n    mode=station-pseudobridge \\\n    ssid=GISMA-NET \\\n    frequency=auto \\\n    disabled=no\n\n\n2.2.3 Bridge + Ports\nErstellt bridgeLocal und fügt wlan1 und ether1 als Ports hinzu.\n/interface bridge add name=bridgeLocal\n/interface bridge port add bridge=bridgeLocal interface=wlan1\n/interface bridge port add bridge=bridgeLocal interface=ether1\n\n\n2.2.4 IP-Bezug & DNS\nAktiviert einen DHCP‑Client auf der Bridge und setzt Resolver für DNS.\n/ip dhcp-client add interface=bridgeLocal disabled=no\n/ip dns set allow-remote-requests=yes servers=8.8.8.8,1.1.1.1\n\n\n2.2.5 LoRa – TTN EU1 (Semtech UDP) & EU-868\nAktiviert das eingebaute LoRa‑Gateway, stellt EU‑868 ein und konfiguriert den Semtech‑UDP‑Forwarder zu TTN EU1.\n/lora disable 0\n/lora set 0 servers=\"TTN V3 (eu1)\" channel-plan=eu-868 \\\n    network=public forward=crc-valid,crc-error\n/lora enable 0\nPrüfung:\nSchnelle Checks: LoRa‑Status und ob UDP‑Pakete auf Port 1700 rausgehen.\n/lora print detail\n/tool sniffer quick port=1700",
+    "crumbs": [
+      "Impressum",
+      "MikroTik Setup",
+      "Hub & TNN"
+    ]
+  },
+  {
+    "objectID": "lorawan_doku.html#winboxterminal-diagnoseleitfaden",
+    "href": "lorawan_doku.html#winboxterminal-diagnoseleitfaden",
+    "title": "LoraWan Doku",
+    "section": "2.3 WinBox/Terminal – Diagnoseleitfaden",
+    "text": "2.3 WinBox/Terminal – Diagnoseleitfaden\nSammlung typischer Diagnose‑Befehle, um WLAN, IP‑Vergabe, Routing und LoRa‑Weiterleitung zu prüfen.\n\n2.3.1 WLAN & IP\nBefehle zum Scannen/Überwachen des WLANs und zum Prüfen der IP‑Konfiguration/Konnektivität.\n\nWLAN-Scan:\n\n  /interface wireless scan wlan1\n\nMonitor des Clients (Status, Kanal, Rauschpegel):\n\n  /interface wireless monitor wlan1\n\nDHCP-Client-Status:\n\n  /ip dhcp-client print detail\n\nRouting:\n\n  /ip route print\n\nKonnektivitätstest:\n\n  /ping 8.8.8.8\n\n\n2.3.2 Bridge/Ports\nDruckt Bridge und Port‑Zugehörigkeiten, um Fehlverdrahtungen auszuschließen.\n/interface bridge print\n/interface bridge port print\n\n\n2.3.3 LoRa-Gateway\nPrüft LoRa‑Gateway‑Parameter (EUI, Server, Plan) und ob Forwarder‑Traffic sichtbar ist.\n\nStatus/EUI/Server/Plan:\n\n  /lora print detail\n\nUDP-Forwarding sichtbar?\n\n  /tool sniffer quick port=1700\n\n\n2.3.4 Export/Sicherung\nExportiert die Konfiguration textuell (Backup der Einstellungen) bzw. erstellt ein binäres Voll‑Backup.\n\nTerse-Export (menschenlesbar):\n\n  /export terse\n\nBinary-Backup (voll):\n\n  /system backup save name=running.backup",
+    "crumbs": [
+      "Impressum",
+      "MikroTik Setup",
+      "Hub & TNN"
+    ]
+  },
+  {
+    "objectID": "lorawan_doku.html#ttn-konsole-gateway-application-geräte",
+    "href": "lorawan_doku.html#ttn-konsole-gateway-application-geräte",
+    "title": "LoraWan Doku",
+    "section": "2.4 TTN-Konsole – Gateway, Application, Geräte",
+    "text": "2.4 TTN-Konsole – Gateway, Application, Geräte\nSchritte in der TTN‑Konsole: Gateway registrieren, Application anlegen, Geräte per OTAA hinzufügen und Decoder prüfen.\n\n2.4.1 Gateway\nRegistrierung des Gateways in TTN inkl. Cluster und Frequency‑Plan.\n\nRegistrierung mit Gateway-EUI (siehe /lora print detail).\nCluster: eu1.cloud.thethings.network.\nFrequency Plan: EU_863_870_TTN.\n\n\n\n2.4.2 Application & Geräte (OTAA)\nGeräte anlegen (OTAA‑Daten), Decoder aktivieren/prüfen und Live‑Daten kontrollieren.\n\nApplication (z. B. gisma-hydro-testbed) vorhanden.\nGeräte hinzufügen (PS-LB, DDS-75LB, S2120): DevEUI, JoinEUI/AppEUI, AppKey (jeweils 16 Byte Hex).\nDecoder sind aktiv (Application-Ebene bzw. Device-Override).\nKontrolle unter End device → Live data: Uplinks sichtbar, decoded_payload gefüllt.\n\n\n\n\n\n\n\nNoteDatenablage – einfache Wege ohne eigenen Server\n\n\n\n\n\n\n2.5 Datenablage – einfache Wege ohne eigenen Server\nDrei niedrigschwellige Optionen, um Daten ohne eigene Server‑Software zu speichern (Storage, MQTT→Datei, Webhooks).\n\n2.5.1 TTS-Storage (eingebaut, “kein Server nötig”)\nTTN‑interner Speicher mit einfachem HTTP‑Abruf (NDJSON). Ideal für erste Tests/Archivierung.\nAktivierung: Application → Integrations → Storage → Enable.\nAbruf (NDJSON):\nAPP_ID=\"gisma-hydro-testbed\"\nREGION=\"eu1\"\nAPI_KEY=\"NNSXS.***api_key***\"\n\ncurl -s -H \"Authorization: Bearer $API_KEY\" \\\n\"https://${REGION}.cloud.thethings.network/api/v3/as/applications/${APP_ID}/packages/storage/uplink_message?limit=100\" \\\n&gt; uplinks.ndjson\nNach CSV destillieren (allgemein):\njq -r '\n  .end_device_ids.device_id as $id\n  | .received_at as $ts\n  | .uplink_message.f_port as $fport\n  | (.uplink_message.decoded_payload // {}) as $dec\n  | [$ts,$id,$fport,($dec|tostring)]\n  | @csv\n' uplinks.ndjson &gt; uplinks.csv\nHinweis: Speicherfrist je nach Tarif begrenzt → regelmäßig abholen.\n\n\n2.5.2 MQTT → Datei/CSV (ohne Programmierung)\nAbonnieren des TTN‑MQTT‑Feeds und direkte Umwandlung in CSV mit jq.\nAbonnieren:\nAPP_ID=\"gisma-hydro-testbed\"\nREGION=\"eu1\"\nAPI_KEY=\"NNSXS.***api_key***\"\n\nmosquitto_sub -h \"${REGION}.cloud.thethings.network\" -p 8883 \\\n  -u \"${APP_ID}\" -P \"${API_KEY}\" --cafile /etc/ssl/certs/ca-certificates.crt \\\n  -t \"v3/${APP_ID}@ttn/devices/+/up\" &gt; live.ndjson\nOn-the-fly CSV:\nmosquitto_sub ... | jq -r '\n  .end_device_ids.device_id as $id\n  | .received_at as $ts\n  | .uplink_message.f_port as $fport\n  | (.uplink_message.decoded_payload // {}) as $dec\n  | [$ts,$id,$fport,($dec|tostring)]\n  | @csv\n' &gt;&gt; live.csv\n\n\n2.5.3 No-Code via Webhooks\nWeiterleitung der Uplinks per HTTP an Dienste wie Make.com, n8n oder Zapier, die ohne Programmierung in Tabellen/DBs schreiben.\n\nApplication → Integrations → Webhooks → Add → „Custom“ oder Vorlage.\nZiel-URL eines Make.com, n8n Cloud oder Zapier Flows eintragen.\nJSON in Google Sheets, Airtable, Notion oder S3/Datenbank speichern.\n\n\n\n\n\n2.6 Dauerbetrieb – robuste Pipelines (MQTT→DB, Grafana)\nProduktionsreife Wege, um kontinuierlich Daten zu sammeln, in eine Zeitreihendatenbank zu schreiben und mit Grafana zu visualisieren.\n\n2.6.1 Minimal-Python (MQTT→CSV/JSON)\nKleines Python‑Skript mit paho-mqtt, das Uplinks liest und als CSV/JSON speichert.\n# mqtt_to_csv.py\nimport ssl, json, csv\nfrom paho.mqtt.client import Client\n\nAPP_ID  = \"gisma-hydro-testbed\"\nREGION  = \"eu1\"\nAPI_KEY = \"NNSXS.***api_key***\"\nTOPIC   = f\"v3/{APP_ID}@ttn/devices/+/up\"\nBROKER  = f\"{REGION}.cloud.thethings.network\"\n\ndef on_connect(c,u,f,rc):\n    c.subscribe(TOPIC, qos=0)\n\ndef on_message(c,u,msg):\n    up = json.loads(msg.payload.decode())\n    ts  = up.get(\"received_at\")\n    dev = up.get(\"end_device_ids\",{}).get(\"device_id\")\n    fpt = up.get(\"uplink_message\",{}).get(\"f_port\")\n    dec = up.get(\"uplink_message\",{}).get(\"decoded_payload\", {})\n    with open(\"uplinks.csv\",\"a\",newline=\"\") as f:\n        csv.writer(f).writerow([ts,dev,fpt,json.dumps(dec,ensure_ascii=False)])\n\ncli = Client(client_id=APP_ID)\ncli.username_pw_set(APP_ID, API_KEY)\ncli.tls_set(cert_reqs=ssl.CERT_REQUIRED)\ncli.on_connect = on_connect\ncli.on_message = on_message\ncli.connect(BROKER, 8883, keepalive=60)\ncli.loop_forever()\nStart:\npip install paho-mqtt\npython mqtt_to_csv.py\n\n\n2.6.2 InfluxDB v2 + Grafana (Docker-Variante)\nStack aus InfluxDB (Zeitreihendatenbank), Telegraf (Ingest/Parsing) und Grafana (Dashboards) als Docker‑Compose.\ndocker-compose.yml (Beispiel, lokal)\nversion: \"3.8\"\nservices:\n  influxdb:\n    image: influxdb:2\n    ports: [ \"8086:8086\" ]\n    volumes: [ \"influx:/var/lib/influxdb2\" ]\n    environment:\n      - DOCKER_INFLUXDB_INIT_MODE=setup\n      - DOCKER_INFLUXDB_INIT_USERNAME=admin\n      - DOCKER_INFLUXDB_INIT_PASSWORD=adminpass\n      - DOCKER_INFLUXDB_INIT_ORG=gisma\n      - DOCKER_INFLUXDB_INIT_BUCKET=lorawan\n  telegraf:\n    image: telegraf:1.29\n    depends_on: [ influxdb ]\n    volumes:\n      - ./telegraf.conf:/etc/telegraf/telegraf.conf:ro\n  grafana:\n    image: grafana/grafana:10\n    ports: [ \"3000:3000\" ]\n    volumes: [ \"grafana:/var/lib/grafana\" ]\nvolumes:\n  influx:\n  grafana:\ntelegraf.conf (MQTT→InfluxDB Line Protocol)\n[agent]\n  omit_hostname = true\n\n# TTN MQTT input\n[[inputs.mqtt_consumer]]\n  servers = [\"ssl://eu1.cloud.thethings.network:8883\"]\n  topics  = [\"v3/gisma-hydro-testbed@ttn/devices/+/up\"]\n  username = \"gisma-hydro-testbed\"\n  password = \"NNSXS.***api_key***\"\n  data_format = \"json\"\n  json_time_key = \"received_at\"\n  json_time_format = \"2006-01-02T15:04:05Z07:00\"\n  # Felder extrahieren\n  json_string_fields = [\"uplink_message.decoded_payload\"]\n\n  # Umformung per tagexclude/fieldpass kann nach Bedarf ergänzt werden\n\n# InfluxDB v2 output\n[[outputs.influxdb_v2]]\n  urls = [\"http://influxdb:8086\"]\n  token = \"admin:adminpass\"      # bei Influx v2 Setup eigenen Token verwenden\n  organization = \"gisma\"\n  bucket = \"lorawan\"\nGrafana:\nVisualisierungsschicht. In Grafana die InfluxDB‑Datenquelle setzen und Panels für relevante Messreihen anlegen.\n\nDatenquelle InfluxDB v2 auf http://influxdb:8086, Org/Bucket/Token setzen.\nDashboard erstellen; z. B. Messungen pressure_cmH2O, distance_cm, battery, temperature (abhängig von Decoderfeldern in decoded_payload).\nAlternativ: TTN → InfluxDB Cloud per Webhook-Vorlage (Konsole → Integrations → Webhooks → InfluxDB Cloud).",
+    "crumbs": [
+      "Impressum",
+      "MikroTik Setup",
+      "Hub & TNN"
+    ]
+  },
+  {
+    "objectID": "lorawan_doku.html#datenablage-einfache-wege-ohne-eigenen-server",
+    "href": "lorawan_doku.html#datenablage-einfache-wege-ohne-eigenen-server",
+    "title": "LoraWan Doku",
+    "section": "2.5 Datenablage – einfache Wege ohne eigenen Server",
+    "text": "2.5 Datenablage – einfache Wege ohne eigenen Server\nDrei niedrigschwellige Optionen, um Daten ohne eigene Server‑Software zu speichern (Storage, MQTT→Datei, Webhooks).\n\n2.5.1 TTS-Storage (eingebaut, “kein Server nötig”)\nTTN‑interner Speicher mit einfachem HTTP‑Abruf (NDJSON). Ideal für erste Tests/Archivierung.\nAktivierung: Application → Integrations → Storage → Enable.\nAbruf (NDJSON):\nAPP_ID=\"gisma-hydro-testbed\"\nREGION=\"eu1\"\nAPI_KEY=\"NNSXS.***api_key***\"\n\ncurl -s -H \"Authorization: Bearer $API_KEY\" \\\n\"https://${REGION}.cloud.thethings.network/api/v3/as/applications/${APP_ID}/packages/storage/uplink_message?limit=100\" \\\n&gt; uplinks.ndjson\nNach CSV destillieren (allgemein):\njq -r '\n  .end_device_ids.device_id as $id\n  | .received_at as $ts\n  | .uplink_message.f_port as $fport\n  | (.uplink_message.decoded_payload // {}) as $dec\n  | [$ts,$id,$fport,($dec|tostring)]\n  | @csv\n' uplinks.ndjson &gt; uplinks.csv\nHinweis: Speicherfrist je nach Tarif begrenzt → regelmäßig abholen.\n\n\n2.5.2 MQTT → Datei/CSV (ohne Programmierung)\nAbonnieren des TTN‑MQTT‑Feeds und direkte Umwandlung in CSV mit jq.\nAbonnieren:\nAPP_ID=\"gisma-hydro-testbed\"\nREGION=\"eu1\"\nAPI_KEY=\"NNSXS.***api_key***\"\n\nmosquitto_sub -h \"${REGION}.cloud.thethings.network\" -p 8883 \\\n  -u \"${APP_ID}\" -P \"${API_KEY}\" --cafile /etc/ssl/certs/ca-certificates.crt \\\n  -t \"v3/${APP_ID}@ttn/devices/+/up\" &gt; live.ndjson\nOn-the-fly CSV:\nmosquitto_sub ... | jq -r '\n  .end_device_ids.device_id as $id\n  | .received_at as $ts\n  | .uplink_message.f_port as $fport\n  | (.uplink_message.decoded_payload // {}) as $dec\n  | [$ts,$id,$fport,($dec|tostring)]\n  | @csv\n' &gt;&gt; live.csv\n\n\n2.5.3 No-Code via Webhooks\nWeiterleitung der Uplinks per HTTP an Dienste wie Make.com, n8n oder Zapier, die ohne Programmierung in Tabellen/DBs schreiben.\n\nApplication → Integrations → Webhooks → Add → „Custom“ oder Vorlage.\nZiel-URL eines Make.com, n8n Cloud oder Zapier Flows eintragen.\nJSON in Google Sheets, Airtable, Notion oder S3/Datenbank speichern.",
+    "crumbs": [
+      "Impressum",
+      "MikroTik Setup",
+      "Hub & TNN"
+    ]
+  },
+  {
+    "objectID": "lorawan_doku.html#dauerbetrieb-robuste-pipelines-mqttdb-grafana",
+    "href": "lorawan_doku.html#dauerbetrieb-robuste-pipelines-mqttdb-grafana",
+    "title": "LoraWan Doku",
+    "section": "2.6 Dauerbetrieb – robuste Pipelines (MQTT→DB, Grafana)",
+    "text": "2.6 Dauerbetrieb – robuste Pipelines (MQTT→DB, Grafana)\nProduktionsreife Wege, um kontinuierlich Daten zu sammeln, in eine Zeitreihendatenbank zu schreiben und mit Grafana zu visualisieren.\n\n2.6.1 Minimal-Python (MQTT→CSV/JSON)\nKleines Python‑Skript mit paho-mqtt, das Uplinks liest und als CSV/JSON speichert.\n# mqtt_to_csv.py\nimport ssl, json, csv\nfrom paho.mqtt.client import Client\n\nAPP_ID  = \"gisma-hydro-testbed\"\nREGION  = \"eu1\"\nAPI_KEY = \"NNSXS.***api_key***\"\nTOPIC   = f\"v3/{APP_ID}@ttn/devices/+/up\"\nBROKER  = f\"{REGION}.cloud.thethings.network\"\n\ndef on_connect(c,u,f,rc):\n    c.subscribe(TOPIC, qos=0)\n\ndef on_message(c,u,msg):\n    up = json.loads(msg.payload.decode())\n    ts  = up.get(\"received_at\")\n    dev = up.get(\"end_device_ids\",{}).get(\"device_id\")\n    fpt = up.get(\"uplink_message\",{}).get(\"f_port\")\n    dec = up.get(\"uplink_message\",{}).get(\"decoded_payload\", {})\n    with open(\"uplinks.csv\",\"a\",newline=\"\") as f:\n        csv.writer(f).writerow([ts,dev,fpt,json.dumps(dec,ensure_ascii=False)])\n\ncli = Client(client_id=APP_ID)\ncli.username_pw_set(APP_ID, API_KEY)\ncli.tls_set(cert_reqs=ssl.CERT_REQUIRED)\ncli.on_connect = on_connect\ncli.on_message = on_message\ncli.connect(BROKER, 8883, keepalive=60)\ncli.loop_forever()\nStart:\npip install paho-mqtt\npython mqtt_to_csv.py\n\n\n2.6.2 InfluxDB v2 + Grafana (Docker-Variante)\nStack aus InfluxDB (Zeitreihendatenbank), Telegraf (Ingest/Parsing) und Grafana (Dashboards) als Docker‑Compose.\ndocker-compose.yml (Beispiel, lokal)\nversion: \"3.8\"\nservices:\n  influxdb:\n    image: influxdb:2\n    ports: [ \"8086:8086\" ]\n    volumes: [ \"influx:/var/lib/influxdb2\" ]\n    environment:\n      - DOCKER_INFLUXDB_INIT_MODE=setup\n      - DOCKER_INFLUXDB_INIT_USERNAME=admin\n      - DOCKER_INFLUXDB_INIT_PASSWORD=adminpass\n      - DOCKER_INFLUXDB_INIT_ORG=gisma\n      - DOCKER_INFLUXDB_INIT_BUCKET=lorawan\n  telegraf:\n    image: telegraf:1.29\n    depends_on: [ influxdb ]\n    volumes:\n      - ./telegraf.conf:/etc/telegraf/telegraf.conf:ro\n  grafana:\n    image: grafana/grafana:10\n    ports: [ \"3000:3000\" ]\n    volumes: [ \"grafana:/var/lib/grafana\" ]\nvolumes:\n  influx:\n  grafana:\ntelegraf.conf (MQTT→InfluxDB Line Protocol)\n[agent]\n  omit_hostname = true\n\n# TTN MQTT input\n[[inputs.mqtt_consumer]]\n  servers = [\"ssl://eu1.cloud.thethings.network:8883\"]\n  topics  = [\"v3/gisma-hydro-testbed@ttn/devices/+/up\"]\n  username = \"gisma-hydro-testbed\"\n  password = \"NNSXS.***api_key***\"\n  data_format = \"json\"\n  json_time_key = \"received_at\"\n  json_time_format = \"2006-01-02T15:04:05Z07:00\"\n  # Felder extrahieren\n  json_string_fields = [\"uplink_message.decoded_payload\"]\n\n  # Umformung per tagexclude/fieldpass kann nach Bedarf ergänzt werden\n\n# InfluxDB v2 output\n[[outputs.influxdb_v2]]\n  urls = [\"http://influxdb:8086\"]\n  token = \"admin:adminpass\"      # bei Influx v2 Setup eigenen Token verwenden\n  organization = \"gisma\"\n  bucket = \"lorawan\"\nGrafana:\nVisualisierungsschicht. In Grafana die InfluxDB‑Datenquelle setzen und Panels für relevante Messreihen anlegen.\n\nDatenquelle InfluxDB v2 auf http://influxdb:8086, Org/Bucket/Token setzen.\nDashboard erstellen; z. B. Messungen pressure_cmH2O, distance_cm, battery, temperature (abhängig von Decoderfeldern in decoded_payload).\nAlternativ: TTN → InfluxDB Cloud per Webhook-Vorlage (Konsole → Integrations → Webhooks → InfluxDB Cloud).",
+    "crumbs": [
+      "Impressum",
+      "MikroTik Setup",
+      "Hub & TNN"
+    ]
+  },
+  {
+    "objectID": "lorawan_doku.html#betriebshilfen-auto-heal-checks",
+    "href": "lorawan_doku.html#betriebshilfen-auto-heal-checks",
+    "title": "LoraWan Doku",
+    "section": "2.7 Betriebshilfen (Auto-Heal, Checks)",
+    "text": "2.7 Betriebshilfen (Auto-Heal, Checks)\nZusatzfunktionen für stabilen Dauerbetrieb: automatischer WLAN‑Reconnect und korrekte Systemzeit.\n\n2.7.1 Netwatch (WLAN neu verbinden bei Ausfall)\nÜberwacht einen Zielhost und startet wlan1 neu, wenn keine Verbindung besteht.\n/tool netwatch add host=8.8.8.8 interval=60s timeout=5s \\\n    up-script=\"\" \\\n    down-script=\"/interface wireless disable wlan1; :delay 2s; /interface wireless enable wlan1\"\n\n\n2.7.2 NTP & Zeitzone (Logs mit korrekter Uhrzeit)\nStellt Zeitzone und NTP‑Server ein, damit Logs/Zeitstempel stimmen.\n/system clock set time-zone-name=Europe/Berlin\n/system ntp client set enabled=yes primary-ntp=1.1.1.1 secondary-ntp=8.8.8.8",
+    "crumbs": [
+      "Impressum",
+      "MikroTik Setup",
+      "Hub & TNN"
+    ]
+  },
+  {
+    "objectID": "lorawan_doku.html#sensecap-besonderheiten-ohne-decoder-code",
+    "href": "lorawan_doku.html#sensecap-besonderheiten-ohne-decoder-code",
+    "title": "LoraWan Doku",
+    "section": "2.8 SenseCAP-Besonderheiten (ohne Decoder-Code)",
+    "text": "2.8 SenseCAP-Besonderheiten (ohne Decoder-Code)\nHinweise zu Pairing, FPorts und Decoder‑Einsatz für den SenseCAP S2120.\n\nPairing/BT-PIN: häufig 000000.\nDevEUI/JoinEUI/AppKey: auf Label, App oder Herstellerportal.\nFPort: typischerweise 199.\nIn TTN Gerät anlegen (OTAA) → Live Data prüfen → decoded_payload wird angezeigt (Decoder ist bereits aktiv).\nBei fehlender Decodierung: Application-Level Decoder prüfen; falls mehrere Hersteller parallel verwendet werden, device-spezifische Overrides setzen.",
+    "crumbs": [
+      "Impressum",
+      "MikroTik Setup",
+      "Hub & TNN"
+    ]
+  },
+  {
+    "objectID": "lorawan_doku.html#dragino-ps-lb-dds-75lb-ohne-decoder-code",
+    "href": "lorawan_doku.html#dragino-ps-lb-dds-75lb-ohne-decoder-code",
+    "title": "LoraWan Doku",
+    "section": "2.9 Dragino PS-LB & DDS-75LB (ohne Decoder-Code)",
+    "text": "2.9 Dragino PS-LB & DDS-75LB (ohne Decoder-Code)\nKurzanleitung für die Aufnahme per OTAA und Decoder‑Kontrolle der Dragino‑Geräte.\n\nBeide über OTAA identisch aufnehmen (DevEUI/JoinEUI/AppKey).\nDecoder unterscheiden sich (Druck vs. Distanz) – bereits aktiv.\nKontrolle via Live Data; Werte erscheinen im decoded_payload.\nTypischer FPort 2 (Herstellerdoku beachten).",
+    "crumbs": [
+      "Impressum",
+      "MikroTik Setup",
+      "Hub & TNN"
+    ]
+  },
+  {
+    "objectID": "lorawan_doku.html#faqs-troubleshooting",
+    "href": "lorawan_doku.html#faqs-troubleshooting",
+    "title": "LoraWan Doku",
+    "section": "2.10 FAQs & Troubleshooting",
+    "text": "2.10 FAQs & Troubleshooting\nKurze Checkliste typischer Fehlerbilder und ihrer Ursachen.\n\nUplinks kommen nicht in TTN an: /lora print detail (Enabled?), /tool sniffer quick port=1700 (UDP-Traffic?), /ip dhcp-client print (IP bekommen?), /ping 8.8.8.8.\nWLAN sichtbar, aber keine IP: Bridge-Ports korrekt? DHCP-Client auf bridgeLocal? WPA-Key/SSID korrekt? monitor wlan1 zeigt „searching-for-network“ → Kanal/Entfernung prüfen.\nDecoder greift nicht: FPort prüfen; Application-Decoder vs. Device-Override; für SenseCAP meist Port 199.\nSpeicherung/Visualisierung fehlt: Storage aktivieren oder MQTT→CSV/DB/Grafana implementieren (siehe Kapitel 5 & 6).\n\n\n\n2.10.1 To-Do-Leitfaden\nMinimalliste, um schnell von „Gerät online“ zu „Daten gesichert und sichtbar“ zu kommen.\n\nTTN Storage aktivieren und per HTTP + jq regelmäßig ziehen (Archiv/CSV).\nFür Live-Dashboards MQTT → InfluxDB → Grafana (Docker-Stack) oder Webhook → InfluxDB Cloud/Datacake/Ubidots.\nNetwatch auf dem MikroTik setzen (WLAN-Selbstheilung).\nBinary-Backup auf dem MikroTik anlegen und extern sichern.",
+    "crumbs": [
+      "Impressum",
+      "MikroTik Setup",
+      "Hub & TNN"
+    ]
+  },
+  {
+    "objectID": "lorawan_doku.html#anmerkungen",
+    "href": "lorawan_doku.html#anmerkungen",
+    "title": "LoraWan Doku",
+    "section": "2.11 Anmerkungen",
+    "text": "2.11 Anmerkungen\nErgänzende Hinweise zur Konfiguration und zum Betrieb (EU‑868, Semtech‑UDP, Datenpfade) in kompakter Form.\n\nDie Decoder für PS-LB, DDS-75LB und SenseCAP S2120 sind in der TTN-Application hinterlegt und aktiv.\nDer MikroTik arbeitet im WLAN-Client/Pseudobridge-Modus, erhält IP per DHCP auf bridgeLocal und forwardet LoRa-Pakete via Semtech-UDP (Port 1700) an TTN EU1 mit EU-868 Frequency-Plan.\nDaten können über Storage/MQTT/Webhook ohne eigenen Server gespeichert und mit Grafana visualisiert werden.",
+    "crumbs": [
+      "Impressum",
+      "MikroTik Setup",
+      "Hub & TNN"
+    ]
+  },
+  {
+    "objectID": "lorawan_doku.html#downloads-handbücher",
+    "href": "lorawan_doku.html#downloads-handbücher",
+    "title": "LoraWan Doku",
+    "section": "2.12 Downloads & Handbücher",
+    "text": "2.12 Downloads & Handbücher\n\nWinBox Download (MikroTik)\nOffizielle Seite zum Herunterladen von WinBox (Windows/Linux mit Wine).\nMikroTik RouterOS LoRa Dokumentation\nMikroTik-Doku zu LoRaWAN, Forwarding-Protokoll und Frequency Plans.\n\n\n\nDragino Wiki (Übersicht)\nZentrale Dokumentation und Manuals für alle Dragino-Geräte.\nDragino Decoder Repository (GitHub)\nSammlung offizieller Payload-Decoder für End-Nodes (z. B. PS-LB, DDS-75LB).\n\n\n\nSeeed SenseCAP S2120 Getting Started (Wiki)\nSchritt-für-Schritt-Anleitung zur Inbetriebnahme (App, LoRaWAN-Parameter, Join).\nSeeed SenseCAP S2120 User Guide (PDF)\nVollständiges Benutzerhandbuch als PDF.\nSeeed S2120 TTN Decoder (GitHub, JS)\nJavaScript-Decoder für TTN/ChirpStack zur Auswertung der SenseCAP-Daten.",
+    "crumbs": [
+      "Impressum",
+      "MikroTik Setup",
+      "Hub & TNN"
     ]
   }
 ]
