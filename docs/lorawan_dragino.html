@@ -421,12 +421,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#kurzleitfaden-remote-kommunikation-nur-port-2-binär" id="toc-kurzleitfaden-remote-kommunikation-nur-port-2-binär" class="nav-link active" data-scroll-target="#kurzleitfaden-remote-kommunikation-nur-port-2-binär"><span class="header-section-number">1</span> Kurzleitfaden Remote-Kommunikation (nur Port 2, binär)</a>
   <ul class="collapse">
   <li><a href="#ziel" id="toc-ziel" class="nav-link" data-scroll-target="#ziel"><span class="header-section-number">1.1</span> Ziel</a></li>
-  <li><a href="#wo-im-webinterface-die-minimal-sequenz-eingegeben-wird-ttntts" id="toc-wo-im-webinterface-die-minimal-sequenz-eingegeben-wird-ttntts" class="nav-link" data-scroll-target="#wo-im-webinterface-die-minimal-sequenz-eingegeben-wird-ttntts"><span class="header-section-number">1.2</span> Wo im Webinterface die Minimal-Sequenz eingegeben wird (TTN/TTS)</a></li>
-  <li><a href="#batch-script-mit-per-gerät-intervall-csv" id="toc-batch-script-mit-per-gerät-intervall-csv" class="nav-link" data-scroll-target="#batch-script-mit-per-gerät-intervall-csv"><span class="header-section-number">1.3</span> Batch-Script mit per-Gerät-Intervall (CSV)</a>
+  </ul></li>
+  <li><a href="#minute" id="toc-minute" class="nav-link" data-scroll-target="#minute"><span class="header-section-number">2</span> 1 Minute</a></li>
+  <li><a href="#minuten" id="toc-minuten" class="nav-link" data-scroll-target="#minuten"><span class="header-section-number">3</span> 5 Minuten</a></li>
+  <li><a href="#minuten-1" id="toc-minuten-1" class="nav-link" data-scroll-target="#minuten-1"><span class="header-section-number">4</span> 15 Minuten</a></li>
+  <li><a href="#minuten-2" id="toc-minuten-2" class="nav-link" data-scroll-target="#minuten-2"><span class="header-section-number">5</span> 30 Minuten</a></li>
+  <li><a href="#minuten-3" id="toc-minuten-3" class="nav-link" data-scroll-target="#minuten-3"><span class="header-section-number">6</span> 60 Minuten</a>
   <ul class="collapse">
-  <li><a href="#csv-devices.csv" id="toc-csv-devices.csv" class="nav-link" data-scroll-target="#csv-devices.csv"><span class="header-section-number">1.3.1</span> CSV: <code>devices.csv</code></a></li>
-  <li><a href="#script-downlink_hex_replace_map.sh" id="toc-script-downlink_hex_replace_map.sh" class="nav-link" data-scroll-target="#script-downlink_hex_replace_map.sh"><span class="header-section-number">1.3.2</span> Script: <code>downlink_hex_replace_map.sh</code></a></li>
-  <li><a href="#troubleshooting" id="toc-troubleshooting" class="nav-link" data-scroll-target="#troubleshooting"><span class="header-section-number">1.3.3</span> Troubleshooting</a></li>
+  <li><a href="#wo-im-webinterface-die-minimal-sequenz-eingegeben-wird-ttntts" id="toc-wo-im-webinterface-die-minimal-sequenz-eingegeben-wird-ttntts" class="nav-link" data-scroll-target="#wo-im-webinterface-die-minimal-sequenz-eingegeben-wird-ttntts"><span class="header-section-number">6.1</span> Wo im Webinterface die Minimal-Sequenz eingegeben wird (TTN/TTS)</a></li>
+  <li><a href="#batch-script-mit-per-gerät-intervall" id="toc-batch-script-mit-per-gerät-intervall" class="nav-link" data-scroll-target="#batch-script-mit-per-gerät-intervall"><span class="header-section-number">6.2</span> Batch-Script mit per-Gerät-Intervall</a>
+  <ul class="collapse">
+  <li><a href="#script-downlink_hex_replace_map.sh" id="toc-script-downlink_hex_replace_map.sh" class="nav-link" data-scroll-target="#script-downlink_hex_replace_map.sh"><span class="header-section-number">6.2.1</span> Script: <code>downlink_hex_replace_map.sh</code></a></li>
+  <li><a href="#troubleshooting" id="toc-troubleshooting" class="nav-link" data-scroll-target="#troubleshooting"><span class="header-section-number">6.2.2</span> Troubleshooting</a></li>
   </ul></li>
   </ul></li>
   </ul>
@@ -466,14 +472,60 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h1 data-number="1"><span class="header-section-number">1</span> Kurzleitfaden Remote-Kommunikation (nur Port 2, binär)</h1>
 <section id="ziel" class="level2" data-number="1.1">
 <h2 data-number="1.1" class="anchored" data-anchor-id="ziel"><span class="header-section-number">1.1</span> Ziel</h2>
-<p>(Mehrere) Dragino <strong>PS-LB/LS</strong> Sensoren per <strong>TTN</strong> mit <strong>binären Downlinks (Hex)</strong> auf <strong>Port 2</strong> konfigurieren</p>
+<p>(Mehrere) Dragino <strong>PS-LB/LS</strong> Sensoren per <strong>TTN</strong> mit <strong>binären Downlinks (Hex)</strong> auf <strong>Port 2</strong> konfigurieren. Im Prinzip muss die folgende Befehlssequenz (für typische Intervalle) via Downlink an den Sensor gesendet werden. Die Reihenfolge in der die Sequenz am Sensor abgearbeiet wird ist <strong>FIFO</strong>. Da die Class A Sensoren nur je Uplink (=Datenpaket) einen Downlink verarbeiten können wird zunächst hochgetaktet damit die Befehlssequenz schneller abgearbeitet werden kann. Konkret sieht das dann wie folgt aus:</p>
+<ul>
+<li><strong>TDC</strong> = Sendeintervall (Sekunden)</li>
+<li><strong>PROBE=0002</strong> = Wassertiefe-Profil 0–2 m</li>
+<li><strong>12 V = 8000 ms</strong> = kurz Sonde speisen (optional)</li>
+</ul>
+<hr>
 </section>
-<section id="wo-im-webinterface-die-minimal-sequenz-eingegeben-wird-ttntts" class="level2" data-number="1.2">
-<h2 data-number="1.2" class="anchored" data-anchor-id="wo-im-webinterface-die-minimal-sequenz-eingegeben-wird-ttntts"><span class="header-section-number">1.2</span> Wo im Webinterface die Minimal-Sequenz eingegeben wird (TTN/TTS)</h2>
+</section>
+<section id="minute" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> 1 Minute</h1>
+<pre><code>Schritt | Hex       | Zweck
+1      | 0100003C  | TDC = 60 s (hochtakten)
+2      | 080002    | PROBE = 0002 (0–2 m)
+3      | 07031F40  | 12 V = 8000 ms (optional)
+4      | 0100003C  | TDC = 60 s (final)</code></pre>
+</section>
+<section id="minuten" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> 5 Minuten</h1>
+<pre><code>Schritt | Hex       | Zweck
+1      | 0100003C  | TDC = 60 s (hochtakten)
+2      | 080002    | PROBE = 0002 (0–2 m)
+3      | 07031F40  | 12 V = 8000 ms (optional)
+4      | 0100012C  | TDC = 300 s (5 min)</code></pre>
+</section>
+<section id="minuten-1" class="level1" data-number="4">
+<h1 data-number="4"><span class="header-section-number">4</span> 15 Minuten</h1>
+<pre><code>Schritt | Hex       | Zweck
+1      | 0100003C  | TDC = 60 s (hochtakten)
+2      | 080002    | PROBE = 0002 (0–2 m)
+3      | 07031F40  | 12 V = 8000 ms (optional)
+4      | 01000384  | TDC = 900 s (15 min)</code></pre>
+</section>
+<section id="minuten-2" class="level1" data-number="5">
+<h1 data-number="5"><span class="header-section-number">5</span> 30 Minuten</h1>
+<pre><code>Schritt | Hex       | Zweck
+1      | 0100003C  | TDC = 60 s (hochtakten)
+2      | 080002    | PROBE = 0002 (0–2 m)
+3      | 07031F40  | 12 V = 8000 ms (optional)
+4      | 01000708  | TDC = 1800 s (30 min)</code></pre>
+</section>
+<section id="minuten-3" class="level1" data-number="6">
+<h1 data-number="6"><span class="header-section-number">6</span> 60 Minuten</h1>
+<pre><code>Schritt | Hex       | Zweck
+1      | 0100003C  | TDC = 60 s (hochtakten)
+2      | 080002    | PROBE = 0002 (0–2 m)
+3      | 07031F40  | 12 V = 8000 ms (optional)
+4      | 01000E10  | TDC = 3600 s (60 min)</code></pre>
+<p>Falls die Sonden <strong>extern</strong> versorgt sind (<strong>sind sie nicht!!</strong>), kann Schritt 3 weggelassen werden, alle anderen Schritte bleiben identisch.</p>
+<section id="wo-im-webinterface-die-minimal-sequenz-eingegeben-wird-ttntts" class="level2" data-number="6.1">
+<h2 data-number="6.1" class="anchored" data-anchor-id="wo-im-webinterface-die-minimal-sequenz-eingegeben-wird-ttntts"><span class="header-section-number">6.1</span> Wo im Webinterface die Minimal-Sequenz eingegeben wird (TTN/TTS)</h2>
 <p><strong>Pfad:</strong> <strong>Applications → <em>deine App</em> → End devices → <em>dein Gerät</em> → Messaging → Downlink</strong></p>
 <p><strong>Pro Gerät:</strong></p>
 <ol type="1">
-<li><p>Oben: <strong>Payload formatter → Downlink = None</strong> (falls nicht schon so).</p></li>
 <li><p>Bereich <strong>Schedule downlink</strong>:</p>
 <ul>
 <li><p><strong>FPort</strong>: <code>2</code></p></li>
@@ -488,131 +540,128 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><p><strong>Confirmed</strong>: an (schadet nicht)</p></li>
 <li><p><strong>Schedule</strong> klicken</p></li>
 </ul></li>
-<li><p><strong>Uplink auslösen</strong> (Taste kurz) oder auf Intervall warten – Class A liefert Downlinks jeweils <strong>nach</strong> einem Uplink (FIFO).</p></li>
+<li><p><strong>Uplink auslösen</strong> (Taste kurz) oder auf Intervall warten – Class A liefert Downlinks jeweils <strong>nach</strong> einem Uplink (FIFO).</p>
+<p>Falls das klemmt: Oben: <strong>Payload formatter → Downlink = None</strong> dann die Sequenz nochmal durchlaufen</p></li>
 </ol>
-<hr>
 </section>
-<section id="batch-script-mit-per-gerät-intervall-csv" class="level2" data-number="1.3">
-<h2 data-number="1.3" class="anchored" data-anchor-id="batch-script-mit-per-gerät-intervall-csv"><span class="header-section-number">1.3</span> Batch-Script mit per-Gerät-Intervall (CSV)</h2>
-<section id="csv-devices.csv" class="level3" data-number="1.3.1">
-<h3 data-number="1.3.1" class="anchored" data-anchor-id="csv-devices.csv"><span class="header-section-number">1.3.1</span> CSV: <code>devices.csv</code></h3>
-<p>Spalten: <strong>device_id, interval_min, ext_power</strong></p>
+<section id="batch-script-mit-per-gerät-intervall" class="level2" data-number="6.2">
+<h2 data-number="6.2" class="anchored" data-anchor-id="batch-script-mit-per-gerät-intervall"><span class="header-section-number">6.2</span> Batch-Script mit per-Gerät-Intervall</h2>
+<p>Weil das ein Alptram ist hier ein Script das sowohl die zeitintervalle ausrechnet als auch die Befehle im Stapel absendet damit die Kommunikationslimits nicht gebrochen werden:</p>
+<p>Als input wird eine CSV-Datei <code>devices.csv</code>benötigt die wie folgt aufgebaut ist:</p>
+<p><code>device_id, interval_min, ext_power</code></p>
 <ul>
 <li><code>interval_min</code>: End-Intervall in Minuten (z. B. 5, 15, 20 …)</li>
 <li><code>ext_power</code>: <code>1</code> = Sonde <strong>extern</strong> versorgt → <strong>ohne</strong> 12 V-Downlink; <code>0</code> = PS-LB soll kurz speisen → <strong>mit</strong> 12 V-Downlink</li>
 </ul>
 <p>Beispiel:</p>
-<pre><code>ps-lb-01,15,1
+<pre><code>ps-lb-01,15,0
 ps-lb-21,5,0
-ps-lb-42,20,1</code></pre>
-</section>
-<section id="script-downlink_hex_replace_map.sh" class="level3" data-number="1.3.2">
-<h3 data-number="1.3.2" class="anchored" data-anchor-id="script-downlink_hex_replace_map.sh"><span class="header-section-number">1.3.2</span> Script: <code>downlink_hex_replace_map.sh</code></h3>
+ps-lb-42,20,0</code></pre>
+<section id="script-downlink_hex_replace_map.sh" class="level3" data-number="6.2.1">
+<h3 data-number="6.2.1" class="anchored" data-anchor-id="script-downlink_hex_replace_map.sh"><span class="header-section-number">6.2.1</span> Script: <code>downlink_hex_replace_map.sh</code></h3>
 <ul>
 <li>Nimmt <strong>nur Hex</strong> als Kommandos, wandelt intern in Base64.</li>
 <li>Legt pro Gerät <strong>einen</strong> <code>down/replace</code> mit bis zu 4 Downlinks (FIFO) ab.</li>
-<li>End-Intervall kommt aus der CSV (1–255 min unterstützt, typische Werte 5/15/20).</li>
+<li>End-Intervall kommt aus der CSV (1–255 min unterstützt, typische Werte 5/15/20/30/60).</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/usr/bin/env bash</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="at">-euo</span> pipefail</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># ===== KONFIG =====</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="va">APP</span><span class="op">=</span><span class="st">"gisma-hydro-testbed"</span>                 <span class="co"># Application-ID</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="va">KEY</span><span class="op">=</span><span class="st">"NNSXS.xxxxx..."</span>                      <span class="co"># Application-API-Key (Write downlink)</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="va">API</span><span class="op">=</span><span class="st">"https://eu1.cloud.thethings.network/api/v3"</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="va">CSV</span><span class="op">=</span><span class="st">"devices.csv"</span>                         <span class="co"># device_id,interval_min,ext_power</span></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="va">FPORT</span><span class="op">=</span>2</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="fu">need()</span><span class="kw">{</span> <span class="bu">command</span> <span class="at">-v</span> <span class="st">"</span><span class="va">$1</span><span class="st">"</span> <span class="op">&gt;</span>/dev/null <span class="dv">2</span><span class="op">&gt;&amp;</span><span class="dv">1</span> <span class="kw">||</span> <span class="kw">{</span> <span class="bu">echo</span> <span class="st">"Fehlt: </span><span class="va">$1</span><span class="st">"</span><span class="kw">;</span> <span class="bu">exit</span> 1<span class="kw">;</span> <span class="kw">};</span> <span class="kw">}</span></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="ex">need</span> xxd<span class="kw">;</span> <span class="ex">need</span> base64<span class="kw">;</span> <span class="ex">need</span> curl<span class="kw">;</span> <span class="ex">need</span> jq<span class="kw">;</span> <span class="ex">need</span> awk</span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="co"># -- Hex-Helper --</span></span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="fu">to_b64()</span><span class="kw">{</span> <span class="bu">printf</span> <span class="st">"%s"</span> <span class="st">"</span><span class="va">$1</span><span class="st">"</span> <span class="kw">|</span> <span class="ex">xxd</span> <span class="at">-r</span> <span class="at">-p</span> <span class="kw">|</span> <span class="fu">base64</span><span class="kw">;</span> <span class="kw">}</span></span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="co"># TDC-Hex aus Minuten berechnen (3-Byte Big-Endian Sekunden)</span></span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Limitation: 1..65535 Sekunden; für unsere Intervalle (1..1440 min) ok.</span></span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="fu">tdc_hex_from_minutes()</span><span class="kw">{</span></span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>  <span class="bu">local</span> <span class="va">min</span><span class="op">=</span><span class="st">"</span><span class="va">$1</span><span class="st">"</span></span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>  <span class="bu">local</span> <span class="va">sec</span><span class="op">=</span><span class="va">$((</span> <span class="va">min</span><span class="op">*</span><span class="dv">60</span> <span class="va">))</span></span>
-<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>  <span class="co"># in 3 Bytes big-endian verpacken</span></span>
-<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>  <span class="bu">printf</span> <span class="st">"%06X"</span> <span class="st">"</span><span class="va">$sec</span><span class="st">"</span></span>
-<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
-<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><span class="co"># Fixe Hex-Commands</span></span>
-<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a><span class="va">HEX_PROBE</span><span class="op">=</span><span class="st">"080002"</span>           <span class="co"># Wassertiefe-Profil 0–2 m</span></span>
-<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a><span class="va">HEX_TDC_60S</span><span class="op">=</span><span class="st">"0100003C"</span>       <span class="co"># TDC=60s (Schnellphase)</span></span>
-<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a><span class="va">HEX_12V_8S</span><span class="op">=</span><span class="st">"07031F40"</span>        <span class="co"># 12V=8000ms (nur wenn PS-LB speist)</span></span>
-<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a><span class="kw">[[</span> <span class="ot">-f</span> <span class="st">"</span><span class="va">$CSV</span><span class="st">"</span> <span class="kw">]]</span> <span class="kw">||</span> <span class="kw">{</span> <span class="bu">echo</span> <span class="st">"CSV '</span><span class="va">$CSV</span><span class="st">' fehlt."</span><span class="kw">;</span> <span class="bu">exit</span> 1<span class="kw">;</span> <span class="kw">}</span></span>
-<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a><span class="co"># Sanfte Drossel zwischen Geräten</span></span>
-<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a><span class="va">DELAY_BETWEEN_DEV</span><span class="op">=</span>0.2</span>
-<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a><span class="cf">while</span> <span class="va">IFS</span><span class="op">=</span>, <span class="bu">read</span> <span class="at">-r</span> <span class="va">DEV</span> <span class="va">MINUTES</span> <span class="va">EXT</span><span class="kw">;</span> <span class="cf">do</span></span>
-<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Leerzeilen/Kommentare überspringen</span></span>
-<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a>  <span class="kw">[[</span> <span class="ot">-z</span> <span class="st">"</span><span class="va">${DEV</span><span class="op">//</span><span class="ss"> </span><span class="va">}</span><span class="st">"</span> <span class="kw">||</span> <span class="st">"</span><span class="va">$DEV</span><span class="st">"</span> <span class="ot">=~</span> <span class="pp">^</span><span class="ss">#</span> <span class="kw">]]</span> <span class="kw">&amp;&amp;</span> <span class="cf">continue</span></span>
-<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Whitespace trim</span></span>
-<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a>  <span class="va">DEV</span><span class="op">=</span><span class="st">"</span><span class="va">$(</span><span class="bu">echo</span> <span class="st">"</span><span class="va">$DEV</span><span class="st">"</span> <span class="kw">|</span> <span class="fu">awk</span> <span class="st">'{$1=$1};1'</span><span class="va">)</span><span class="st">"</span></span>
-<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a>  <span class="va">MINUTES</span><span class="op">=</span><span class="st">"</span><span class="va">$(</span><span class="bu">echo</span> <span class="st">"</span><span class="va">$MINUTES</span><span class="st">"</span> <span class="kw">|</span> <span class="fu">awk</span> <span class="st">'{$1=$1};1'</span><span class="va">)</span><span class="st">"</span></span>
-<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a>  <span class="va">EXT</span><span class="op">=</span><span class="st">"</span><span class="va">$(</span><span class="bu">echo</span> <span class="st">"</span><span class="va">$EXT</span><span class="st">"</span> <span class="kw">|</span> <span class="fu">awk</span> <span class="st">'{$1=$1};1'</span><span class="va">)</span><span class="st">"</span></span>
-<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a>  <span class="co"># End-TDC aus Minuten → Sekunden → 3-Byte Hex → komplettes Setz-Command (01 + 3 Byte)</span></span>
-<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a>  <span class="va">TDC3</span><span class="op">=</span><span class="va">$(</span><span class="ex">tdc_hex_from_minutes</span> <span class="st">"</span><span class="va">$MINUTES</span><span class="st">"</span><span class="va">)</span>      <span class="co"># z.B. 15min -&gt; 000384</span></span>
-<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a>  <span class="va">HEX_TDC_FINAL</span><span class="op">=</span><span class="st">"01</span><span class="va">${TDC3}</span><span class="st">"</span></span>
-<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a>  <span class="co"># In Base64 umwandeln</span></span>
-<span id="cb2-50"><a href="#cb2-50" aria-hidden="true" tabindex="-1"></a>  <span class="va">P_TDC60</span><span class="op">=</span><span class="va">$(</span><span class="ex">to_b64</span> <span class="st">"</span><span class="va">$HEX_TDC_60S</span><span class="st">"</span><span class="va">)</span></span>
-<span id="cb2-51"><a href="#cb2-51" aria-hidden="true" tabindex="-1"></a>  <span class="va">P_PROBE</span><span class="op">=</span><span class="va">$(</span><span class="ex">to_b64</span> <span class="st">"</span><span class="va">$HEX_PROBE</span><span class="st">"</span><span class="va">)</span></span>
-<span id="cb2-52"><a href="#cb2-52" aria-hidden="true" tabindex="-1"></a>  <span class="va">P_12V8</span><span class="op">=</span><span class="va">$(</span><span class="ex">to_b64</span> <span class="st">"</span><span class="va">$HEX_12V_8S</span><span class="st">"</span><span class="va">)</span></span>
-<span id="cb2-53"><a href="#cb2-53" aria-hidden="true" tabindex="-1"></a>  <span class="va">P_TDCF</span><span class="op">=</span><span class="va">$(</span><span class="ex">to_b64</span> <span class="st">"</span><span class="va">$HEX_TDC_FINAL</span><span class="st">"</span><span class="va">)</span></span>
-<span id="cb2-54"><a href="#cb2-54" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-55"><a href="#cb2-55" aria-hidden="true" tabindex="-1"></a>  <span class="bu">echo</span> <span class="st">"== </span><span class="va">$DEV</span><span class="st"> (Endintervall </span><span class="va">${MINUTES}</span><span class="st"> min, ext_power=</span><span class="va">${EXT}</span><span class="st">) =="</span></span>
-<span id="cb2-56"><a href="#cb2-56" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-57"><a href="#cb2-57" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Downlink-Liste zusammenbauen (FIFO: TDC60 -&gt; PROBE -&gt; optional 12V -&gt; TDCfinal)</span></span>
-<span id="cb2-58"><a href="#cb2-58" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="kw">[[</span> <span class="st">"</span><span class="va">$EXT</span><span class="st">"</span> <span class="ot">==</span> <span class="st">"0"</span> <span class="kw">]];</span> <span class="cf">then</span></span>
-<span id="cb2-59"><a href="#cb2-59" aria-hidden="true" tabindex="-1"></a>    <span class="va">JSON</span><span class="op">=</span><span class="va">$(</span><span class="ex">jq</span> <span class="at">-n</span> <span class="at">--arg</span> p1 <span class="st">"</span><span class="va">$P_TDC60</span><span class="st">"</span> <span class="at">--arg</span> p2 <span class="st">"</span><span class="va">$P_PROBE</span><span class="st">"</span> <span class="at">--arg</span> p3 <span class="st">"</span><span class="va">$P_12V8</span><span class="st">"</span> <span class="at">--arg</span> p4 <span class="st">"</span><span class="va">$P_TDCF</span><span class="st">"</span> <span class="at">--argjson</span> fp <span class="va">$FPORT</span> <span class="dt">\</span></span>
-<span id="cb2-60"><a href="#cb2-60" aria-hidden="true" tabindex="-1"></a>      <span class="st">'{downlinks:[</span></span>
-<span id="cb2-61"><a href="#cb2-61" aria-hidden="true" tabindex="-1"></a><span class="st">        {f_port:$fp, frm_payload:$p1, confirmed:true, priority:"NORMAL"},</span></span>
-<span id="cb2-62"><a href="#cb2-62" aria-hidden="true" tabindex="-1"></a><span class="st">        {f_port:$fp, frm_payload:$p2, confirmed:true, priority:"NORMAL"},</span></span>
-<span id="cb2-63"><a href="#cb2-63" aria-hidden="true" tabindex="-1"></a><span class="st">        {f_port:$fp, frm_payload:$p3, confirmed:true, priority:"NORMAL"},</span></span>
-<span id="cb2-64"><a href="#cb2-64" aria-hidden="true" tabindex="-1"></a><span class="st">        {f_port:$fp, frm_payload:$p4, confirmed:true, priority:"NORMAL"}</span></span>
-<span id="cb2-65"><a href="#cb2-65" aria-hidden="true" tabindex="-1"></a><span class="st">      ]}'</span><span class="va">)</span></span>
-<span id="cb2-66"><a href="#cb2-66" aria-hidden="true" tabindex="-1"></a>  <span class="cf">else</span></span>
-<span id="cb2-67"><a href="#cb2-67" aria-hidden="true" tabindex="-1"></a>    <span class="va">JSON</span><span class="op">=</span><span class="va">$(</span><span class="ex">jq</span> <span class="at">-n</span> <span class="at">--arg</span> p1 <span class="st">"</span><span class="va">$P_TDC60</span><span class="st">"</span> <span class="at">--arg</span> p2 <span class="st">"</span><span class="va">$P_PROBE</span><span class="st">"</span> <span class="at">--arg</span> p4 <span class="st">"</span><span class="va">$P_TDCF</span><span class="st">"</span> <span class="at">--argjson</span> fp <span class="va">$FPORT</span> <span class="dt">\</span></span>
-<span id="cb2-68"><a href="#cb2-68" aria-hidden="true" tabindex="-1"></a>      <span class="st">'{downlinks:[</span></span>
-<span id="cb2-69"><a href="#cb2-69" aria-hidden="true" tabindex="-1"></a><span class="st">        {f_port:$fp, frm_payload:$p1, confirmed:true, priority:"NORMAL"},</span></span>
-<span id="cb2-70"><a href="#cb2-70" aria-hidden="true" tabindex="-1"></a><span class="st">        {f_port:$fp, frm_payload:$p2, confirmed:true, priority:"NORMAL"},</span></span>
-<span id="cb2-71"><a href="#cb2-71" aria-hidden="true" tabindex="-1"></a><span class="st">        {f_port:$fp, frm_payload:$p4, confirmed:true, priority:"NORMAL"}</span></span>
-<span id="cb2-72"><a href="#cb2-72" aria-hidden="true" tabindex="-1"></a><span class="st">      ]}'</span><span class="va">)</span></span>
-<span id="cb2-73"><a href="#cb2-73" aria-hidden="true" tabindex="-1"></a>  <span class="cf">fi</span></span>
-<span id="cb2-74"><a href="#cb2-74" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-75"><a href="#cb2-75" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Ein API-Call pro Gerät: down/replace</span></span>
-<span id="cb2-76"><a href="#cb2-76" aria-hidden="true" tabindex="-1"></a>  <span class="va">HTTP</span><span class="op">=</span><span class="va">$(</span><span class="ex">curl</span> <span class="at">-sS</span> <span class="at">-o</span> /tmp/resp.json <span class="at">-w</span> <span class="st">"%{http_code}"</span> <span class="dt">\</span></span>
-<span id="cb2-77"><a href="#cb2-77" aria-hidden="true" tabindex="-1"></a>    <span class="at">-X</span> POST <span class="st">"</span><span class="va">$API</span><span class="st">/as/applications/</span><span class="va">$APP</span><span class="st">/devices/</span><span class="va">$DEV</span><span class="st">/down/replace"</span> <span class="dt">\</span></span>
-<span id="cb2-78"><a href="#cb2-78" aria-hidden="true" tabindex="-1"></a>    <span class="at">-H</span> <span class="st">"Authorization: Bearer </span><span class="va">$KEY</span><span class="st">"</span> <span class="at">-H</span> <span class="st">"Content-Type: application/json"</span> <span class="dt">\</span></span>
-<span id="cb2-79"><a href="#cb2-79" aria-hidden="true" tabindex="-1"></a>    <span class="at">-d</span> <span class="st">"</span><span class="va">$JSON</span><span class="st">"</span><span class="va">)</span></span>
-<span id="cb2-80"><a href="#cb2-80" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-81"><a href="#cb2-81" aria-hidden="true" tabindex="-1"></a>  <span class="bu">echo</span> <span class="st">"HTTP: </span><span class="va">$HTTP</span><span class="st">"</span></span>
-<span id="cb2-82"><a href="#cb2-82" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span> /tmp/resp.json<span class="kw">;</span> <span class="bu">echo</span></span>
-<span id="cb2-83"><a href="#cb2-83" aria-hidden="true" tabindex="-1"></a>  <span class="kw">[[</span> <span class="st">"</span><span class="va">$HTTP</span><span class="st">"</span> <span class="ot">=~</span> <span class="pp">^</span><span class="ss">2</span> <span class="kw">]]</span> <span class="kw">||</span> <span class="kw">{</span> <span class="bu">echo</span> <span class="st">"Fehler bei </span><span class="va">$DEV</span><span class="st"> – siehe oben."</span><span class="kw">;</span> <span class="bu">exit</span> 1<span class="kw">;</span> <span class="kw">}</span></span>
-<span id="cb2-84"><a href="#cb2-84" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-85"><a href="#cb2-85" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sleep</span> <span class="st">"</span><span class="va">$DELAY_BETWEEN_DEV</span><span class="st">"</span></span>
-<span id="cb2-86"><a href="#cb2-86" aria-hidden="true" tabindex="-1"></a><span class="cf">done</span> <span class="op">&lt;</span> <span class="st">"</span><span class="va">$CSV</span><span class="st">"</span></span>
-<span id="cb2-87"><a href="#cb2-87" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-88"><a href="#cb2-88" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">"Hinweis: Class A → Downlinks kommen NACH dem nächsten Uplink (FIFO, meist 1 pro Uplink).</span></span>
-<span id="cb2-89"><a href="#cb2-89" aria-hidden="true" tabindex="-1"></a><span class="st">Lass TDC=60s aktiv, bis die Queue bei jedem Gerät abgearbeitet ist."</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/usr/bin/env bash</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="at">-euo</span> pipefail</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co"># ===== KONFIG =====</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="va">APP</span><span class="op">=</span><span class="st">"gisma-hydro-testbed"</span>                 <span class="co"># Application-ID</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="va">KEY</span><span class="op">=</span><span class="st">"NNSXS.xxxxx..."</span>                      <span class="co"># Application-API-Key (Write downlink)</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="va">API</span><span class="op">=</span><span class="st">"https://eu1.cloud.thethings.network/api/v3"</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="va">CSV</span><span class="op">=</span><span class="st">"devices.csv"</span>                         <span class="co"># device_id,interval_min,ext_power</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="va">FPORT</span><span class="op">=</span>2</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="fu">need()</span><span class="kw">{</span> <span class="bu">command</span> <span class="at">-v</span> <span class="st">"</span><span class="va">$1</span><span class="st">"</span> <span class="op">&gt;</span>/dev/null <span class="dv">2</span><span class="op">&gt;&amp;</span><span class="dv">1</span> <span class="kw">||</span> <span class="kw">{</span> <span class="bu">echo</span> <span class="st">"Fehlt: </span><span class="va">$1</span><span class="st">"</span><span class="kw">;</span> <span class="bu">exit</span> 1<span class="kw">;</span> <span class="kw">};</span> <span class="kw">}</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="ex">need</span> xxd<span class="kw">;</span> <span class="ex">need</span> base64<span class="kw">;</span> <span class="ex">need</span> curl<span class="kw">;</span> <span class="ex">need</span> jq<span class="kw">;</span> <span class="ex">need</span> awk</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="co"># -- Hex-Helper --</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a><span class="fu">to_b64()</span><span class="kw">{</span> <span class="bu">printf</span> <span class="st">"%s"</span> <span class="st">"</span><span class="va">$1</span><span class="st">"</span> <span class="kw">|</span> <span class="ex">xxd</span> <span class="at">-r</span> <span class="at">-p</span> <span class="kw">|</span> <span class="fu">base64</span><span class="kw">;</span> <span class="kw">}</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="co"># TDC-Hex aus Minuten berechnen (3-Byte Big-Endian Sekunden)</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Limitation: 1..65535 Sekunden; für unsere Intervalle (1..1440 min) ok.</span></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a><span class="fu">tdc_hex_from_minutes()</span><span class="kw">{</span></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>  <span class="bu">local</span> <span class="va">min</span><span class="op">=</span><span class="st">"</span><span class="va">$1</span><span class="st">"</span></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>  <span class="bu">local</span> <span class="va">sec</span><span class="op">=</span><span class="va">$((</span> <span class="va">min</span><span class="op">*</span><span class="dv">60</span> <span class="va">))</span></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>  <span class="co"># in 3 Bytes big-endian verpacken</span></span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>  <span class="bu">printf</span> <span class="st">"%06X"</span> <span class="st">"</span><span class="va">$sec</span><span class="st">"</span></span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a><span class="co"># Fixe Hex-Commands</span></span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a><span class="va">HEX_PROBE</span><span class="op">=</span><span class="st">"080002"</span>           <span class="co"># Wassertiefe-Profil 0–2 m</span></span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a><span class="va">HEX_TDC_60S</span><span class="op">=</span><span class="st">"0100003C"</span>       <span class="co"># TDC=60s (Schnellphase)</span></span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a><span class="va">HEX_12V_8S</span><span class="op">=</span><span class="st">"07031F40"</span>        <span class="co"># 12V=8000ms (nur wenn PS-LB speist)</span></span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a><span class="kw">[[</span> <span class="ot">-f</span> <span class="st">"</span><span class="va">$CSV</span><span class="st">"</span> <span class="kw">]]</span> <span class="kw">||</span> <span class="kw">{</span> <span class="bu">echo</span> <span class="st">"CSV '</span><span class="va">$CSV</span><span class="st">' fehlt."</span><span class="kw">;</span> <span class="bu">exit</span> 1<span class="kw">;</span> <span class="kw">}</span></span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a><span class="co"># Sanfte Drossel zwischen Geräten</span></span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a><span class="va">DELAY_BETWEEN_DEV</span><span class="op">=</span>0.2</span>
+<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a><span class="cf">while</span> <span class="va">IFS</span><span class="op">=</span>, <span class="bu">read</span> <span class="at">-r</span> <span class="va">DEV</span> <span class="va">MINUTES</span> <span class="va">EXT</span><span class="kw">;</span> <span class="cf">do</span></span>
+<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Leerzeilen/Kommentare überspringen</span></span>
+<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a>  <span class="kw">[[</span> <span class="ot">-z</span> <span class="st">"</span><span class="va">${DEV</span><span class="op">//</span><span class="ss"> </span><span class="va">}</span><span class="st">"</span> <span class="kw">||</span> <span class="st">"</span><span class="va">$DEV</span><span class="st">"</span> <span class="ot">=~</span> <span class="pp">^</span><span class="ss">#</span> <span class="kw">]]</span> <span class="kw">&amp;&amp;</span> <span class="cf">continue</span></span>
+<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Whitespace trim</span></span>
+<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a>  <span class="va">DEV</span><span class="op">=</span><span class="st">"</span><span class="va">$(</span><span class="bu">echo</span> <span class="st">"</span><span class="va">$DEV</span><span class="st">"</span> <span class="kw">|</span> <span class="fu">awk</span> <span class="st">'{$1=$1};1'</span><span class="va">)</span><span class="st">"</span></span>
+<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a>  <span class="va">MINUTES</span><span class="op">=</span><span class="st">"</span><span class="va">$(</span><span class="bu">echo</span> <span class="st">"</span><span class="va">$MINUTES</span><span class="st">"</span> <span class="kw">|</span> <span class="fu">awk</span> <span class="st">'{$1=$1};1'</span><span class="va">)</span><span class="st">"</span></span>
+<span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a>  <span class="va">EXT</span><span class="op">=</span><span class="st">"</span><span class="va">$(</span><span class="bu">echo</span> <span class="st">"</span><span class="va">$EXT</span><span class="st">"</span> <span class="kw">|</span> <span class="fu">awk</span> <span class="st">'{$1=$1};1'</span><span class="va">)</span><span class="st">"</span></span>
+<span id="cb7-44"><a href="#cb7-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-45"><a href="#cb7-45" aria-hidden="true" tabindex="-1"></a>  <span class="co"># End-TDC aus Minuten → Sekunden → 3-Byte Hex → komplettes Setz-Command (01 + 3 Byte)</span></span>
+<span id="cb7-46"><a href="#cb7-46" aria-hidden="true" tabindex="-1"></a>  <span class="va">TDC3</span><span class="op">=</span><span class="va">$(</span><span class="ex">tdc_hex_from_minutes</span> <span class="st">"</span><span class="va">$MINUTES</span><span class="st">"</span><span class="va">)</span>      <span class="co"># z.B. 15min -&gt; 000384</span></span>
+<span id="cb7-47"><a href="#cb7-47" aria-hidden="true" tabindex="-1"></a>  <span class="va">HEX_TDC_FINAL</span><span class="op">=</span><span class="st">"01</span><span class="va">${TDC3}</span><span class="st">"</span></span>
+<span id="cb7-48"><a href="#cb7-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-49"><a href="#cb7-49" aria-hidden="true" tabindex="-1"></a>  <span class="co"># In Base64 umwandeln</span></span>
+<span id="cb7-50"><a href="#cb7-50" aria-hidden="true" tabindex="-1"></a>  <span class="va">P_TDC60</span><span class="op">=</span><span class="va">$(</span><span class="ex">to_b64</span> <span class="st">"</span><span class="va">$HEX_TDC_60S</span><span class="st">"</span><span class="va">)</span></span>
+<span id="cb7-51"><a href="#cb7-51" aria-hidden="true" tabindex="-1"></a>  <span class="va">P_PROBE</span><span class="op">=</span><span class="va">$(</span><span class="ex">to_b64</span> <span class="st">"</span><span class="va">$HEX_PROBE</span><span class="st">"</span><span class="va">)</span></span>
+<span id="cb7-52"><a href="#cb7-52" aria-hidden="true" tabindex="-1"></a>  <span class="va">P_12V8</span><span class="op">=</span><span class="va">$(</span><span class="ex">to_b64</span> <span class="st">"</span><span class="va">$HEX_12V_8S</span><span class="st">"</span><span class="va">)</span></span>
+<span id="cb7-53"><a href="#cb7-53" aria-hidden="true" tabindex="-1"></a>  <span class="va">P_TDCF</span><span class="op">=</span><span class="va">$(</span><span class="ex">to_b64</span> <span class="st">"</span><span class="va">$HEX_TDC_FINAL</span><span class="st">"</span><span class="va">)</span></span>
+<span id="cb7-54"><a href="#cb7-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-55"><a href="#cb7-55" aria-hidden="true" tabindex="-1"></a>  <span class="bu">echo</span> <span class="st">"== </span><span class="va">$DEV</span><span class="st"> (Endintervall </span><span class="va">${MINUTES}</span><span class="st"> min, ext_power=</span><span class="va">${EXT}</span><span class="st">) =="</span></span>
+<span id="cb7-56"><a href="#cb7-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-57"><a href="#cb7-57" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Downlink-Liste zusammenbauen (FIFO: TDC60 -&gt; PROBE -&gt; optional 12V -&gt; TDCfinal)</span></span>
+<span id="cb7-58"><a href="#cb7-58" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="kw">[[</span> <span class="st">"</span><span class="va">$EXT</span><span class="st">"</span> <span class="ot">==</span> <span class="st">"0"</span> <span class="kw">]];</span> <span class="cf">then</span></span>
+<span id="cb7-59"><a href="#cb7-59" aria-hidden="true" tabindex="-1"></a>    <span class="va">JSON</span><span class="op">=</span><span class="va">$(</span><span class="ex">jq</span> <span class="at">-n</span> <span class="at">--arg</span> p1 <span class="st">"</span><span class="va">$P_TDC60</span><span class="st">"</span> <span class="at">--arg</span> p2 <span class="st">"</span><span class="va">$P_PROBE</span><span class="st">"</span> <span class="at">--arg</span> p3 <span class="st">"</span><span class="va">$P_12V8</span><span class="st">"</span> <span class="at">--arg</span> p4 <span class="st">"</span><span class="va">$P_TDCF</span><span class="st">"</span> <span class="at">--argjson</span> fp <span class="va">$FPORT</span> <span class="dt">\</span></span>
+<span id="cb7-60"><a href="#cb7-60" aria-hidden="true" tabindex="-1"></a>      <span class="st">'{downlinks:[</span></span>
+<span id="cb7-61"><a href="#cb7-61" aria-hidden="true" tabindex="-1"></a><span class="st">        {f_port:$fp, frm_payload:$p1, confirmed:true, priority:"NORMAL"},</span></span>
+<span id="cb7-62"><a href="#cb7-62" aria-hidden="true" tabindex="-1"></a><span class="st">        {f_port:$fp, frm_payload:$p2, confirmed:true, priority:"NORMAL"},</span></span>
+<span id="cb7-63"><a href="#cb7-63" aria-hidden="true" tabindex="-1"></a><span class="st">        {f_port:$fp, frm_payload:$p3, confirmed:true, priority:"NORMAL"},</span></span>
+<span id="cb7-64"><a href="#cb7-64" aria-hidden="true" tabindex="-1"></a><span class="st">        {f_port:$fp, frm_payload:$p4, confirmed:true, priority:"NORMAL"}</span></span>
+<span id="cb7-65"><a href="#cb7-65" aria-hidden="true" tabindex="-1"></a><span class="st">      ]}'</span><span class="va">)</span></span>
+<span id="cb7-66"><a href="#cb7-66" aria-hidden="true" tabindex="-1"></a>  <span class="cf">else</span></span>
+<span id="cb7-67"><a href="#cb7-67" aria-hidden="true" tabindex="-1"></a>    <span class="va">JSON</span><span class="op">=</span><span class="va">$(</span><span class="ex">jq</span> <span class="at">-n</span> <span class="at">--arg</span> p1 <span class="st">"</span><span class="va">$P_TDC60</span><span class="st">"</span> <span class="at">--arg</span> p2 <span class="st">"</span><span class="va">$P_PROBE</span><span class="st">"</span> <span class="at">--arg</span> p4 <span class="st">"</span><span class="va">$P_TDCF</span><span class="st">"</span> <span class="at">--argjson</span> fp <span class="va">$FPORT</span> <span class="dt">\</span></span>
+<span id="cb7-68"><a href="#cb7-68" aria-hidden="true" tabindex="-1"></a>      <span class="st">'{downlinks:[</span></span>
+<span id="cb7-69"><a href="#cb7-69" aria-hidden="true" tabindex="-1"></a><span class="st">        {f_port:$fp, frm_payload:$p1, confirmed:true, priority:"NORMAL"},</span></span>
+<span id="cb7-70"><a href="#cb7-70" aria-hidden="true" tabindex="-1"></a><span class="st">        {f_port:$fp, frm_payload:$p2, confirmed:true, priority:"NORMAL"},</span></span>
+<span id="cb7-71"><a href="#cb7-71" aria-hidden="true" tabindex="-1"></a><span class="st">        {f_port:$fp, frm_payload:$p4, confirmed:true, priority:"NORMAL"}</span></span>
+<span id="cb7-72"><a href="#cb7-72" aria-hidden="true" tabindex="-1"></a><span class="st">      ]}'</span><span class="va">)</span></span>
+<span id="cb7-73"><a href="#cb7-73" aria-hidden="true" tabindex="-1"></a>  <span class="cf">fi</span></span>
+<span id="cb7-74"><a href="#cb7-74" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-75"><a href="#cb7-75" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Ein API-Call pro Gerät: down/replace</span></span>
+<span id="cb7-76"><a href="#cb7-76" aria-hidden="true" tabindex="-1"></a>  <span class="va">HTTP</span><span class="op">=</span><span class="va">$(</span><span class="ex">curl</span> <span class="at">-sS</span> <span class="at">-o</span> /tmp/resp.json <span class="at">-w</span> <span class="st">"%{http_code}"</span> <span class="dt">\</span></span>
+<span id="cb7-77"><a href="#cb7-77" aria-hidden="true" tabindex="-1"></a>    <span class="at">-X</span> POST <span class="st">"</span><span class="va">$API</span><span class="st">/as/applications/</span><span class="va">$APP</span><span class="st">/devices/</span><span class="va">$DEV</span><span class="st">/down/replace"</span> <span class="dt">\</span></span>
+<span id="cb7-78"><a href="#cb7-78" aria-hidden="true" tabindex="-1"></a>    <span class="at">-H</span> <span class="st">"Authorization: Bearer </span><span class="va">$KEY</span><span class="st">"</span> <span class="at">-H</span> <span class="st">"Content-Type: application/json"</span> <span class="dt">\</span></span>
+<span id="cb7-79"><a href="#cb7-79" aria-hidden="true" tabindex="-1"></a>    <span class="at">-d</span> <span class="st">"</span><span class="va">$JSON</span><span class="st">"</span><span class="va">)</span></span>
+<span id="cb7-80"><a href="#cb7-80" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-81"><a href="#cb7-81" aria-hidden="true" tabindex="-1"></a>  <span class="bu">echo</span> <span class="st">"HTTP: </span><span class="va">$HTTP</span><span class="st">"</span></span>
+<span id="cb7-82"><a href="#cb7-82" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span> /tmp/resp.json<span class="kw">;</span> <span class="bu">echo</span></span>
+<span id="cb7-83"><a href="#cb7-83" aria-hidden="true" tabindex="-1"></a>  <span class="kw">[[</span> <span class="st">"</span><span class="va">$HTTP</span><span class="st">"</span> <span class="ot">=~</span> <span class="pp">^</span><span class="ss">2</span> <span class="kw">]]</span> <span class="kw">||</span> <span class="kw">{</span> <span class="bu">echo</span> <span class="st">"Fehler bei </span><span class="va">$DEV</span><span class="st"> – siehe oben."</span><span class="kw">;</span> <span class="bu">exit</span> 1<span class="kw">;</span> <span class="kw">}</span></span>
+<span id="cb7-84"><a href="#cb7-84" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-85"><a href="#cb7-85" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sleep</span> <span class="st">"</span><span class="va">$DELAY_BETWEEN_DEV</span><span class="st">"</span></span>
+<span id="cb7-86"><a href="#cb7-86" aria-hidden="true" tabindex="-1"></a><span class="cf">done</span> <span class="op">&lt;</span> <span class="st">"</span><span class="va">$CSV</span><span class="st">"</span></span>
+<span id="cb7-87"><a href="#cb7-87" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-88"><a href="#cb7-88" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">"Hinweis: Class A → Downlinks kommen NACH dem nächsten Uplink (FIFO, meist 1 pro Uplink).</span></span>
+<span id="cb7-89"><a href="#cb7-89" aria-hidden="true" tabindex="-1"></a><span class="st">Lass TDC=60s aktiv, bis die Queue bei jedem Gerät abgearbeitet ist."</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <ul>
-<li><strong>Minimal-Sequenz</strong> ist im Webinterface unter <strong>Messaging → Downlink</strong> (siehe oben).</li>
-<li>Das Script baut für jedes Gerät die <strong>gleiche Start-Sequenz</strong> (60 s → PROBE → optional 12 V) und setzt dann das <strong>End-Intervall aus der CSV</strong>.</li>
+<li>Das Script baut für jedes Gerät die <strong>gleiche Start-Sequenz</strong> (60 s → PROBE → optional externe Stromversorgung) und setzt dann das <strong>End-Intervall aus der CSV</strong>.</li>
 <li>Unterstützt beliebige Minutenwerte (z. B. 5/15/20).</li>
-<li>Wenn deine Sonden <strong>dauerhaft extern</strong> versorgt sind, setze in der CSV <code>ext_power=1</code> → es wird <strong>kein</strong> 12 V-Downlink hinzugefügt.</li>
 </ul>
 </section>
-<section id="troubleshooting" class="level3" data-number="1.3.3">
-<h3 data-number="1.3.3" class="anchored" data-anchor-id="troubleshooting"><span class="header-section-number">1.3.3</span> Troubleshooting</h3>
+<section id="troubleshooting" class="level3" data-number="6.2.2">
+<h3 data-number="6.2.2" class="anchored" data-anchor-id="troubleshooting"><span class="header-section-number">6.2.2</span> Troubleshooting</h3>
 <ul>
-<li><p><strong>Downlinks „kommen nicht“</strong> → Es braucht <strong>einen Uplink</strong> (Taste kurz), Queue FIFO.</p></li>
+<li><p><strong>Downlinks „kommen nicht“</strong> → Es braucht <strong>einen Uplink</strong> (Taste kurz!), Queue FIFO.</p></li>
 <li><p><strong>Rate-Limit</strong> → nur <strong>ein</strong> <code>down/replace</code> pro Gerät; im Batch kleine Pause.</p></li>
 <li><p><strong>Tiefe bleibt 0</strong> &amp; Uplink zeigt <code>IDC=0000</code> → <strong>keine 4–20 mA-Schleife</strong>:</p>
 <ul>
