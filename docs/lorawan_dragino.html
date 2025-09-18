@@ -65,6 +65,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
+<link href="./index_data.html" rel="next">
+<link href="./lorawan_doku.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
@@ -309,9 +311,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./lorawan_doku.html">MikroTik Setup</a></li><li class="breadcrumb-item"><a href="./lorawan_dragino.html">Dragino Sensoren</a></li></ol></nav>
-        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
-        </a>
+        <a class="flex-grow-1 no-decor" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+          <h1 class="quarto-secondary-nav-title">LoraWan Dragino Doku</h1>
+        </a>     
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
         <i class="bi bi-search"></i>
       </button>
@@ -418,21 +420,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#kurzleitfaden-remote-kommunikation-nur-port-2-binär" id="toc-kurzleitfaden-remote-kommunikation-nur-port-2-binär" class="nav-link active" data-scroll-target="#kurzleitfaden-remote-kommunikation-nur-port-2-binär"><span class="header-section-number">1</span> Kurzleitfaden Remote-Kommunikation (nur Port 2, binär)</a>
+  <li><a href="#kurzleitfaden-remote-kommunikation-nur-port-2-binär" id="toc-kurzleitfaden-remote-kommunikation-nur-port-2-binär" class="nav-link active" data-scroll-target="#kurzleitfaden-remote-kommunikation-nur-port-2-binär">Kurzleitfaden Remote-Kommunikation (nur Port 2, binär)</a>
   <ul class="collapse">
-  <li><a href="#ziel" id="toc-ziel" class="nav-link" data-scroll-target="#ziel"><span class="header-section-number">1.1</span> Ziel</a></li>
-  </ul></li>
-  <li><a href="#minute" id="toc-minute" class="nav-link" data-scroll-target="#minute"><span class="header-section-number">2</span> 1 Minute</a></li>
-  <li><a href="#minuten" id="toc-minuten" class="nav-link" data-scroll-target="#minuten"><span class="header-section-number">3</span> 5 Minuten</a></li>
-  <li><a href="#minuten-1" id="toc-minuten-1" class="nav-link" data-scroll-target="#minuten-1"><span class="header-section-number">4</span> 15 Minuten</a></li>
-  <li><a href="#minuten-2" id="toc-minuten-2" class="nav-link" data-scroll-target="#minuten-2"><span class="header-section-number">5</span> 30 Minuten</a></li>
-  <li><a href="#minuten-3" id="toc-minuten-3" class="nav-link" data-scroll-target="#minuten-3"><span class="header-section-number">6</span> 60 Minuten</a>
+  <li><a href="#ziel" id="toc-ziel" class="nav-link" data-scroll-target="#ziel">Ziel</a></li>
+  <li><a href="#wo-im-webinterface-die-minimal-sequenz-eingegeben-wird-ttntts" id="toc-wo-im-webinterface-die-minimal-sequenz-eingegeben-wird-ttntts" class="nav-link" data-scroll-target="#wo-im-webinterface-die-minimal-sequenz-eingegeben-wird-ttntts">Wo im Webinterface die Minimal-Sequenz eingegeben wird (TTN/TTS)</a></li>
+  <li><a href="#batch-script-mit-per-gerät-intervall" id="toc-batch-script-mit-per-gerät-intervall" class="nav-link" data-scroll-target="#batch-script-mit-per-gerät-intervall">Batch-Script mit per-Gerät-Intervall</a>
   <ul class="collapse">
-  <li><a href="#wo-im-webinterface-die-minimal-sequenz-eingegeben-wird-ttntts" id="toc-wo-im-webinterface-die-minimal-sequenz-eingegeben-wird-ttntts" class="nav-link" data-scroll-target="#wo-im-webinterface-die-minimal-sequenz-eingegeben-wird-ttntts"><span class="header-section-number">6.1</span> Wo im Webinterface die Minimal-Sequenz eingegeben wird (TTN/TTS)</a></li>
-  <li><a href="#batch-script-mit-per-gerät-intervall" id="toc-batch-script-mit-per-gerät-intervall" class="nav-link" data-scroll-target="#batch-script-mit-per-gerät-intervall"><span class="header-section-number">6.2</span> Batch-Script mit per-Gerät-Intervall</a>
-  <ul class="collapse">
-  <li><a href="#script-downlink_hex_replace_map.sh" id="toc-script-downlink_hex_replace_map.sh" class="nav-link" data-scroll-target="#script-downlink_hex_replace_map.sh"><span class="header-section-number">6.2.1</span> Script: <code>downlink_hex_replace_map.sh</code></a></li>
-  <li><a href="#troubleshooting" id="toc-troubleshooting" class="nav-link" data-scroll-target="#troubleshooting"><span class="header-section-number">6.2.2</span> Troubleshooting</a></li>
+  <li><a href="#script-downlink_hex_replace_map.sh" id="toc-script-downlink_hex_replace_map.sh" class="nav-link" data-scroll-target="#script-downlink_hex_replace_map.sh">Script: <code>downlink_hex_replace_map.sh</code></a></li>
+  <li><a href="#troubleshooting" id="toc-troubleshooting" class="nav-link" data-scroll-target="#troubleshooting">Troubleshooting</a></li>
   </ul></li>
   </ul></li>
   </ul>
@@ -442,9 +437,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <main class="content" id="quarto-document-content">
 
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./lorawan_doku.html">MikroTik Setup</a></li><li class="breadcrumb-item"><a href="./lorawan_dragino.html">Dragino Sensoren</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">LoraWan Dragino Doku</h1>
+<h1 class="title d-none d-lg-block">LoraWan Dragino Doku</h1>
 <p class="subtitle lead">version 0.1</p>
 </div>
 
@@ -468,10 +463,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<section id="kurzleitfaden-remote-kommunikation-nur-port-2-binär" class="level1" data-number="1">
-<h1 data-number="1"><span class="header-section-number">1</span> Kurzleitfaden Remote-Kommunikation (nur Port 2, binär)</h1>
-<section id="ziel" class="level2" data-number="1.1">
-<h2 data-number="1.1" class="anchored" data-anchor-id="ziel"><span class="header-section-number">1.1</span> Ziel</h2>
+<section id="kurzleitfaden-remote-kommunikation-nur-port-2-binär" class="level1">
+<h1>Kurzleitfaden Remote-Kommunikation (nur Port 2, binär)</h1>
+<section id="ziel" class="level2">
+<h2 class="anchored" data-anchor-id="ziel">Ziel</h2>
 <p>(Mehrere) Dragino <strong>PS-LB/LS</strong> Sensoren per <strong>TTN</strong> mit <strong>binären Downlinks (Hex)</strong> auf <strong>Port 2</strong> konfigurieren. Im Prinzip muss die folgende Befehlssequenz (für typische Intervalle) via Downlink an den Sensor gesendet werden. Die Reihenfolge in der die Sequenz am Sensor abgearbeiet wird ist <strong>FIFO</strong>. Da die Class A Sensoren nur je Uplink (=Datenpaket) einen Downlink verarbeiten können wird zunächst hochgetaktet damit die Befehlssequenz schneller abgearbeitet werden kann. Konkret sieht das dann wie folgt aus:</p>
 <ul>
 <li><strong>TDC</strong> = Sendeintervall (Sekunden)</li>
@@ -479,50 +474,40 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><strong>12 V = 8000 ms</strong> = kurz Sonde speisen (optional)</li>
 </ul>
 <hr>
-</section>
-</section>
-<section id="minute" class="level1" data-number="2">
-<h1 data-number="2"><span class="header-section-number">2</span> 1 Minute</h1>
+<p><strong>1 Minute</strong></p>
 <pre><code>Schritt | Hex       | Zweck
 1      | 0100003C  | TDC = 60 s (hochtakten)
 2      | 080002    | PROBE = 0002 (0–2 m)
 3      | 07031F40  | 12 V = 8000 ms (optional)
 4      | 0100003C  | TDC = 60 s (final)</code></pre>
-</section>
-<section id="minuten" class="level1" data-number="3">
-<h1 data-number="3"><span class="header-section-number">3</span> 5 Minuten</h1>
+<p><strong>5 Minuten</strong></p>
 <pre><code>Schritt | Hex       | Zweck
 1      | 0100003C  | TDC = 60 s (hochtakten)
 2      | 080002    | PROBE = 0002 (0–2 m)
 3      | 07031F40  | 12 V = 8000 ms (optional)
 4      | 0100012C  | TDC = 300 s (5 min)</code></pre>
-</section>
-<section id="minuten-1" class="level1" data-number="4">
-<h1 data-number="4"><span class="header-section-number">4</span> 15 Minuten</h1>
+<p><strong>15 Minuten</strong></p>
 <pre><code>Schritt | Hex       | Zweck
 1      | 0100003C  | TDC = 60 s (hochtakten)
 2      | 080002    | PROBE = 0002 (0–2 m)
 3      | 07031F40  | 12 V = 8000 ms (optional)
 4      | 01000384  | TDC = 900 s (15 min)</code></pre>
-</section>
-<section id="minuten-2" class="level1" data-number="5">
-<h1 data-number="5"><span class="header-section-number">5</span> 30 Minuten</h1>
+<p><strong>30 Minuten</strong></p>
 <pre><code>Schritt | Hex       | Zweck
 1      | 0100003C  | TDC = 60 s (hochtakten)
 2      | 080002    | PROBE = 0002 (0–2 m)
 3      | 07031F40  | 12 V = 8000 ms (optional)
 4      | 01000708  | TDC = 1800 s (30 min)</code></pre>
-</section>
-<section id="minuten-3" class="level1" data-number="6">
-<h1 data-number="6"><span class="header-section-number">6</span> 60 Minuten</h1>
+<p><strong>60 Minuten</strong></p>
 <pre><code>Schritt | Hex       | Zweck
 1      | 0100003C  | TDC = 60 s (hochtakten)
 2      | 080002    | PROBE = 0002 (0–2 m)
 3      | 07031F40  | 12 V = 8000 ms (optional)
 4      | 01000E10  | TDC = 3600 s (60 min)</code></pre>
 <p>Falls die Sonden <strong>extern</strong> versorgt sind (<strong>sind sie nicht!!</strong>), kann Schritt 3 weggelassen werden, alle anderen Schritte bleiben identisch.</p>
-<section id="wo-im-webinterface-die-minimal-sequenz-eingegeben-wird-ttntts" class="level2" data-number="6.1">
-<h2 data-number="6.1" class="anchored" data-anchor-id="wo-im-webinterface-die-minimal-sequenz-eingegeben-wird-ttntts"><span class="header-section-number">6.1</span> Wo im Webinterface die Minimal-Sequenz eingegeben wird (TTN/TTS)</h2>
+</section>
+<section id="wo-im-webinterface-die-minimal-sequenz-eingegeben-wird-ttntts" class="level2">
+<h2 class="anchored" data-anchor-id="wo-im-webinterface-die-minimal-sequenz-eingegeben-wird-ttntts">Wo im Webinterface die Minimal-Sequenz eingegeben wird (TTN/TTS)</h2>
 <p><strong>Pfad:</strong> <strong>Applications → <em>deine App</em> → End devices → <em>dein Gerät</em> → Messaging → Downlink</strong></p>
 <p><strong>Pro Gerät:</strong></p>
 <ol type="1">
@@ -544,8 +529,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Falls das klemmt: Oben: <strong>Payload formatter → Downlink = None</strong> dann die Sequenz nochmal durchlaufen</p></li>
 </ol>
 </section>
-<section id="batch-script-mit-per-gerät-intervall" class="level2" data-number="6.2">
-<h2 data-number="6.2" class="anchored" data-anchor-id="batch-script-mit-per-gerät-intervall"><span class="header-section-number">6.2</span> Batch-Script mit per-Gerät-Intervall</h2>
+<section id="batch-script-mit-per-gerät-intervall" class="level2">
+<h2 class="anchored" data-anchor-id="batch-script-mit-per-gerät-intervall">Batch-Script mit per-Gerät-Intervall</h2>
 <p>Weil das ein Alptram ist hier ein Script das sowohl die zeitintervalle ausrechnet als auch die Befehle im Stapel absendet damit die Kommunikationslimits nicht gebrochen werden:</p>
 <p>Als input wird eine CSV-Datei <code>devices.csv</code>benötigt die wie folgt aufgebaut ist:</p>
 <p><code>device_id, interval_min, ext_power</code></p>
@@ -557,8 +542,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <pre><code>ps-lb-01,15,0
 ps-lb-21,5,0
 ps-lb-42,20,0</code></pre>
-<section id="script-downlink_hex_replace_map.sh" class="level3" data-number="6.2.1">
-<h3 data-number="6.2.1" class="anchored" data-anchor-id="script-downlink_hex_replace_map.sh"><span class="header-section-number">6.2.1</span> Script: <code>downlink_hex_replace_map.sh</code></h3>
+<section id="script-downlink_hex_replace_map.sh" class="level3">
+<h3 class="anchored" data-anchor-id="script-downlink_hex_replace_map.sh">Script: <code>downlink_hex_replace_map.sh</code></h3>
 <ul>
 <li>Nimmt <strong>nur Hex</strong> als Kommandos, wandelt intern in Base64.</li>
 <li>Legt pro Gerät <strong>einen</strong> <code>down/replace</code> mit bis zu 4 Downlinks (FIFO) ab.</li>
@@ -658,8 +643,8 @@ ps-lb-42,20,0</code></pre>
 <li>Unterstützt beliebige Minutenwerte (z. B. 5/15/20).</li>
 </ul>
 </section>
-<section id="troubleshooting" class="level3" data-number="6.2.2">
-<h3 data-number="6.2.2" class="anchored" data-anchor-id="troubleshooting"><span class="header-section-number">6.2.2</span> Troubleshooting</h3>
+<section id="troubleshooting" class="level3">
+<h3 class="anchored" data-anchor-id="troubleshooting">Troubleshooting</h3>
 <ul>
 <li><p><strong>Downlinks „kommen nicht“</strong> → Es braucht <strong>einen Uplink</strong> (Taste kurz!), Queue FIFO.</p></li>
 <li><p><strong>Rate-Limit</strong> → nur <strong>ein</strong> <code>down/replace</code> pro Gerät; im Batch kleine Pause.</p></li>
@@ -784,8 +769,6 @@ ps-lb-42,20,0</code></pre>
             if (link.getAttribute("rel") === null) {
               link.setAttribute("rel", "noopener");
             }
-            // default icon
-            link.classList.add("external");
         }
       }
     function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
@@ -1099,6 +1082,18 @@ ps-lb-42,20,0</code></pre>
     }
   });
   </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./lorawan_doku.html" class="pagination-link" aria-label="Hub &amp; TNN">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Hub &amp; TNN</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./index_data.html" class="pagination-link" aria-label="Daten Repository">
+        <span class="nav-page-text">Daten Repository</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
 </div> <!-- /content -->
 
 
