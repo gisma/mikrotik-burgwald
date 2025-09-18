@@ -65,6 +65,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
+<link href="./lorawan_doku.html" rel="next">
 <link href="./live-data.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
@@ -353,36 +354,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false">
- <span class="menu-text">MikroTik Setup</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Daten-Interface</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 ">  
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="./lorawan_doku.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Hub &amp; TNN</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="./lorawan_dragino.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Dragino Sensoren</span></a>
-  </div>
-</li>
-      </ul>
-  </li>
-        <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
- <span class="menu-text">Messnetz-Daten</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
-            <i class="bi bi-chevron-right ms-2"></i>
-          </a> 
-      </div>
-      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./debug-data.html" class="sidebar-item-text sidebar-link">
@@ -399,6 +377,29 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <div class="sidebar-item-container"> 
   <a href="./dashboard_doku_de.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Dashboard Doku</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false">
+ <span class="menu-text">Setup Doku</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./lorawan_doku.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Hub &amp; TNN</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./lorawan_dragino.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Dragino Sensoren</span></a>
   </div>
 </li>
       </ul>
@@ -469,17 +470,19 @@ Es erkennt automatisch alle Devices, zieht deren Uplinks, schreibt pro Gerät Pa
 <section id="schnellstart-lokal" class="level2" data-number="1.1">
 <h2 data-number="1.1" class="anchored" data-anchor-id="schnellstart-lokal"><span class="header-section-number">1.1</span> Schnellstart (lokal)</h2>
 <ol type="1">
-<li><p>(Optional) Erstelle <code>scripts/.env</code>:</p>
-<pre class="env"><code>TTN_APP_ID=gisma-hydro-testbed
-TTN_REGION=eu1
-TTN_API_KEY=NNSXS_...
-RUN_DASH=1
-TTN_AFTER_DAYS=2
-DELAY_BETWEEN_DEVICES=0.3
-# Health-Report (optional):
-# STALE_HOURS=3
-# DEV_INCLUDE=dds75-lb-.*
-# DEV_EXCLUDE=</code></pre></li>
+<li>(Optional) Erstelle <code>scripts/.env</code>:</li>
+</ol>
+<pre class="env"><code>   TTN_APP_ID=gisma-hydro-testbed
+   TTN_REGION=eu1
+   TTN_API_KEY=NNSXS_...
+   RUN_DASH=1
+   TTN_AFTER_DAYS=2
+   DELAY_BETWEEN_DEVICES=0.3
+   # Health-Report (optional):
+   # STALE_HOURS=3
+   # DEV_INCLUDE=dds75-lb-.*
+   # DEV_EXCLUDE=</code></pre>
+<ol start="2" type="1">
 <li><p>Ausführen:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> scripts/pull_all_devices.py</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></li>
 <li><p>Ergebnisse liegen unter:</p>
@@ -560,51 +563,122 @@ DELAY_BETWEEN_DEVICES=0.3
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">on</span><span class="kw">:</span></span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">schedule</span><span class="kw">:</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">cron</span><span class="kw">:</span><span class="at"> </span><span class="st">"*/15 * * * *"</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">cron</span><span class="kw">:</span><span class="at"> </span><span class="st">"*/30 * * * *"</span><span class="co">     # alle 30 Minuten (UTC)</span></span>
 <span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">workflow_dispatch</span><span class="kw">:</span></span>
 <span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="fu">permissions</span><span class="kw">:</span></span>
 <span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">contents</span><span class="kw">:</span><span class="at"> write</span></span>
 <span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="fu">jobs</span><span class="kw">:</span></span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">build</span><span class="kw">:</span></span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">runs-on</span><span class="kw">:</span><span class="at"> ubuntu-latest</span></span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">env</span><span class="kw">:</span></span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">TTN_API_KEY</span><span class="kw">:</span><span class="at">  ${{ secrets.TTN_API_KEY }}</span></span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">TTN_APP_ID</span><span class="kw">:</span><span class="at">   ${{ secrets.TTN_APP_ID }}</span></span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">TTN_REGION</span><span class="kw">:</span><span class="at">   ${{ secrets.TTN_REGION }}</span></span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">TTN_AFTER_DAYS</span><span class="kw">:</span><span class="at"> </span><span class="st">"2"</span></span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">RUN_DASH</span><span class="kw">:</span><span class="at"> </span><span class="st">"1"</span></span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">DELAY_BETWEEN_DEVICES</span><span class="kw">:</span><span class="at"> </span><span class="st">"0.4"</span></span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="co">      # DEVICES leer lassen = Auto-Discovery</span></span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="co">      # Optional STALE_HOURS / DEV_INCLUDE / DEV_EXCLUDE hier setzen</span></span>
-<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">steps</span><span class="kw">:</span></span>
-<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> actions/checkout@v4</span></span>
-<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Python einrichten</span></span>
-<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> actions/setup-python@v5</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="fu">concurrency</span><span class="kw">:</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">group</span><span class="kw">:</span><span class="at"> ttn-pages</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">cancel-in-progress</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="fu">jobs</span><span class="kw">:</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">build</span><span class="kw">:</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">runs-on</span><span class="kw">:</span><span class="at"> ubuntu-latest</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">env</span><span class="kw">:</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">TTN_APP_ID</span><span class="kw">:</span><span class="at">  ${{ secrets.TTN_APP_ID }}</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">TTN_REGION</span><span class="kw">:</span><span class="at">  ${{ secrets.TTN_REGION }}</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">TTN_API_KEY</span><span class="kw">:</span><span class="at"> ${{ secrets.TTN_API_KEY }}</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">THEME_DEFAULT</span><span class="kw">:</span><span class="at"> </span><span class="st">"light"</span><span class="co">                 # optionales Theme fürs Dashboard</span></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">DEBUG_RECENT_MINUTES</span><span class="kw">:</span><span class="at"> </span><span class="st">"90"</span><span class="co">             # steuert die Debug-Tabelle (zuletzt X Minuten)</span></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">steps</span><span class="kw">:</span></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Checkout (full history)</span></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> actions/checkout@v4</span></span>
 <span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">with</span><span class="kw">:</span></span>
-<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="fu">python-version</span><span class="kw">:</span><span class="at"> </span><span class="st">"3.12"</span></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="fu">fetch-depth</span><span class="kw">:</span><span class="at"> </span><span class="dv">0</span></span>
 <span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Dependencies installieren</span></span>
-<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a><span class="fu">        run</span><span class="kw">: </span><span class="ch">|</span></span>
-<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>          python -m pip install --upgrade pip</span>
-<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>          pip install requests pandas plotly pyarrow fastparquet python-dotenv</span>
-<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Dashboard bauen</span></span>
-<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a><span class="fu">        run</span><span class="kw">: </span><span class="ch">|</span></span>
-<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>          python scripts/pull_all_devices.py</span>
-<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>          mkdir -p docs</span>
-<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>          cp -r assets/* docs/</span>
-<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Commit docs/ und data/</span></span>
-<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a><span class="fu">        run</span><span class="kw">: </span><span class="ch">|</span></span>
-<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a>          git config user.name  "ttn-bot"</span>
-<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>          git config user.email "ttn-bot@example.com"</span>
-<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a>          git add docs/ data/ || true</span>
-<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a>          git diff --cached --quiet || git commit -m "update all-devices $(date -u +%FT%TZ)"</span>
-<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a>          git push</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Sync branch (rebase)</span></span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">env</span><span class="kw">:</span></span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="fu">BRANCH</span><span class="kw">:</span><span class="at"> ${{ github.ref_name }}</span></span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a><span class="fu">        run</span><span class="kw">: </span><span class="ch">|</span></span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>          git config user.name  "ttn-bot"</span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>          git config user.email "ttn-bot@example.com"</span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>          git checkout "$BRANCH"</span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>          git pull --rebase origin "$BRANCH" || true</span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Set up Python</span></span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> actions/setup-python@v5</span></span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">with</span><span class="kw">:</span></span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="fu">python-version</span><span class="kw">:</span><span class="at"> </span><span class="st">'3.12'</span></span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Install dependencies</span></span>
+<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a><span class="fu">        run</span><span class="kw">: </span><span class="ch">|</span></span>
+<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a>          python -m pip install --upgrade pip</span>
+<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a>          pip install requests pandas plotly pyarrow python-dotenv</span>
+<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a><span class="co">      # Erzwingt HTML-Build und genügend Storage-Fenster</span></span>
+<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Build dashboard (pull all devices)</span></span>
+<span id="cb4-53"><a href="#cb4-53" aria-hidden="true" tabindex="-1"></a><span class="fu">        run</span><span class="kw">: </span><span class="ch">|</span></span>
+<span id="cb4-54"><a href="#cb4-54" aria-hidden="true" tabindex="-1"></a>          RUN_DASH=1 TTN_AFTER_DAYS=7 python scripts/pull_all_devices.py</span>
+<span id="cb4-55"><a href="#cb4-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-56"><a href="#cb4-56" aria-hidden="true" tabindex="-1"></a>          # Nach Build: frisch erzeugte Assets loggen</span>
+<span id="cb4-57"><a href="#cb4-57" aria-hidden="true" tabindex="-1"></a>          test -f assets/data.html  &amp;&amp; ls -l --time-style=full-iso assets/data.html  || true</span>
+<span id="cb4-58"><a href="#cb4-58" aria-hidden="true" tabindex="-1"></a>          test -f assets/debug.html &amp;&amp; ls -l --time-style=full-iso assets/debug.html || true</span>
+<span id="cb4-59"><a href="#cb4-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-60"><a href="#cb4-60" aria-hidden="true" tabindex="-1"></a>          # In Pages-Verzeichnis spiegeln</span>
+<span id="cb4-61"><a href="#cb4-61" aria-hidden="true" tabindex="-1"></a>          mkdir -p docs/assets</span>
+<span id="cb4-62"><a href="#cb4-62" aria-hidden="true" tabindex="-1"></a>          cp -r assets/* docs/assets/ || true</span>
+<span id="cb4-63"><a href="#cb4-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-64"><a href="#cb4-64" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Publish data artifacts to docs/data</span></span>
+<span id="cb4-65"><a href="#cb4-65" aria-hidden="true" tabindex="-1"></a><span class="fu">        run</span><span class="kw">: </span><span class="ch">|</span></span>
+<span id="cb4-66"><a href="#cb4-66" aria-hidden="true" tabindex="-1"></a>          mkdir -p docs/data</span>
+<span id="cb4-67"><a href="#cb4-67" aria-hidden="true" tabindex="-1"></a>          cp -a data/*.parquet docs/data/ 2&gt;/dev/null || true</span>
+<span id="cb4-68"><a href="#cb4-68" aria-hidden="true" tabindex="-1"></a>          cp -a data/*.ndjson  docs/data/ 2&gt;/dev/null || true</span>
+<span id="cb4-69"><a href="#cb4-69" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-70"><a href="#cb4-70" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Build data index (JSON)</span></span>
+<span id="cb4-71"><a href="#cb4-71" aria-hidden="true" tabindex="-1"></a><span class="fu">        run</span><span class="kw">: </span><span class="ch">|</span></span>
+<span id="cb4-72"><a href="#cb4-72" aria-hidden="true" tabindex="-1"></a>          python - &lt;&lt; 'PY'</span>
+<span id="cb4-73"><a href="#cb4-73" aria-hidden="true" tabindex="-1"></a>          import json, pathlib</span>
+<span id="cb4-74"><a href="#cb4-74" aria-hidden="true" tabindex="-1"></a>          d = pathlib.Path("docs/data")</span>
+<span id="cb4-75"><a href="#cb4-75" aria-hidden="true" tabindex="-1"></a>          d.mkdir(parents=True, exist_ok=True)</span>
+<span id="cb4-76"><a href="#cb4-76" aria-hidden="true" tabindex="-1"></a>          items = []</span>
+<span id="cb4-77"><a href="#cb4-77" aria-hidden="true" tabindex="-1"></a>          for p in sorted(d.glob("*")):</span>
+<span id="cb4-78"><a href="#cb4-78" aria-hidden="true" tabindex="-1"></a>              if p.suffix.lower() not in (".parquet", ".ndjson"):</span>
+<span id="cb4-79"><a href="#cb4-79" aria-hidden="true" tabindex="-1"></a>                  continue</span>
+<span id="cb4-80"><a href="#cb4-80" aria-hidden="true" tabindex="-1"></a>              st = p.stat()</span>
+<span id="cb4-81"><a href="#cb4-81" aria-hidden="true" tabindex="-1"></a>              items.append({</span>
+<span id="cb4-82"><a href="#cb4-82" aria-hidden="true" tabindex="-1"></a>                  "name": p.name,</span>
+<span id="cb4-83"><a href="#cb4-83" aria-hidden="true" tabindex="-1"></a>                  "size": st.st_size,</span>
+<span id="cb4-84"><a href="#cb4-84" aria-hidden="true" tabindex="-1"></a>                  "mtime": int(st.st_mtime),</span>
+<span id="cb4-85"><a href="#cb4-85" aria-hidden="true" tabindex="-1"></a>                  "type": "Parquet" if p.suffix.lower()==".parquet" else "NDJSON"</span>
+<span id="cb4-86"><a href="#cb4-86" aria-hidden="true" tabindex="-1"></a>              })</span>
+<span id="cb4-87"><a href="#cb4-87" aria-hidden="true" tabindex="-1"></a>          (d / "index.json").write_text(json.dumps(items, ensure_ascii=False), encoding="utf-8")</span>
+<span id="cb4-88"><a href="#cb4-88" aria-hidden="true" tabindex="-1"></a>          PY</span>
+<span id="cb4-89"><a href="#cb4-89" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-90"><a href="#cb4-90" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Ensure GitHub Pages flags</span></span>
+<span id="cb4-91"><a href="#cb4-91" aria-hidden="true" tabindex="-1"></a><span class="fu">        run</span><span class="kw">: </span><span class="ch">|</span></span>
+<span id="cb4-92"><a href="#cb4-92" aria-hidden="true" tabindex="-1"></a>          mkdir -p docs</span>
+<span id="cb4-93"><a href="#cb4-93" aria-hidden="true" tabindex="-1"></a>          touch docs/.nojekyll</span>
+<span id="cb4-94"><a href="#cb4-94" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-95"><a href="#cb4-95" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Sanity check before commit</span></span>
+<span id="cb4-96"><a href="#cb4-96" aria-hidden="true" tabindex="-1"></a><span class="fu">        run</span><span class="kw">: </span><span class="ch">|</span></span>
+<span id="cb4-97"><a href="#cb4-97" aria-hidden="true" tabindex="-1"></a>          echo "Listing freshly built assets:"</span>
+<span id="cb4-98"><a href="#cb4-98" aria-hidden="true" tabindex="-1"></a>          ls -l --time-style=full-iso docs/assets/ || true</span>
+<span id="cb4-99"><a href="#cb4-99" aria-hidden="true" tabindex="-1"></a>          echo "Listing data artifacts:"</span>
+<span id="cb4-100"><a href="#cb4-100" aria-hidden="true" tabindex="-1"></a>          ls -l --time-style=full-iso docs/data/ || true</span>
+<span id="cb4-101"><a href="#cb4-101" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-102"><a href="#cb4-102" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Commit docs/ and data/ (stash + rebase + push)</span></span>
+<span id="cb4-103"><a href="#cb4-103" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">env</span><span class="kw">:</span></span>
+<span id="cb4-104"><a href="#cb4-104" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="fu">BRANCH</span><span class="kw">:</span><span class="at"> ${{ github.ref_name }}</span></span>
+<span id="cb4-105"><a href="#cb4-105" aria-hidden="true" tabindex="-1"></a><span class="fu">        run</span><span class="kw">: </span><span class="ch">|</span></span>
+<span id="cb4-106"><a href="#cb4-106" aria-hidden="true" tabindex="-1"></a>          set -e</span>
+<span id="cb4-107"><a href="#cb4-107" aria-hidden="true" tabindex="-1"></a>          git config user.name  "ttn-bot"</span>
+<span id="cb4-108"><a href="#cb4-108" aria-hidden="true" tabindex="-1"></a>          git config user.email "ttn-bot@example.com"</span>
+<span id="cb4-109"><a href="#cb4-109" aria-hidden="true" tabindex="-1"></a>          git checkout "$BRANCH"</span>
+<span id="cb4-110"><a href="#cb4-110" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-111"><a href="#cb4-111" aria-hidden="true" tabindex="-1"></a>          git add -A</span>
+<span id="cb4-112"><a href="#cb4-112" aria-hidden="true" tabindex="-1"></a>          git stash push --include-untracked --message "ci-wip" || true</span>
+<span id="cb4-113"><a href="#cb4-113" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-114"><a href="#cb4-114" aria-hidden="true" tabindex="-1"></a>          git pull --rebase origin "$BRANCH" || true</span>
+<span id="cb4-115"><a href="#cb4-115" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-116"><a href="#cb4-116" aria-hidden="true" tabindex="-1"></a>          git stash pop || true</span>
+<span id="cb4-117"><a href="#cb4-117" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-118"><a href="#cb4-118" aria-hidden="true" tabindex="-1"></a>          git add docs/ data/ || true</span>
+<span id="cb4-119"><a href="#cb4-119" aria-hidden="true" tabindex="-1"></a>          git commit -m "update all-devices $(date -u +%FT%TZ)" || echo "no changes"</span>
+<span id="cb4-120"><a href="#cb4-120" aria-hidden="true" tabindex="-1"></a>          git push origin "$BRANCH"</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p><strong>Repo-Einstellungen:</strong></p>
 <ul>
 <li>Secrets: <code>TTN_API_KEY</code>, <code>TTN_APP_ID</code>, <code>TTN_REGION</code>.</li>
@@ -1064,6 +1138,9 @@ DELAY_BETWEEN_DEVICES=0.3
       </a>          
   </div>
   <div class="nav-page nav-page-next">
+      <a href="./lorawan_doku.html" class="pagination-link" aria-label="Hub &amp; TNN">
+        <span class="nav-page-text">Hub &amp; TNN</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
   </div>
 </nav>
 </div> <!-- /content -->
