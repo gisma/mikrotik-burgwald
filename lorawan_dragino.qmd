@@ -87,6 +87,8 @@ Falls die Sonden **extern** versorgt sind (**sind sie nicht!!**), kann Schritt 3
 
 ## Wo im Webinterface die Minimal-Sequenz eingegeben wird (TTN/TTS)
 
+Die Sensoren sind im [The Things Stack](https://eu1.cloud.thethings.network/console) angemeldet. Das nennt sich TTN-Console unter wähle oben rechts den Cluster (für Europa eu1) und melde dich an.
+
 **Pfad:** **Applications → *deine App* → End devices → *dein Gerät* → Messaging → Downlink**
 
 **Pro Gerät:**
