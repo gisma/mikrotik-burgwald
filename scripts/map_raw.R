@@ -25,7 +25,7 @@ df_ok <- df_ok %>%
   mutate(across(c("Radar","Druck","Hobo"),
                 ~ ifelse(is.na(.x) | .x=="", "", "✓"))) %>%
   mutate(Sensoren = trimws(paste0(
-    ifelse(Radar=="✓","Radar ",""),
+    ifelse(Radar=="✓","Ultraschall ",""),
     ifelse(Druck=="✓","Druck ",""),
     ifelse(Hobo =="✓","Hobo","")
   )))
