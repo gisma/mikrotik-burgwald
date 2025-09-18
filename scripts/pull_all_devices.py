@@ -23,6 +23,8 @@ AFTER_DAYS = int(os.environ.get("TTN_AFTER_DAYS", "2"))
 AFTER = (datetime.now(timezone.utc) - timedelta(days=AFTER_DAYS)).strftime("%Y-%m-%dT%H:%M:%SZ")
 HDRS  = {"Authorization": f"Bearer {KEY}"}    # robust NDJSON/SSE parsing
 DELAY_BETWEEN_DEVICES = float(os.environ.get("DELAY_BETWEEN_DEVICES", "0.3"))
+DEBUG_RECENT_MINUTES = int(os.environ.get("DEBUG_RECENT_MINUTES", "90"))
+
 
 # Health report configuration
 STALE_HOURS  = int(os.environ.get("STALE_HOURS", "3"))
@@ -450,19 +452,31 @@ if RUN_DASH:
             "status": status
         })
 
-        # Debug card (raw sample + head of parquet if available)
-        raw = DATA / f"{dev}_raw.ndjson"
-        sample = ""
-        if raw.exists():
-            sample = "".join(raw.read_text(encoding="utf-8").splitlines(True)[:5])
-            sample = sample.replace("<", "&lt;").replace(">", "&gt;")
-        head_html = (pd.read_parquet(DATA / f"{dev}.parquet").head(3).to_html(index=False)
-                     if (DATA / f"{dev}.parquet").exists() else "<i>no parquet yet</i>")
+        # --- DEBUG: nur Daten der letzten DEBUG_RECENT_MINUTES Minuten anzeigen ---
+        recent_html = "<i>no recent data</i>"
+        try:
+            df_dev = df.copy()
+            if not df_dev.empty:
+                df_dev["received_at"] = pd.to_datetime(df_dev["received_at"], utc=True, errors="coerce")
+                cutoff = datetime.now(timezone.utc) - timedelta(minutes=DEBUG_RECENT_MINUTES)
+                dfr = df_dev[df_dev["received_at"] >= cutoff].sort_values("received_at")
+
+                prefer = ["received_at","f_port","battery","water_cm","idc_input_ma","vdc_input_v","rssi","snr"]
+                cols = [c for c in prefer if c in dfr.columns]
+                if not cols:
+                    # Fallback: alles Numerische + Zeitstempel (max 6 Werte)
+                    num_cols = [c for c in dfr.columns
+                                if c != "received_at" and pd.api.types.is_numeric_dtype(dfr[c])]
+                    cols = ["received_at"] + num_cols[:6]
+                if cols:
+                    recent_html = dfr[cols].tail(12).to_html(index=False)
+        except Exception:
+            pass
+
         debug_cards.append(f"""
         <div class="card">
           <h3>{dev}</h3>
-          <pre style="white-space:pre-wrap;max-height:220px;overflow:auto">{sample}</pre>
-          {head_html}
+          <div>{recent_html}</div>
         </div>""")
 
         # Gentle rate limiting
@@ -473,7 +487,7 @@ if RUN_DASH:
     def _badge(s: str) -> str:
        cls = "badge"
        if s == "ok": cls += " ok"
-       elif s.startswith("STALE"): cls += " stale"
+       elif isinstance(s, str) and s.startswith("STALE"): cls += " stale"
        elif s == "empty": cls += " empty"
        elif s == "error": cls += " err"
        return f'<span class="{cls}">{s}</span>'
@@ -484,6 +498,7 @@ if RUN_DASH:
 
     overview_html = ov[["device_id","records","last_seen_utc","status"]].sort_values("device_id") \
         .to_html(index=False, escape=False)  # wichtig: escape=False für HTML-Badges
+
     # Build HTML dashboard
     stamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%SZ")
 
@@ -553,13 +568,13 @@ if RUN_DASH:
 <div class="type-grid">
 {"".join(type_cards_html) if type_cards_html else '<div class="card">Keine Daten zum Anzeigen.</div>'}
 </div>
-""" 
+"""
 
-
-    dbg = f"""<!doctype html><meta charset="utf-8"><title>Debug</title>
+    # --- Debug-Seite schreiben (nur recent) ---
+    dbg = f"""<!doctype html><meta charset="utf-8"><title>Debug (recent)</title>
     <style>body{{font-family:system-ui;margin:20px}} .card{{border:1px solid #eee;border-radius:12px;padding:12px;margin:12px 0}}</style>
-    <h1>Status – Pull & Persist</h1>
-    {"".join(debug_cards)}
+    <h1>Debug – letzte {DEBUG_RECENT_MINUTES} Minuten</h1>
+    {"".join(debug_cards) if debug_cards else "<div class='card'><i>Keine aktuellen Daten.</i></div>"}
     """
 
     # Write HTML files
@@ -611,6 +626,7 @@ if RUN_DASH:
         for r in health_rows
     )
     (ASSETS / "devices_used.txt").write_text(health_txt, encoding="utf-8")
+
 
     # CSV for machines
     pd.DataFrame(health_rows).to_csv(ASSETS / "devices_used.csv", index=False)
