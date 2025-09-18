@@ -22,62 +22,123 @@ diagram:
     kroki-url: https://kroki.io
 ---
 
-
 # Kurzleitfaden Remote-Kommunikation (nur Port 2, binär)
 
 ## Ziel
 
-(Mehrere) Dragino **PS-LB/LS** Sensoren per **TTN** mit **binären Downlinks (Hex)** auf **Port 2** konfigurieren
+(Mehrere) Dragino **PS-LB/LS** Sensoren per **TTN** mit **binären Downlinks (Hex)** auf **Port 2** konfigurieren. Im Prinzip muss die folgende Befehlssequenz (für typische Intervalle) via Downlink an den Sensor gesendet werden. Die Reihenfolge in der die Sequenz am Sensor abgearbeiet wird ist **FIFO**. Da die Class A Sensoren nur je Uplink (=Datenpaket) einen Downlink verarbeiten können wird zunächst hochgetaktet damit die Befehlssequenz schneller abgearbeitet werden kann. Konkret sieht das dann wie folgt aus:
 
+-   **TDC** = Sendeintervall (Sekunden)
+-   **PROBE=0002** = Wassertiefe-Profil 0–2 m
+-   **12 V = 8000 ms** = kurz Sonde speisen (optional)
+
+------------------------------------------------------------------------
+
+# 1 Minute
+
+```         
+Schritt | Hex       | Zweck
+1      | 0100003C  | TDC = 60 s (hochtakten)
+2      | 080002    | PROBE = 0002 (0–2 m)
+3      | 07031F40  | 12 V = 8000 ms (optional)
+4      | 0100003C  | TDC = 60 s (final)
+```
+
+# 5 Minuten
+
+```         
+Schritt | Hex       | Zweck
+1      | 0100003C  | TDC = 60 s (hochtakten)
+2      | 080002    | PROBE = 0002 (0–2 m)
+3      | 07031F40  | 12 V = 8000 ms (optional)
+4      | 0100012C  | TDC = 300 s (5 min)
+```
+
+# 15 Minuten
+
+```         
+Schritt | Hex       | Zweck
+1      | 0100003C  | TDC = 60 s (hochtakten)
+2      | 080002    | PROBE = 0002 (0–2 m)
+3      | 07031F40  | 12 V = 8000 ms (optional)
+4      | 01000384  | TDC = 900 s (15 min)
+```
+
+# 30 Minuten
+
+```         
+Schritt | Hex       | Zweck
+1      | 0100003C  | TDC = 60 s (hochtakten)
+2      | 080002    | PROBE = 0002 (0–2 m)
+3      | 07031F40  | 12 V = 8000 ms (optional)
+4      | 01000708  | TDC = 1800 s (30 min)
+```
+
+# 60 Minuten
+
+```         
+Schritt | Hex       | Zweck
+1      | 0100003C  | TDC = 60 s (hochtakten)
+2      | 080002    | PROBE = 0002 (0–2 m)
+3      | 07031F40  | 12 V = 8000 ms (optional)
+4      | 01000E10  | TDC = 3600 s (60 min)
+```
+
+Falls die Sonden **extern** versorgt sind (**sind sie nicht!!**), kann Schritt 3 weggelassen werden, alle anderen Schritte bleiben identisch.
 
 ## Wo im Webinterface die Minimal-Sequenz eingegeben wird (TTN/TTS)
 
-**Pfad:**
-**Applications → *deine App* → End devices → *dein Gerät* → Messaging → Downlink**
+**Pfad:** **Applications → *deine App* → End devices → *dein Gerät* → Messaging → Downlink**
 
 **Pro Gerät:**
 
-1. Oben: **Payload formatter → Downlink = None** (falls nicht schon so).
-2. Bereich **Schedule downlink**:
+1.  Bereich **Schedule downlink**:
 
-   * **FPort**: `2`
-   * **Payload type**: **Bytes**
-   * **Bytes** (Hex ohne Leerzeichen), nacheinander schedulen:
+    -   **FPort**: `2`
 
-     * `0100003C`   (TDC = 60 s)
-     * `080002`     (PROBE = 0002, 0–2 m)
-     * `07031F40`   (optional, 12 V 8 s, nur wenn PS-LB speist)
-     * `01000384`   (TDC = 900 s = 15 min)
-   * **Confirmed**: an (schadet nicht)
-   * **Schedule** klicken
-3. **Uplink auslösen** (Taste kurz) oder auf Intervall warten – Class A liefert Downlinks jeweils **nach** einem Uplink (FIFO).
+    -   **Payload type**: **Bytes**
 
----
+    -   **Bytes** (Hex ohne Leerzeichen), nacheinander schedulen:
 
-## Batch-Script mit per-Gerät-Intervall (CSV)
+        -   `0100003C` (TDC = 60 s)
+        -   `080002` (PROBE = 0002, 0–2 m)
+        -   `07031F40` (optional, 12 V 8 s, nur wenn PS-LB speist)
+        -   `01000384` (TDC = 900 s = 15 min)
 
-### CSV: `devices.csv`
+    -   **Confirmed**: an (schadet nicht)
 
-Spalten: **device\_id, interval\_min, ext\_power**
+    -   **Schedule** klicken
 
-* `interval_min`: End-Intervall in Minuten (z. B. 5, 15, 20 …)
-* `ext_power`: `1` = Sonde **extern** versorgt → **ohne** 12 V-Downlink; `0` = PS-LB soll kurz speisen → **mit** 12 V-Downlink
+2.  **Uplink auslösen** (Taste kurz) oder auf Intervall warten – Class A liefert Downlinks jeweils **nach** einem Uplink (FIFO).
+
+    Falls das klemmt: Oben: **Payload formatter → Downlink = None** dann die Sequenz nochmal durchlaufen
+
+## Batch-Script mit per-Gerät-Intervall
+
+Weil das ein Alptram ist hier ein Script das sowohl die zeitintervalle ausrechnet als auch die Befehle im Stapel absendet damit die Kommunikationslimits nicht gebrochen werden:
+
+Als input wird eine CSV-Datei `devices.csv`benötigt die wie folgt aufgebaut ist:
+
+`device_id, interval_min, ext_power`
+
+-   `interval_min`: End-Intervall in Minuten (z. B. 5, 15, 20 …)
+-   `ext_power`: `1` = Sonde **extern** versorgt → **ohne** 12 V-Downlink; `0` = PS-LB soll kurz speisen → **mit** 12 V-Downlink
 
 Beispiel:
 
-```
-ps-lb-01,15,1
+```         
+ps-lb-01,15,0
 ps-lb-21,5,0
-ps-lb-42,20,1
+ps-lb-42,20,0
 ```
 
 ### Script: `downlink_hex_replace_map.sh`
 
-* Nimmt **nur Hex** als Kommandos, wandelt intern in Base64.
-* Legt pro Gerät **einen** `down/replace` mit bis zu 4 Downlinks (FIFO) ab.
-* End-Intervall kommt aus der CSV (1–255 min unterstützt, typische Werte 5/15/20).
+-   Nimmt **nur Hex** als Kommandos, wandelt intern in Base64.
+-   Legt pro Gerät **einen** `down/replace` mit bis zu 4 Downlinks (FIFO) ab.
+-   End-Intervall kommt aus der CSV (1–255 min unterstützt, typische Werte 5/15/20/30/60).
 
-```bash
+``` bash
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -169,27 +230,21 @@ echo "Hinweis: Class A → Downlinks kommen NACH dem nächsten Uplink (FIFO, mei
 Lass TDC=60s aktiv, bis die Queue bei jedem Gerät abgearbeitet ist."
 ```
 
-
-
-* **Minimal-Sequenz** ist im Webinterface unter **Messaging → Downlink** (siehe oben).
-* Das Script baut für jedes Gerät die **gleiche Start-Sequenz** (60 s → PROBE → optional 12 V) und setzt dann das **End-Intervall aus der CSV**.
-* Unterstützt beliebige Minutenwerte (z. B. 5/15/20).
-* Wenn deine Sonden **dauerhaft extern** versorgt sind, setze in der CSV `ext_power=1` → es wird **kein** 12 V-Downlink hinzugefügt.
-
+-   Das Script baut für jedes Gerät die **gleiche Start-Sequenz** (60 s → PROBE → optional externe Stromversorgung) und setzt dann das **End-Intervall aus der CSV**.
+-   Unterstützt beliebige Minutenwerte (z. B. 5/15/20).
 
 ### Troubleshooting
 
-* **Downlinks „kommen nicht“** → Es braucht **einen Uplink** (Taste kurz), Queue FIFO.
-* **Rate-Limit** → nur **ein** `down/replace` pro Gerät; im Batch kleine Pause.
-* **Tiefe bleibt 0** & Uplink zeigt `IDC=0000` → **keine 4–20 mA-Schleife**:
+-   **Downlinks „kommen nicht“** → Es braucht **einen Uplink** (Taste kurz!), Queue FIFO.
 
-  * Verdrahtung in Serie über **IDC+ / IDC−** prüfen
-  * Test: `07031F40` + Uplink → **IDC > 4 mA** oder **VDC > 0**
-  * A/B-Tausch Sonde ↔ Gerät, um Sensor/Board zu isolieren
-* **Remote-Reset** → `04FF`, danach Sequenz erneut senden.
-* **Statusframe** (zur Kontrolle) → `2601` (nächster Uplink auf FPort 5 zeigt Modell/FW/Band/BAT)
+-   **Rate-Limit** → nur **ein** `down/replace` pro Gerät; im Batch kleine Pause.
 
+-   **Tiefe bleibt 0** & Uplink zeigt `IDC=0000` → **keine 4–20 mA-Schleife**:
 
+    -   Verdrahtung in Serie über **IDC+ / IDC−** prüfen
+    -   Test: `07031F40` + Uplink → **IDC \> 4 mA** oder **VDC \> 0**
+    -   A/B-Tausch Sonde ↔ Gerät, um Sensor/Board zu isolieren
 
+-   **Remote-Reset** → `04FF`, danach Sequenz erneut senden.
 
-
+-   **Statusframe** (zur Kontrolle) → `2601` (nächster Uplink auf FPort 5 zeigt Modell/FW/Band/BAT)
