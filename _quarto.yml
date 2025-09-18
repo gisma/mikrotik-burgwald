@@ -10,6 +10,8 @@ project:
     - "theme-ecowitt.css"
 
 website:
+  page-navigation: true
+  bread-crumbs: false
   site-url: https://gisma.github.io/mikrotik-burgwald
   title: "Hydro-Messnetz Burgwald"
   search:
@@ -55,7 +57,7 @@ format:
     code-copy: true
     css: css/styles.css      # ← sicherstellen, dass dein CSS lädt
     toc: true
-    link-external-icon: true
+    link-external-icon: false
     link-external-newwindow: true
     link-external-filter: '^(?:https?:)\/\/(www\.quarto\.org|gisma\.github\.io)\/'
     code-overflow: wrap
