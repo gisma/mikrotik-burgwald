@@ -21,7 +21,7 @@ Farben = **Sensortyp-Kombinationen** (z. B. Ultraschall, Druck, Hobo). Klick auf
 
 ::: {style="display:flex; gap:.75rem; align-items:center; margin:.35rem 0 1rem;"}
 <a href="assets/karte_burgwald_sonden.html" target="_blank" rel="noopener"
-     style="text-decoration:none; padding:.4rem .7rem; border:1px solid #ccc; border-radius:8px;"> 🌐 Vollbild öffnen </a> [ (neues Fenster) ]{style="color:#555;"}
+     style="text-decoration:none; padding:.4rem .7rem; border:1px solid #ccc; border-radius:8px;"> 🌐 Vollbild öffnen </a> {style="color:#555;"}
 :::
 
 ::: {style="position:relative; padding-top:56.25%; border:1px solid #ddd; border-radius:12px; overflow:hidden; box-shadow:0 2px 10px rgba(0,0,0,.06);"}
