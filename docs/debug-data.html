@@ -30,7 +30,7 @@ ul.task-list li input[type="checkbox"] {
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
 <link href="./live-data.html" rel="next">
-<link href="./index_data.html" rel="prev">
+<link href="./lorawan_dragino.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
@@ -350,12 +350,6 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./index_data.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Daten Repository</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
   <a href="./debug-data.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Status Informationen</span></a>
   </div>
@@ -379,8 +373,15 @@ ul.task-list li input[type="checkbox"] {
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#allgemeine-formate-im-repo" id="toc-allgemeine-formate-im-repo" class="nav-link active" data-scroll-target="#allgemeine-formate-im-repo">Allgemeine Formate im Repo</a></li>
+  <li><a href="#sensoren" id="toc-sensoren" class="nav-link" data-scroll-target="#sensoren">Sensoren</a></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -405,8 +406,30 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
+<section id="allgemeine-formate-im-repo" class="level2">
+<h2 class="anchored" data-anchor-id="allgemeine-formate-im-repo">Allgemeine Formate im Repo</h2>
+<p><strong>NDJSON</strong> und <strong>Parquet</strong> sind beides Datenformate, die sich gut ergänzen:</p>
+<ul>
+<li><p><strong>NDJSON</strong> (Newline Delimited JSON) speichert Ereignisse zeilenweise als JSON-Objekte.<br>
+→ Ideal für <strong>Streaming und APIs</strong>, weil jede Zeile ein eigenständiger Datensatz ist.<br>
+→ Lässt sich mit Tools wie <code>jq</code>, <code>pandas.read_json(lines=True)</code> oder <code>jsonlite::stream_in()</code> direkt auswerten.</p></li>
+<li><p><strong>Parquet</strong> ist ein <strong>spaltenorientiertes, binäres Format</strong> für große Datenmengen.<br>
+→ Optimiert für <strong>Analysen und Abfragen</strong>, sehr platzsparend und schnell.<br>
+→ Standard in Big-Data-Ecosystemen (Spark, Hadoop, DuckDB, BigQuery, GDAL/GeoParquet).</p></li>
+</ul>
+<p><strong>Typischer Workflow:</strong> Rohdaten zunächst als <strong>NDJSON</strong> persistieren → für Analyse/Archiv in <strong>Parquet</strong> konvertieren.</p>
+</section>
+<section id="sensoren" class="level2">
+<h2 class="anchored" data-anchor-id="sensoren">Sensoren</h2>
+<ul>
+<li><strong>DDS75-LB</strong> (<code>dds75-lb-*.parquet</code>): <code>distance_cm</code> (bzw. <code>Distance_mm</code>), <code>temperature</code>, <code>battery</code>, Flags (<code>interrupt_flag</code>, <code>sensor_flag</code>).</li>
+<li><strong>PS-LB</strong> (<code>burgwald-ps-lb-*.parquet</code>): <code>water_cm</code> bzw. <code>pressure_kpa/_mpa</code>, zusätzlich <code>idc_input_ma</code>, <code>vdc_input_v</code>, <code>battery</code>, digitale Eingänge.</li>
+<li><strong>SenseCAP</strong> (<code>burgwald-sensecap-*.parquet</code>): <code>temperature</code>, <code>humidity</code>, <code>pressure_hpa</code>, <code>illumination</code>, ggf. <code>uv_index</code>, <code>wind_speed</code>, <code>wind_dir</code>, <code>rainfall</code>.</li>
+</ul>
+<hr>
 <div class="iframe-wrap">
-<p><iframe id="data-iframe" src="assets/debug.html?v=2" loading="lazy" width="100%" height="900" style="border:0;" referrerpolicy="no-referrer"> </iframe></p>
+<iframe id="data-iframe" src="assets/debug.html?v=2" loading="lazy" width="100%" height="900" style="border:0;" referrerpolicy="no-referrer">
+</iframe>
 </div>
 <script>
 (function () {
@@ -437,6 +460,7 @@ ul.task-list li input[type="checkbox"] {
 </style>
 
 
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
@@ -859,8 +883,8 @@ ul.task-list li input[type="checkbox"] {
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./index_data.html" class="pagination-link" aria-label="Daten Repository">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Daten Repository</span>
+      <a href="./lorawan_dragino.html" class="pagination-link" aria-label="Dragino Sensoren">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Dragino Sensoren</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
