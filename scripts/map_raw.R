@@ -41,7 +41,7 @@ popup_cols <- intersect(c("Gewässer","Einzugsgebiet","Gemeinde","Sensoren","Nor
 m <- mapview::mapview(
   pts,
   zcol = "Sensoren",               # Legende/Farbe nach Sensortyp
-  layer.name = "Messstellen",
+  layer.name = "Geplante Messstellen",
   cex = 8,
   label = pts$Nr,                  # Hover-Label
   popup = leafpop::popupTable(
