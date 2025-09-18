@@ -44,13 +44,13 @@ The Things Network (TTN) ist ein öffentliches, community-betriebenes LoRaWAN-Ne
 
 -   **Roaming/Weitverkehr**: Packet Broker-Anbindung (Gateways/Netze übergreifend), ohne eigene Peering-Pflege.
 
--   **Warum TTN Community für \~100 Sensoren:**
+-   *TTN Community für \~1000 Sensoren:**
 
     -   **0 € & wartungsfrei**, sofort startklar, bewährte Defaults.
     -   **Skaliert** bei Intervallen 1–60 min problemlos.
     -   **Ops-Aufwand ≈ 0** im Vergleich zu self-hosted.
 
--   **Alternativen (kurz):**
+-   **Alternative Clouds:**
 
     -   **Loriot / Actility (Cloud)**: gemanagt, **kostenpflichtig**, SLA.
     -   **AWS IoT Core for LoRaWAN**: pay-as-you-go, tiefe AWS-Integration.
