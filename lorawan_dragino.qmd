@@ -6,9 +6,8 @@ format:
   html:
     toc: true
     toc-depth: 3
-    number-sections: true      
+    number-sections: false     
     number-depth: 3           
-
     code-copy: true
     code-link: true
     code-overflow: wrap
@@ -34,7 +33,7 @@ diagram:
 
 ------------------------------------------------------------------------
 
-# 1 Minute
+**1 Minute**
 
 ```         
 Schritt | Hex       | Zweck
@@ -44,7 +43,7 @@ Schritt | Hex       | Zweck
 4      | 0100003C  | TDC = 60 s (final)
 ```
 
-# 5 Minuten
+**5 Minuten**
 
 ```         
 Schritt | Hex       | Zweck
@@ -54,7 +53,7 @@ Schritt | Hex       | Zweck
 4      | 0100012C  | TDC = 300 s (5 min)
 ```
 
-# 15 Minuten
+**15 Minuten**
 
 ```         
 Schritt | Hex       | Zweck
@@ -64,7 +63,7 @@ Schritt | Hex       | Zweck
 4      | 01000384  | TDC = 900 s (15 min)
 ```
 
-# 30 Minuten
+**30 Minuten**
 
 ```         
 Schritt | Hex       | Zweck
@@ -74,7 +73,7 @@ Schritt | Hex       | Zweck
 4      | 01000708  | TDC = 1800 s (30 min)
 ```
 
-# 60 Minuten
+**60 Minuten**
 
 ```         
 Schritt | Hex       | Zweck
