@@ -31,12 +31,6 @@ website:
       - section: "Über..."
         contents:
           - index.qmd
-      - section: "MikroTik Setup"
-        contents:
-          - text: "Hub & TNN"
-            href: lorawan_doku.qmd
-          - text: "Dragino Sensoren"
-            href: lorawan_dragino.qmd
       - section: "Messnetz-Daten"
         contents:
           # - text: "Daten Repository"
@@ -46,7 +40,14 @@ website:
           - text: "Dashboard"
             href: live-data.qmd
           - text: "Dashboard Doku"
-            href: dashboard_doku_de.qmd
+            href: dashboard_doku_de.qmd          
+      - section: "Setup Doku"
+        contents:
+          - text: "Hub & TNN"
+            href: lorawan_doku.qmd
+          - text: "Dragino Sensoren"
+            href: lorawan_dragino.qmd
+
 
 format:
   html:
