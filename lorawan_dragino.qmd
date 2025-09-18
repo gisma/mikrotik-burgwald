@@ -1,0 +1,195 @@
+---
+title: "LoraWan Dragino Doku"
+subtitle: "version 0.1"
+author: "Chris Reudenbach"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true      
+    number-depth: 3           
+
+    code-copy: true
+    code-link: true
+    code-overflow: wrap
+    code-fold: true
+    highlight-style: github
+execute:
+  mermaid: true
+diagram:
+  mermaid:
+    engine: kroki
+    kroki-url: https://kroki.io
+---
+
+
+# Kurzleitfaden Remote-Kommunikation (nur Port 2, binär)
+
+## Ziel
+
+(Mehrere) Dragino **PS-LB/LS** Sensoren per **TTN** mit **binären Downlinks (Hex)** auf **Port 2** konfigurieren
+
+
+## Wo im Webinterface die Minimal-Sequenz eingegeben wird (TTN/TTS)
+
+**Pfad:**
+**Applications → *deine App* → End devices → *dein Gerät* → Messaging → Downlink**
+
+**Pro Gerät:**
+
+1. Oben: **Payload formatter → Downlink = None** (falls nicht schon so).
+2. Bereich **Schedule downlink**:
+
+   * **FPort**: `2`
+   * **Payload type**: **Bytes**
+   * **Bytes** (Hex ohne Leerzeichen), nacheinander schedulen:
+
+     * `0100003C`   (TDC = 60 s)
+     * `080002`     (PROBE = 0002, 0–2 m)
+     * `07031F40`   (optional, 12 V 8 s, nur wenn PS-LB speist)
+     * `01000384`   (TDC = 900 s = 15 min)
+   * **Confirmed**: an (schadet nicht)
+   * **Schedule** klicken
+3. **Uplink auslösen** (Taste kurz) oder auf Intervall warten – Class A liefert Downlinks jeweils **nach** einem Uplink (FIFO).
+
+---
+
+## Batch-Script mit per-Gerät-Intervall (CSV)
+
+### CSV: `devices.csv`
+
+Spalten: **device\_id, interval\_min, ext\_power**
+
+* `interval_min`: End-Intervall in Minuten (z. B. 5, 15, 20 …)
+* `ext_power`: `1` = Sonde **extern** versorgt → **ohne** 12 V-Downlink; `0` = PS-LB soll kurz speisen → **mit** 12 V-Downlink
+
+Beispiel:
+
+```
+ps-lb-01,15,1
+ps-lb-21,5,0
+ps-lb-42,20,1
+```
+
+### Script: `downlink_hex_replace_map.sh`
+
+* Nimmt **nur Hex** als Kommandos, wandelt intern in Base64.
+* Legt pro Gerät **einen** `down/replace` mit bis zu 4 Downlinks (FIFO) ab.
+* End-Intervall kommt aus der CSV (1–255 min unterstützt, typische Werte 5/15/20).
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+# ===== KONFIG =====
+APP="gisma-hydro-testbed"                 # Application-ID
+KEY="NNSXS.xxxxx..."                      # Application-API-Key (Write downlink)
+API="https://eu1.cloud.thethings.network/api/v3"
+CSV="devices.csv"                         # device_id,interval_min,ext_power
+FPORT=2
+
+need(){ command -v "$1" >/dev/null 2>&1 || { echo "Fehlt: $1"; exit 1; }; }
+need xxd; need base64; need curl; need jq; need awk
+
+# -- Hex-Helper --
+to_b64(){ printf "%s" "$1" | xxd -r -p | base64; }
+
+# TDC-Hex aus Minuten berechnen (3-Byte Big-Endian Sekunden)
+# Limitation: 1..65535 Sekunden; für unsere Intervalle (1..1440 min) ok.
+tdc_hex_from_minutes(){
+  local min="$1"
+  local sec=$(( min*60 ))
+  # in 3 Bytes big-endian verpacken
+  printf "%06X" "$sec"
+}
+
+# Fixe Hex-Commands
+HEX_PROBE="080002"           # Wassertiefe-Profil 0–2 m
+HEX_TDC_60S="0100003C"       # TDC=60s (Schnellphase)
+HEX_12V_8S="07031F40"        # 12V=8000ms (nur wenn PS-LB speist)
+
+[[ -f "$CSV" ]] || { echo "CSV '$CSV' fehlt."; exit 1; }
+
+# Sanfte Drossel zwischen Geräten
+DELAY_BETWEEN_DEV=0.2
+
+while IFS=, read -r DEV MINUTES EXT; do
+  # Leerzeilen/Kommentare überspringen
+  [[ -z "${DEV// }" || "$DEV" =~ ^# ]] && continue
+
+  # Whitespace trim
+  DEV="$(echo "$DEV" | awk '{$1=$1};1')"
+  MINUTES="$(echo "$MINUTES" | awk '{$1=$1};1')"
+  EXT="$(echo "$EXT" | awk '{$1=$1};1')"
+
+  # End-TDC aus Minuten → Sekunden → 3-Byte Hex → komplettes Setz-Command (01 + 3 Byte)
+  TDC3=$(tdc_hex_from_minutes "$MINUTES")      # z.B. 15min -> 000384
+  HEX_TDC_FINAL="01${TDC3}"
+
+  # In Base64 umwandeln
+  P_TDC60=$(to_b64 "$HEX_TDC_60S")
+  P_PROBE=$(to_b64 "$HEX_PROBE")
+  P_12V8=$(to_b64 "$HEX_12V_8S")
+  P_TDCF=$(to_b64 "$HEX_TDC_FINAL")
+
+  echo "== $DEV (Endintervall ${MINUTES} min, ext_power=${EXT}) =="
+
+  # Downlink-Liste zusammenbauen (FIFO: TDC60 -> PROBE -> optional 12V -> TDCfinal)
+  if [[ "$EXT" == "0" ]]; then
+    JSON=$(jq -n --arg p1 "$P_TDC60" --arg p2 "$P_PROBE" --arg p3 "$P_12V8" --arg p4 "$P_TDCF" --argjson fp $FPORT \
+      '{downlinks:[
+        {f_port:$fp, frm_payload:$p1, confirmed:true, priority:"NORMAL"},
+        {f_port:$fp, frm_payload:$p2, confirmed:true, priority:"NORMAL"},
+        {f_port:$fp, frm_payload:$p3, confirmed:true, priority:"NORMAL"},
+        {f_port:$fp, frm_payload:$p4, confirmed:true, priority:"NORMAL"}
+      ]}')
+  else
+    JSON=$(jq -n --arg p1 "$P_TDC60" --arg p2 "$P_PROBE" --arg p4 "$P_TDCF" --argjson fp $FPORT \
+      '{downlinks:[
+        {f_port:$fp, frm_payload:$p1, confirmed:true, priority:"NORMAL"},
+        {f_port:$fp, frm_payload:$p2, confirmed:true, priority:"NORMAL"},
+        {f_port:$fp, frm_payload:$p4, confirmed:true, priority:"NORMAL"}
+      ]}')
+  fi
+
+  # Ein API-Call pro Gerät: down/replace
+  HTTP=$(curl -sS -o /tmp/resp.json -w "%{http_code}" \
+    -X POST "$API/as/applications/$APP/devices/$DEV/down/replace" \
+    -H "Authorization: Bearer $KEY" -H "Content-Type: application/json" \
+    -d "$JSON")
+
+  echo "HTTP: $HTTP"
+  cat /tmp/resp.json; echo
+  [[ "$HTTP" =~ ^2 ]] || { echo "Fehler bei $DEV – siehe oben."; exit 1; }
+
+  sleep "$DELAY_BETWEEN_DEV"
+done < "$CSV"
+
+echo "Hinweis: Class A → Downlinks kommen NACH dem nächsten Uplink (FIFO, meist 1 pro Uplink).
+Lass TDC=60s aktiv, bis die Queue bei jedem Gerät abgearbeitet ist."
+```
+
+
+
+* **Minimal-Sequenz** ist im Webinterface unter **Messaging → Downlink** (siehe oben).
+* Das Script baut für jedes Gerät die **gleiche Start-Sequenz** (60 s → PROBE → optional 12 V) und setzt dann das **End-Intervall aus der CSV**.
+* Unterstützt beliebige Minutenwerte (z. B. 5/15/20).
+* Wenn deine Sonden **dauerhaft extern** versorgt sind, setze in der CSV `ext_power=1` → es wird **kein** 12 V-Downlink hinzugefügt.
+
+
+### Troubleshooting
+
+* **Downlinks „kommen nicht“** → Es braucht **einen Uplink** (Taste kurz), Queue FIFO.
+* **Rate-Limit** → nur **ein** `down/replace` pro Gerät; im Batch kleine Pause.
+* **Tiefe bleibt 0** & Uplink zeigt `IDC=0000` → **keine 4–20 mA-Schleife**:
+
+  * Verdrahtung in Serie über **IDC+ / IDC−** prüfen
+  * Test: `07031F40` + Uplink → **IDC > 4 mA** oder **VDC > 0**
+  * A/B-Tausch Sonde ↔ Gerät, um Sensor/Board zu isolieren
+* **Remote-Reset** → `04FF`, danach Sequenz erneut senden.
+* **Statusframe** (zur Kontrolle) → `2601` (nächster Uplink auf FPort 5 zeigt Modell/FW/Band/BAT)
+
+
+
+
+
