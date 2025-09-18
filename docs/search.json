@@ -52,7 +52,19 @@
     "href": "index.html",
     "title": "Hydro-Messnetz Burgwald",
     "section": "",
-    "text": "Im Burgwald in Hessen wird ein hydrologisches Echtzeit-Monitoring eingerichtet, das kontinuierlich Daten zu Niederschlag, Bodenfeuchte, Grundwasser und Abfluss liefert. Sensoren erfassen die relevanten Größen und übertragen sie per Funk oder Mobilfunk in zentrale Datenbanken. So können Veränderungen in Moor- und Quellbereichen zeitnah erkannt und für Wasserhaushaltsanalysen genutzt werden. Diese Webseite dient der technischen und inhaltlichen Dokumentation des Monitorings und stellt perspektivisch auch die erhobenen Datensätze für Forschung, Praxis und Öffentlichkeit zur Verfügung.",
+    "text": "Die Karte zeigt geplante Stationen zur Erfassung von Niederschlag, Bodenfeuchte, Grundwasser und Abfluss.\nFarben = Sensortyp-Kombinationen (z. B. Radar, Druck, Hobo). Klick auf Marker ⇒ Popup mit Standort-Infos.\n\n 🌐 Vollbild öffnen  (neues Fenster)\n\n\n\n\n\n\nAbbildung: Geplante Stationen im Burgwald (Hessen). Farben kennzeichnen die verbauten Sensor-Typen (Radar = wasserstandsbezogene Distanzmessung, Druck = Tauchsonde/pegelabhängiger Druck, Hobo = Datenlogger). Popup enthält Standort-ID, Gewässer, Gemeinde und Messaufbau.\n\n\nHinweis: Diese Seite dokumentiert Technik & Inhalte fortlaufend.\nDie Sensoren sind derzeit in der Validierungsphase Sobald die Qualitätssicherung abgeschlosen ist und die Sensoren ausgebracht sind erfolgt hier ein Update.",
+    "crumbs": [
+      "Impressum",
+      "Über...",
+      "Hydro-Messnetz Burgwald"
+    ]
+  },
+  {
+    "objectID": "index.html#hydrologisches-echtzeit-monitoring-burgwald-hessen",
+    "href": "index.html#hydrologisches-echtzeit-monitoring-burgwald-hessen",
+    "title": "Hydro-Messnetz Burgwald",
+    "section": "",
+    "text": "Die Karte zeigt geplante Stationen zur Erfassung von Niederschlag, Bodenfeuchte, Grundwasser und Abfluss.\nFarben = Sensortyp-Kombinationen (z. B. Radar, Druck, Hobo). Klick auf Marker ⇒ Popup mit Standort-Infos.\n\n 🌐 Vollbild öffnen  (neues Fenster)\n\n\n\n\n\n\nAbbildung: Geplante Stationen im Burgwald (Hessen). Farben kennzeichnen die verbauten Sensor-Typen (Radar = wasserstandsbezogene Distanzmessung, Druck = Tauchsonde/pegelabhängiger Druck, Hobo = Datenlogger). Popup enthält Standort-ID, Gewässer, Gemeinde und Messaufbau.\n\n\nHinweis: Diese Seite dokumentiert Technik & Inhalte fortlaufend.\nDie Sensoren sind derzeit in der Validierungsphase Sobald die Qualitätssicherung abgeschlosen ist und die Sensoren ausgebracht sind erfolgt hier ein Update.",
     "crumbs": [
       "Impressum",
       "Über...",
