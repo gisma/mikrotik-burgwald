@@ -8,7 +8,7 @@
 
 <meta name="author" content="Chris Reudenbach">
 
-<title>README dashboard – Hydro-Messnetz Burgwald</title>
+<title>LoraWan Dragino Doku – Hydro-Messnetz Burgwald</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -309,7 +309,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">README dashboard</li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./lorawan_doku.html">MikroTik Setup</a></li><li class="breadcrumb-item"><a href="./lorawan_dragino.html">Dragino Sensoren</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -352,13 +352,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
  <span class="menu-text">MikroTik Setup</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 ">  
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./lorawan_doku.html" class="sidebar-item-text sidebar-link">
@@ -367,7 +367,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./lorawan_dragino.html" class="sidebar-item-text sidebar-link">
+  <a href="./lorawan_dragino.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Dragino Sensoren</span></a>
   </div>
 </li>
@@ -418,20 +418,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#ttn-dashboard-how-to-run-configure-and-deploy" id="toc-ttn-dashboard-how-to-run-configure-and-deploy" class="nav-link active" data-scroll-target="#ttn-dashboard-how-to-run-configure-and-deploy"><span class="header-section-number">1</span> TTN Dashboard – How to Run, Configure, and Deploy</a>
+  <li><a href="#kurzleitfaden-remote-kommunikation-nur-port-2-binär" id="toc-kurzleitfaden-remote-kommunikation-nur-port-2-binär" class="nav-link active" data-scroll-target="#kurzleitfaden-remote-kommunikation-nur-port-2-binär"><span class="header-section-number">1</span> Kurzleitfaden Remote-Kommunikation (nur Port 2, binär)</a>
   <ul class="collapse">
-  <li><a href="#quick-start-local" id="toc-quick-start-local" class="nav-link" data-scroll-target="#quick-start-local"><span class="header-section-number">1.1</span> Quick Start (local)</a></li>
-  <li><a href="#environment-variables" id="toc-environment-variables" class="nav-link" data-scroll-target="#environment-variables"><span class="header-section-number">1.2</span> Environment Variables</a>
+  <li><a href="#ziel" id="toc-ziel" class="nav-link" data-scroll-target="#ziel"><span class="header-section-number">1.1</span> Ziel</a></li>
+  <li><a href="#wo-im-webinterface-die-minimal-sequenz-eingegeben-wird-ttntts" id="toc-wo-im-webinterface-die-minimal-sequenz-eingegeben-wird-ttntts" class="nav-link" data-scroll-target="#wo-im-webinterface-die-minimal-sequenz-eingegeben-wird-ttntts"><span class="header-section-number">1.2</span> Wo im Webinterface die Minimal-Sequenz eingegeben wird (TTN/TTS)</a></li>
+  <li><a href="#batch-script-mit-per-gerät-intervall-csv" id="toc-batch-script-mit-per-gerät-intervall-csv" class="nav-link" data-scroll-target="#batch-script-mit-per-gerät-intervall-csv"><span class="header-section-number">1.3</span> Batch-Script mit per-Gerät-Intervall (CSV)</a>
   <ul class="collapse">
-  <li><a href="#required" id="toc-required" class="nav-link" data-scroll-target="#required"><span class="header-section-number">1.2.1</span> Required</a></li>
-  <li><a href="#optional-behavior" id="toc-optional-behavior" class="nav-link" data-scroll-target="#optional-behavior"><span class="header-section-number">1.2.2</span> Optional (behavior)</a></li>
-  <li><a href="#health-report" id="toc-health-report" class="nav-link" data-scroll-target="#health-report"><span class="header-section-number">1.2.3</span> Health Report</a></li>
+  <li><a href="#csv-devices.csv" id="toc-csv-devices.csv" class="nav-link" data-scroll-target="#csv-devices.csv"><span class="header-section-number">1.3.1</span> CSV: <code>devices.csv</code></a></li>
+  <li><a href="#script-downlink_hex_replace_map.sh" id="toc-script-downlink_hex_replace_map.sh" class="nav-link" data-scroll-target="#script-downlink_hex_replace_map.sh"><span class="header-section-number">1.3.2</span> Script: <code>downlink_hex_replace_map.sh</code></a></li>
+  <li><a href="#troubleshooting" id="toc-troubleshooting" class="nav-link" data-scroll-target="#troubleshooting"><span class="header-section-number">1.3.3</span> Troubleshooting</a></li>
   </ul></li>
-  <li><a href="#outputs-layout" id="toc-outputs-layout" class="nav-link" data-scroll-target="#outputs-layout"><span class="header-section-number">1.3</span> Outputs &amp; Layout</a></li>
-  <li><a href="#cli-smoke-test" id="toc-cli-smoke-test" class="nav-link" data-scroll-target="#cli-smoke-test"><span class="header-section-number">1.4</span> CLI Smoke-Test</a></li>
-  <li><a href="#github-actions-pages-or-artifact" id="toc-github-actions-pages-or-artifact" class="nav-link" data-scroll-target="#github-actions-pages-or-artifact"><span class="header-section-number">1.5</span> GitHub Actions (Pages or artifact)</a></li>
-  <li><a href="#troubleshooting" id="toc-troubleshooting" class="nav-link" data-scroll-target="#troubleshooting"><span class="header-section-number">1.6</span> Troubleshooting</a></li>
-  <li><a href="#design-notes" id="toc-design-notes" class="nav-link" data-scroll-target="#design-notes"><span class="header-section-number">1.7</span> Design Notes</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -440,9 +436,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <main class="content" id="quarto-document-content">
 
 
-<header id="title-block-header" class="quarto-title-block default">
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./lorawan_doku.html">MikroTik Setup</a></li><li class="breadcrumb-item"><a href="./lorawan_dragino.html">Dragino Sensoren</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">README dashboard</h1>
+<h1 class="title">LoraWan Dragino Doku</h1>
 <p class="subtitle lead">version 0.1</p>
 </div>
 
@@ -466,179 +462,170 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<section id="ttn-dashboard-how-to-run-configure-and-deploy" class="level1" data-number="1">
-<h1 data-number="1"><span class="header-section-number">1</span> TTN Dashboard – How to Run, Configure, and Deploy</h1>
-<p>This repo contains a Python script that builds an HTML dashboard from <strong>The Things Network (TTN) Storage</strong>.<br>
-It auto-discovers devices, fetches uplinks, writes per-device Parquet files, and renders interactive plots.</p>
-<hr>
-<section id="quick-start-local" class="level2" data-number="1.1">
-<h2 data-number="1.1" class="anchored" data-anchor-id="quick-start-local"><span class="header-section-number">1.1</span> Quick Start (local)</h2>
+<section id="kurzleitfaden-remote-kommunikation-nur-port-2-binär" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> Kurzleitfaden Remote-Kommunikation (nur Port 2, binär)</h1>
+<section id="ziel" class="level2" data-number="1.1">
+<h2 data-number="1.1" class="anchored" data-anchor-id="ziel"><span class="header-section-number">1.1</span> Ziel</h2>
+<p>(Mehrere) Dragino <strong>PS-LB/LS</strong> Sensoren per <strong>TTN</strong> mit <strong>binären Downlinks (Hex)</strong> auf <strong>Port 2</strong> konfigurieren</p>
+</section>
+<section id="wo-im-webinterface-die-minimal-sequenz-eingegeben-wird-ttntts" class="level2" data-number="1.2">
+<h2 data-number="1.2" class="anchored" data-anchor-id="wo-im-webinterface-die-minimal-sequenz-eingegeben-wird-ttntts"><span class="header-section-number">1.2</span> Wo im Webinterface die Minimal-Sequenz eingegeben wird (TTN/TTS)</h2>
+<p><strong>Pfad:</strong> <strong>Applications → <em>deine App</em> → End devices → <em>dein Gerät</em> → Messaging → Downlink</strong></p>
+<p><strong>Pro Gerät:</strong></p>
 <ol type="1">
-<li><p>(Optional) Create <code>scripts/.env</code>:</p>
-<pre class="env"><code>TTN_APP_ID=gisma-hydro-testbed
-TTN_REGION=eu1
-TTN_API_KEY=NNSXS_...
-RUN_DASH=1
-TTN_AFTER_DAYS=2
-DELAY_BETWEEN_DEVICES=0.3
-# Health report (optional):
-# STALE_HOURS=3
-# DEV_INCLUDE=dds75-lb-.*
-# DEV_EXCLUDE=</code></pre></li>
-<li><p>Run:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> scripts/pull_all_devices.py</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></li>
-<li><p>Open the dashboard at:</p>
+<li><p>Oben: <strong>Payload formatter → Downlink = None</strong> (falls nicht schon so).</p></li>
+<li><p>Bereich <strong>Schedule downlink</strong>:</p>
 <ul>
-<li><code>assets/data.html</code> (main)</li>
-<li><code>assets/debug.html</code> (raw samples &amp; heads)</li>
-<li>Health summary: <code>assets/devices_used.txt</code> and <code>assets/devices_used.csv</code></li>
+<li><p><strong>FPort</strong>: <code>2</code></p></li>
+<li><p><strong>Payload type</strong>: <strong>Bytes</strong></p></li>
+<li><p><strong>Bytes</strong> (Hex ohne Leerzeichen), nacheinander schedulen:</p>
+<ul>
+<li><code>0100003C</code> (TDC = 60 s)</li>
+<li><code>080002</code> (PROBE = 0002, 0–2 m)</li>
+<li><code>07031F40</code> (optional, 12 V 8 s, nur wenn PS-LB speist)</li>
+<li><code>01000384</code> (TDC = 900 s = 15 min)</li>
 </ul></li>
+<li><p><strong>Confirmed</strong>: an (schadet nicht)</p></li>
+<li><p><strong>Schedule</strong> klicken</p></li>
+</ul></li>
+<li><p><strong>Uplink auslösen</strong> (Taste kurz) oder auf Intervall warten – Class A liefert Downlinks jeweils <strong>nach</strong> einem Uplink (FIFO).</p></li>
 </ol>
 <hr>
 </section>
-<section id="environment-variables" class="level2" data-number="1.2">
-<h2 data-number="1.2" class="anchored" data-anchor-id="environment-variables"><span class="header-section-number">1.2</span> Environment Variables</h2>
-<p>Set these in <code>.env</code>, your shell, or GitHub Actions <code>env:</code>. If missing, defaults (in parentheses) are used.</p>
-<section id="required" class="level3" data-number="1.2.1">
-<h3 data-number="1.2.1" class="anchored" data-anchor-id="required"><span class="header-section-number">1.2.1</span> Required</h3>
+<section id="batch-script-mit-per-gerät-intervall-csv" class="level2" data-number="1.3">
+<h2 data-number="1.3" class="anchored" data-anchor-id="batch-script-mit-per-gerät-intervall-csv"><span class="header-section-number">1.3</span> Batch-Script mit per-Gerät-Intervall (CSV)</h2>
+<section id="csv-devices.csv" class="level3" data-number="1.3.1">
+<h3 data-number="1.3.1" class="anchored" data-anchor-id="csv-devices.csv"><span class="header-section-number">1.3.1</span> CSV: <code>devices.csv</code></h3>
+<p>Spalten: <strong>device_id, interval_min, ext_power</strong></p>
 <ul>
-<li><p><code>TTN_APP_ID</code> — your TTN application id (e.g., <code>gisma-hydro-testbed</code>)</p></li>
-<li><p><code>TTN_REGION</code> — TTN cluster (e.g., <code>eu1</code>)</p></li>
-<li><p><code>TTN_API_KEY</code> — NNSXS key with scopes:</p>
+<li><code>interval_min</code>: End-Intervall in Minuten (z. B. 5, 15, 20 …)</li>
+<li><code>ext_power</code>: <code>1</code> = Sonde <strong>extern</strong> versorgt → <strong>ohne</strong> 12 V-Downlink; <code>0</code> = PS-LB soll kurz speisen → <strong>mit</strong> 12 V-Downlink</li>
+</ul>
+<p>Beispiel:</p>
+<pre><code>ps-lb-01,15,1
+ps-lb-21,5,0
+ps-lb-42,20,1</code></pre>
+</section>
+<section id="script-downlink_hex_replace_map.sh" class="level3" data-number="1.3.2">
+<h3 data-number="1.3.2" class="anchored" data-anchor-id="script-downlink_hex_replace_map.sh"><span class="header-section-number">1.3.2</span> Script: <code>downlink_hex_replace_map.sh</code></h3>
 <ul>
-<li><strong>View end devices</strong> (auto-discovery)</li>
-<li><strong>View application packages and associations</strong> (Storage)</li>
-<li>(helpful) <strong>View application info</strong>, <strong>Read application traffic/data</strong></li>
+<li>Nimmt <strong>nur Hex</strong> als Kommandos, wandelt intern in Base64.</li>
+<li>Legt pro Gerät <strong>einen</strong> <code>down/replace</code> mit bis zu 4 Downlinks (FIFO) ab.</li>
+<li>End-Intervall kommt aus der CSV (1–255 min unterstützt, typische Werte 5/15/20).</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/usr/bin/env bash</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="at">-euo</span> pipefail</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># ===== KONFIG =====</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="va">APP</span><span class="op">=</span><span class="st">"gisma-hydro-testbed"</span>                 <span class="co"># Application-ID</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="va">KEY</span><span class="op">=</span><span class="st">"NNSXS.xxxxx..."</span>                      <span class="co"># Application-API-Key (Write downlink)</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="va">API</span><span class="op">=</span><span class="st">"https://eu1.cloud.thethings.network/api/v3"</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="va">CSV</span><span class="op">=</span><span class="st">"devices.csv"</span>                         <span class="co"># device_id,interval_min,ext_power</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="va">FPORT</span><span class="op">=</span>2</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="fu">need()</span><span class="kw">{</span> <span class="bu">command</span> <span class="at">-v</span> <span class="st">"</span><span class="va">$1</span><span class="st">"</span> <span class="op">&gt;</span>/dev/null <span class="dv">2</span><span class="op">&gt;&amp;</span><span class="dv">1</span> <span class="kw">||</span> <span class="kw">{</span> <span class="bu">echo</span> <span class="st">"Fehlt: </span><span class="va">$1</span><span class="st">"</span><span class="kw">;</span> <span class="bu">exit</span> 1<span class="kw">;</span> <span class="kw">};</span> <span class="kw">}</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="ex">need</span> xxd<span class="kw">;</span> <span class="ex">need</span> base64<span class="kw">;</span> <span class="ex">need</span> curl<span class="kw">;</span> <span class="ex">need</span> jq<span class="kw">;</span> <span class="ex">need</span> awk</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="co"># -- Hex-Helper --</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="fu">to_b64()</span><span class="kw">{</span> <span class="bu">printf</span> <span class="st">"%s"</span> <span class="st">"</span><span class="va">$1</span><span class="st">"</span> <span class="kw">|</span> <span class="ex">xxd</span> <span class="at">-r</span> <span class="at">-p</span> <span class="kw">|</span> <span class="fu">base64</span><span class="kw">;</span> <span class="kw">}</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="co"># TDC-Hex aus Minuten berechnen (3-Byte Big-Endian Sekunden)</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Limitation: 1..65535 Sekunden; für unsere Intervalle (1..1440 min) ok.</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="fu">tdc_hex_from_minutes()</span><span class="kw">{</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>  <span class="bu">local</span> <span class="va">min</span><span class="op">=</span><span class="st">"</span><span class="va">$1</span><span class="st">"</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>  <span class="bu">local</span> <span class="va">sec</span><span class="op">=</span><span class="va">$((</span> <span class="va">min</span><span class="op">*</span><span class="dv">60</span> <span class="va">))</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>  <span class="co"># in 3 Bytes big-endian verpacken</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>  <span class="bu">printf</span> <span class="st">"%06X"</span> <span class="st">"</span><span class="va">$sec</span><span class="st">"</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><span class="co"># Fixe Hex-Commands</span></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a><span class="va">HEX_PROBE</span><span class="op">=</span><span class="st">"080002"</span>           <span class="co"># Wassertiefe-Profil 0–2 m</span></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a><span class="va">HEX_TDC_60S</span><span class="op">=</span><span class="st">"0100003C"</span>       <span class="co"># TDC=60s (Schnellphase)</span></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a><span class="va">HEX_12V_8S</span><span class="op">=</span><span class="st">"07031F40"</span>        <span class="co"># 12V=8000ms (nur wenn PS-LB speist)</span></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a><span class="kw">[[</span> <span class="ot">-f</span> <span class="st">"</span><span class="va">$CSV</span><span class="st">"</span> <span class="kw">]]</span> <span class="kw">||</span> <span class="kw">{</span> <span class="bu">echo</span> <span class="st">"CSV '</span><span class="va">$CSV</span><span class="st">' fehlt."</span><span class="kw">;</span> <span class="bu">exit</span> 1<span class="kw">;</span> <span class="kw">}</span></span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a><span class="co"># Sanfte Drossel zwischen Geräten</span></span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a><span class="va">DELAY_BETWEEN_DEV</span><span class="op">=</span>0.2</span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a><span class="cf">while</span> <span class="va">IFS</span><span class="op">=</span>, <span class="bu">read</span> <span class="at">-r</span> <span class="va">DEV</span> <span class="va">MINUTES</span> <span class="va">EXT</span><span class="kw">;</span> <span class="cf">do</span></span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Leerzeilen/Kommentare überspringen</span></span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a>  <span class="kw">[[</span> <span class="ot">-z</span> <span class="st">"</span><span class="va">${DEV</span><span class="op">//</span><span class="ss"> </span><span class="va">}</span><span class="st">"</span> <span class="kw">||</span> <span class="st">"</span><span class="va">$DEV</span><span class="st">"</span> <span class="ot">=~</span> <span class="pp">^</span><span class="ss">#</span> <span class="kw">]]</span> <span class="kw">&amp;&amp;</span> <span class="cf">continue</span></span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Whitespace trim</span></span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a>  <span class="va">DEV</span><span class="op">=</span><span class="st">"</span><span class="va">$(</span><span class="bu">echo</span> <span class="st">"</span><span class="va">$DEV</span><span class="st">"</span> <span class="kw">|</span> <span class="fu">awk</span> <span class="st">'{$1=$1};1'</span><span class="va">)</span><span class="st">"</span></span>
+<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a>  <span class="va">MINUTES</span><span class="op">=</span><span class="st">"</span><span class="va">$(</span><span class="bu">echo</span> <span class="st">"</span><span class="va">$MINUTES</span><span class="st">"</span> <span class="kw">|</span> <span class="fu">awk</span> <span class="st">'{$1=$1};1'</span><span class="va">)</span><span class="st">"</span></span>
+<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a>  <span class="va">EXT</span><span class="op">=</span><span class="st">"</span><span class="va">$(</span><span class="bu">echo</span> <span class="st">"</span><span class="va">$EXT</span><span class="st">"</span> <span class="kw">|</span> <span class="fu">awk</span> <span class="st">'{$1=$1};1'</span><span class="va">)</span><span class="st">"</span></span>
+<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a>  <span class="co"># End-TDC aus Minuten → Sekunden → 3-Byte Hex → komplettes Setz-Command (01 + 3 Byte)</span></span>
+<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a>  <span class="va">TDC3</span><span class="op">=</span><span class="va">$(</span><span class="ex">tdc_hex_from_minutes</span> <span class="st">"</span><span class="va">$MINUTES</span><span class="st">"</span><span class="va">)</span>      <span class="co"># z.B. 15min -&gt; 000384</span></span>
+<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a>  <span class="va">HEX_TDC_FINAL</span><span class="op">=</span><span class="st">"01</span><span class="va">${TDC3}</span><span class="st">"</span></span>
+<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a>  <span class="co"># In Base64 umwandeln</span></span>
+<span id="cb2-50"><a href="#cb2-50" aria-hidden="true" tabindex="-1"></a>  <span class="va">P_TDC60</span><span class="op">=</span><span class="va">$(</span><span class="ex">to_b64</span> <span class="st">"</span><span class="va">$HEX_TDC_60S</span><span class="st">"</span><span class="va">)</span></span>
+<span id="cb2-51"><a href="#cb2-51" aria-hidden="true" tabindex="-1"></a>  <span class="va">P_PROBE</span><span class="op">=</span><span class="va">$(</span><span class="ex">to_b64</span> <span class="st">"</span><span class="va">$HEX_PROBE</span><span class="st">"</span><span class="va">)</span></span>
+<span id="cb2-52"><a href="#cb2-52" aria-hidden="true" tabindex="-1"></a>  <span class="va">P_12V8</span><span class="op">=</span><span class="va">$(</span><span class="ex">to_b64</span> <span class="st">"</span><span class="va">$HEX_12V_8S</span><span class="st">"</span><span class="va">)</span></span>
+<span id="cb2-53"><a href="#cb2-53" aria-hidden="true" tabindex="-1"></a>  <span class="va">P_TDCF</span><span class="op">=</span><span class="va">$(</span><span class="ex">to_b64</span> <span class="st">"</span><span class="va">$HEX_TDC_FINAL</span><span class="st">"</span><span class="va">)</span></span>
+<span id="cb2-54"><a href="#cb2-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-55"><a href="#cb2-55" aria-hidden="true" tabindex="-1"></a>  <span class="bu">echo</span> <span class="st">"== </span><span class="va">$DEV</span><span class="st"> (Endintervall </span><span class="va">${MINUTES}</span><span class="st"> min, ext_power=</span><span class="va">${EXT}</span><span class="st">) =="</span></span>
+<span id="cb2-56"><a href="#cb2-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-57"><a href="#cb2-57" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Downlink-Liste zusammenbauen (FIFO: TDC60 -&gt; PROBE -&gt; optional 12V -&gt; TDCfinal)</span></span>
+<span id="cb2-58"><a href="#cb2-58" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="kw">[[</span> <span class="st">"</span><span class="va">$EXT</span><span class="st">"</span> <span class="ot">==</span> <span class="st">"0"</span> <span class="kw">]];</span> <span class="cf">then</span></span>
+<span id="cb2-59"><a href="#cb2-59" aria-hidden="true" tabindex="-1"></a>    <span class="va">JSON</span><span class="op">=</span><span class="va">$(</span><span class="ex">jq</span> <span class="at">-n</span> <span class="at">--arg</span> p1 <span class="st">"</span><span class="va">$P_TDC60</span><span class="st">"</span> <span class="at">--arg</span> p2 <span class="st">"</span><span class="va">$P_PROBE</span><span class="st">"</span> <span class="at">--arg</span> p3 <span class="st">"</span><span class="va">$P_12V8</span><span class="st">"</span> <span class="at">--arg</span> p4 <span class="st">"</span><span class="va">$P_TDCF</span><span class="st">"</span> <span class="at">--argjson</span> fp <span class="va">$FPORT</span> <span class="dt">\</span></span>
+<span id="cb2-60"><a href="#cb2-60" aria-hidden="true" tabindex="-1"></a>      <span class="st">'{downlinks:[</span></span>
+<span id="cb2-61"><a href="#cb2-61" aria-hidden="true" tabindex="-1"></a><span class="st">        {f_port:$fp, frm_payload:$p1, confirmed:true, priority:"NORMAL"},</span></span>
+<span id="cb2-62"><a href="#cb2-62" aria-hidden="true" tabindex="-1"></a><span class="st">        {f_port:$fp, frm_payload:$p2, confirmed:true, priority:"NORMAL"},</span></span>
+<span id="cb2-63"><a href="#cb2-63" aria-hidden="true" tabindex="-1"></a><span class="st">        {f_port:$fp, frm_payload:$p3, confirmed:true, priority:"NORMAL"},</span></span>
+<span id="cb2-64"><a href="#cb2-64" aria-hidden="true" tabindex="-1"></a><span class="st">        {f_port:$fp, frm_payload:$p4, confirmed:true, priority:"NORMAL"}</span></span>
+<span id="cb2-65"><a href="#cb2-65" aria-hidden="true" tabindex="-1"></a><span class="st">      ]}'</span><span class="va">)</span></span>
+<span id="cb2-66"><a href="#cb2-66" aria-hidden="true" tabindex="-1"></a>  <span class="cf">else</span></span>
+<span id="cb2-67"><a href="#cb2-67" aria-hidden="true" tabindex="-1"></a>    <span class="va">JSON</span><span class="op">=</span><span class="va">$(</span><span class="ex">jq</span> <span class="at">-n</span> <span class="at">--arg</span> p1 <span class="st">"</span><span class="va">$P_TDC60</span><span class="st">"</span> <span class="at">--arg</span> p2 <span class="st">"</span><span class="va">$P_PROBE</span><span class="st">"</span> <span class="at">--arg</span> p4 <span class="st">"</span><span class="va">$P_TDCF</span><span class="st">"</span> <span class="at">--argjson</span> fp <span class="va">$FPORT</span> <span class="dt">\</span></span>
+<span id="cb2-68"><a href="#cb2-68" aria-hidden="true" tabindex="-1"></a>      <span class="st">'{downlinks:[</span></span>
+<span id="cb2-69"><a href="#cb2-69" aria-hidden="true" tabindex="-1"></a><span class="st">        {f_port:$fp, frm_payload:$p1, confirmed:true, priority:"NORMAL"},</span></span>
+<span id="cb2-70"><a href="#cb2-70" aria-hidden="true" tabindex="-1"></a><span class="st">        {f_port:$fp, frm_payload:$p2, confirmed:true, priority:"NORMAL"},</span></span>
+<span id="cb2-71"><a href="#cb2-71" aria-hidden="true" tabindex="-1"></a><span class="st">        {f_port:$fp, frm_payload:$p4, confirmed:true, priority:"NORMAL"}</span></span>
+<span id="cb2-72"><a href="#cb2-72" aria-hidden="true" tabindex="-1"></a><span class="st">      ]}'</span><span class="va">)</span></span>
+<span id="cb2-73"><a href="#cb2-73" aria-hidden="true" tabindex="-1"></a>  <span class="cf">fi</span></span>
+<span id="cb2-74"><a href="#cb2-74" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-75"><a href="#cb2-75" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Ein API-Call pro Gerät: down/replace</span></span>
+<span id="cb2-76"><a href="#cb2-76" aria-hidden="true" tabindex="-1"></a>  <span class="va">HTTP</span><span class="op">=</span><span class="va">$(</span><span class="ex">curl</span> <span class="at">-sS</span> <span class="at">-o</span> /tmp/resp.json <span class="at">-w</span> <span class="st">"%{http_code}"</span> <span class="dt">\</span></span>
+<span id="cb2-77"><a href="#cb2-77" aria-hidden="true" tabindex="-1"></a>    <span class="at">-X</span> POST <span class="st">"</span><span class="va">$API</span><span class="st">/as/applications/</span><span class="va">$APP</span><span class="st">/devices/</span><span class="va">$DEV</span><span class="st">/down/replace"</span> <span class="dt">\</span></span>
+<span id="cb2-78"><a href="#cb2-78" aria-hidden="true" tabindex="-1"></a>    <span class="at">-H</span> <span class="st">"Authorization: Bearer </span><span class="va">$KEY</span><span class="st">"</span> <span class="at">-H</span> <span class="st">"Content-Type: application/json"</span> <span class="dt">\</span></span>
+<span id="cb2-79"><a href="#cb2-79" aria-hidden="true" tabindex="-1"></a>    <span class="at">-d</span> <span class="st">"</span><span class="va">$JSON</span><span class="st">"</span><span class="va">)</span></span>
+<span id="cb2-80"><a href="#cb2-80" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-81"><a href="#cb2-81" aria-hidden="true" tabindex="-1"></a>  <span class="bu">echo</span> <span class="st">"HTTP: </span><span class="va">$HTTP</span><span class="st">"</span></span>
+<span id="cb2-82"><a href="#cb2-82" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span> /tmp/resp.json<span class="kw">;</span> <span class="bu">echo</span></span>
+<span id="cb2-83"><a href="#cb2-83" aria-hidden="true" tabindex="-1"></a>  <span class="kw">[[</span> <span class="st">"</span><span class="va">$HTTP</span><span class="st">"</span> <span class="ot">=~</span> <span class="pp">^</span><span class="ss">2</span> <span class="kw">]]</span> <span class="kw">||</span> <span class="kw">{</span> <span class="bu">echo</span> <span class="st">"Fehler bei </span><span class="va">$DEV</span><span class="st"> – siehe oben."</span><span class="kw">;</span> <span class="bu">exit</span> 1<span class="kw">;</span> <span class="kw">}</span></span>
+<span id="cb2-84"><a href="#cb2-84" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-85"><a href="#cb2-85" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sleep</span> <span class="st">"</span><span class="va">$DELAY_BETWEEN_DEV</span><span class="st">"</span></span>
+<span id="cb2-86"><a href="#cb2-86" aria-hidden="true" tabindex="-1"></a><span class="cf">done</span> <span class="op">&lt;</span> <span class="st">"</span><span class="va">$CSV</span><span class="st">"</span></span>
+<span id="cb2-87"><a href="#cb2-87" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-88"><a href="#cb2-88" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">"Hinweis: Class A → Downlinks kommen NACH dem nächsten Uplink (FIFO, meist 1 pro Uplink).</span></span>
+<span id="cb2-89"><a href="#cb2-89" aria-hidden="true" tabindex="-1"></a><span class="st">Lass TDC=60s aktiv, bis die Queue bei jedem Gerät abgearbeitet ist."</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li><strong>Minimal-Sequenz</strong> ist im Webinterface unter <strong>Messaging → Downlink</strong> (siehe oben).</li>
+<li>Das Script baut für jedes Gerät die <strong>gleiche Start-Sequenz</strong> (60 s → PROBE → optional 12 V) und setzt dann das <strong>End-Intervall aus der CSV</strong>.</li>
+<li>Unterstützt beliebige Minutenwerte (z. B. 5/15/20).</li>
+<li>Wenn deine Sonden <strong>dauerhaft extern</strong> versorgt sind, setze in der CSV <code>ext_power=1</code> → es wird <strong>kein</strong> 12 V-Downlink hinzugefügt.</li>
+</ul>
+</section>
+<section id="troubleshooting" class="level3" data-number="1.3.3">
+<h3 data-number="1.3.3" class="anchored" data-anchor-id="troubleshooting"><span class="header-section-number">1.3.3</span> Troubleshooting</h3>
+<ul>
+<li><p><strong>Downlinks „kommen nicht“</strong> → Es braucht <strong>einen Uplink</strong> (Taste kurz), Queue FIFO.</p></li>
+<li><p><strong>Rate-Limit</strong> → nur <strong>ein</strong> <code>down/replace</code> pro Gerät; im Batch kleine Pause.</p></li>
+<li><p><strong>Tiefe bleibt 0</strong> &amp; Uplink zeigt <code>IDC=0000</code> → <strong>keine 4–20 mA-Schleife</strong>:</p>
+<ul>
+<li>Verdrahtung in Serie über <strong>IDC+ / IDC−</strong> prüfen</li>
+<li>Test: <code>07031F40</code> + Uplink → <strong>IDC &gt; 4 mA</strong> oder <strong>VDC &gt; 0</strong></li>
+<li>A/B-Tausch Sonde ↔︎ Gerät, um Sensor/Board zu isolieren</li>
 </ul></li>
-</ul>
-</section>
-<section id="optional-behavior" class="level3" data-number="1.2.2">
-<h3 data-number="1.2.2" class="anchored" data-anchor-id="optional-behavior"><span class="header-section-number">1.2.2</span> Optional (behavior)</h3>
-<ul>
-<li><code>RUN_DASH</code> (<code>"1"</code>) <code>1</code> = build HTML dashboard; <code>0</code> = CLI smoke-test mode (see below).</li>
-<li><code>TTN_AFTER_DAYS</code> (<code>"2"</code>) Sliding storage window: <em>now − N days</em>. If Parquet exists, the script resumes from the <strong>last saved timestamp</strong>.</li>
-<li><code>DELAY_BETWEEN_DEVICES</code> (<code>"0.3"</code>) Seconds to sleep between device pulls (avoid rate limits).</li>
-<li><code>DEVICES</code> (unset) Whitespace-separated list. If <strong>unset</strong>, the script <strong>auto-discovers</strong> all devices in the app.</li>
-</ul>
-</section>
-<section id="health-report" class="level3" data-number="1.2.3">
-<h3 data-number="1.2.3" class="anchored" data-anchor-id="health-report"><span class="header-section-number">1.2.3</span> Health Report</h3>
-<ul>
-<li><code>STALE_HOURS</code> (<code>"3"</code>) — mark as <code>STALE (xh)</code> if <code>last_seen</code> older than this.</li>
-<li><code>DEV_INCLUDE</code> (<code>".*"</code>) — regex include (e.g., <code>dds75-lb-.*</code>).</li>
-<li><code>DEV_EXCLUDE</code> (empty) — regex exclude (e.g., <code>dds75-lb-11</code>).</li>
-</ul>
-<hr>
-</section>
-</section>
-<section id="outputs-layout" class="level2" data-number="1.3">
-<h2 data-number="1.3" class="anchored" data-anchor-id="outputs-layout"><span class="header-section-number">1.3</span> Outputs &amp; Layout</h2>
-<ul>
-<li><p><code>data/</code> — per-device Parquet files: <code>data/&lt;device&gt;.parquet</code></p></li>
-<li><p><code>assets/</code></p>
-<ul>
-<li><code>data.html</code> — interactive dashboard</li>
-<li><code>debug.html</code> — debug cards with raw NDJSON samples &amp; parquet heads</li>
-<li><code>devices_used.txt</code> — <strong>human-readable</strong> health summary</li>
-<li><code>devices_used.csv</code> — <strong>machine-readable</strong> health table</li>
-</ul></li>
-</ul>
-<blockquote class="blockquote">
-<p>Note: At start, <code>devices_used.txt</code> may temporarily contain only the discovered device list; it’s overwritten at the end with the full health summary.</p>
-</blockquote>
-<hr>
-</section>
-<section id="cli-smoke-test" class="level2" data-number="1.4">
-<h2 data-number="1.4" class="anchored" data-anchor-id="cli-smoke-test"><span class="header-section-number">1.4</span> CLI Smoke-Test</h2>
-<p>Run an ad-hoc pull for one device without building the full dashboard:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="va">RUN_DASH</span><span class="op">=</span>0 <span class="ex">python</span> scripts/pull_all_devices.py <span class="at">--device</span> dds75-lb-13 <span class="at">--hours</span> 6 <span class="at">-v</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<ul>
-<li><code>--hours</code> overrides <code>TTN_AFTER_DAYS</code> <strong>for this run only</strong>.</li>
-<li>Data is merged into <code>data/&lt;device&gt;.parquet</code> with de-duplication.</li>
-</ul>
-<hr>
-</section>
-<section id="github-actions-pages-or-artifact" class="level2" data-number="1.5">
-<h2 data-number="1.5" class="anchored" data-anchor-id="github-actions-pages-or-artifact"><span class="header-section-number">1.5</span> GitHub Actions (Pages or artifact)</h2>
-<p>Use a workflow like:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">name</span><span class="kw">:</span><span class="at"> TTN all devices → Pages</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">on</span><span class="kw">:</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">schedule</span><span class="kw">:</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">cron</span><span class="kw">:</span><span class="at"> </span><span class="st">"*/15 * * * *"</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">workflow_dispatch</span><span class="kw">:</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="fu">permissions</span><span class="kw">:</span></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">contents</span><span class="kw">:</span><span class="at"> write</span></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="fu">jobs</span><span class="kw">:</span></span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">build</span><span class="kw">:</span></span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">runs-on</span><span class="kw">:</span><span class="at"> ubuntu-latest</span></span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">env</span><span class="kw">:</span></span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">TTN_API_KEY</span><span class="kw">:</span><span class="at">  ${{ secrets.TTN_API_KEY }}</span></span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">TTN_APP_ID</span><span class="kw">:</span><span class="at">   ${{ secrets.TTN_APP_ID }}</span></span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">TTN_REGION</span><span class="kw">:</span><span class="at">   ${{ secrets.TTN_REGION }}</span></span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">TTN_AFTER_DAYS</span><span class="kw">:</span><span class="at"> </span><span class="st">"2"</span></span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">RUN_DASH</span><span class="kw">:</span><span class="at"> </span><span class="st">"1"</span></span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">DELAY_BETWEEN_DEVICES</span><span class="kw">:</span><span class="at"> </span><span class="st">"0.4"</span></span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="co">      # Leave DEVICES unset for auto-discovery.</span></span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="co">      # Optionally add STALE_HOURS / DEV_INCLUDE / DEV_EXCLUDE here.</span></span>
-<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">steps</span><span class="kw">:</span></span>
-<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> actions/checkout@v4</span></span>
-<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Set up Python</span></span>
-<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> actions/setup-python@v5</span></span>
-<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">with</span><span class="kw">:</span></span>
-<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="fu">python-version</span><span class="kw">:</span><span class="at"> </span><span class="st">"3.12"</span></span>
-<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Install deps</span></span>
-<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a><span class="fu">        run</span><span class="kw">: </span><span class="ch">|</span></span>
-<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>          python -m pip install --upgrade pip</span>
-<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>          pip install requests pandas plotly pyarrow fastparquet python-dotenv</span>
-<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Build dashboard</span></span>
-<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a><span class="fu">        run</span><span class="kw">: </span><span class="ch">|</span></span>
-<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>          python scripts/pull_all_devices.py</span>
-<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>          mkdir -p docs</span>
-<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>          cp -r assets/* docs/</span>
-<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Commit docs/ and data/</span></span>
-<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a><span class="fu">        run</span><span class="kw">: </span><span class="ch">|</span></span>
-<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a>          git config user.name  "ttn-bot"</span>
-<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>          git config user.email "ttn-bot@example.com"</span>
-<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a>          git add docs/ data/ || true</span>
-<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a>          git diff --cached --quiet || git commit -m "update all-devices $(date -u +%FT%TZ)"</span>
-<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a>          git push</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p><strong>Repo settings:</strong></p>
-<ul>
-<li>Add <code>TTN_API_KEY</code> (secret), <code>TTN_APP_ID</code>, <code>TTN_REGION</code> (secrets or variables).</li>
-<li>Enable <strong>GitHub Pages</strong> to serve the <code>docs/</code> folder (or change the workflow to upload a Pages artifact).</li>
-</ul>
-<hr>
-</section>
-<section id="troubleshooting" class="level2" data-number="1.6">
-<h2 data-number="1.6" class="anchored" data-anchor-id="troubleshooting"><span class="header-section-number">1.6</span> Troubleshooting</h2>
-<ul>
-<li><strong>HTTP 400 invalid token</strong> Wrong key or missing scopes → create a new API key with the scopes listed above.</li>
-<li><strong>HTTP 400 with <code>after</code></strong> The script automatically retries with smaller <code>limit</code> and without <code>after</code>.</li>
-<li><strong>Missing Parquet engine</strong> Install <code>pyarrow</code> or <code>fastparquet</code> (included in the workflow deps).</li>
-<li><strong>No data</strong> Check TTN Console: Storage Integration enabled? Device sent uplinks within window?</li>
-<li><strong>429 rate limit</strong> Increase <code>DELAY_BETWEEN_DEVICES</code> to <code>0.6</code>–<code>1.0</code>.</li>
-<li><strong>Too many STALE devices</strong> Increase <code>STALE_HOURS</code> or adjust include/exclude regex.</li>
-</ul>
-<hr>
-</section>
-<section id="design-notes" class="level2" data-number="1.7">
-<h2 data-number="1.7" class="anchored" data-anchor-id="design-notes"><span class="header-section-number">1.7</span> Design Notes</h2>
-<ul>
-<li>Auto-discovery (no device list maintenance).</li>
-<li>Per-device Parquet for incremental pulls &amp; deduplication.</li>
-<li>Robust fetch with retries/backoff and conservative fallbacks.</li>
-<li>Health report written as text &amp; CSV for quick oversight.</li>
+<li><p><strong>Remote-Reset</strong> → <code>04FF</code>, danach Sequenz erneut senden.</p></li>
+<li><p><strong>Statusframe</strong> (zur Kontrolle) → <code>2601</code> (nächster Uplink auf FPort 5 zeigt Modell/FW/Band/BAT)</p></li>
 </ul>
 
 
+</section>
 </section>
 </section>
 
