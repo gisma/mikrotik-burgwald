@@ -2,7 +2,7 @@ name: TTN all devices → Pages
 
 on:
   schedule:
-    - cron: "*/15 * * * *"     # alle 15 Minuten
+    - cron: "*/30 * * * *"     # alle 30 Minuten
   workflow_dispatch:
 
 permissions:
