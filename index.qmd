@@ -32,7 +32,7 @@ Farben = **Sensortyp-Kombinationen** (z. B. Ultraschall, Druck, Hobo). Klick auf
 
 <figcaption style="margin-top:.6rem; color:#666; font-size:.95rem;">
 
-<b>Abbildung:</b> Geplante Stationen im Burgwald (Hessen). Farben kennzeichnen die verbauten Sensor-Typen (Radar = wasserstandsbezogene Distanzmessung, Druck = Tauchsonde/pegelabhängiger Druck, Hobo = Datenlogger). Popup enthält Standort-ID, Gewässer, Gemeinde und Messaufbau.
+<b>Abbildung:</b> Geplante Stationen im Burgwald (Hessen). Farben kennzeichnen die verbauten Sensor-Typen (Ultraschall = wasserstandsbezogene Distanzmessung, Druck = Tauchsonde/pegelabhängiger Druck, Hobo = Datenlogger). Popup enthält Standort-ID, Gewässer, Gemeinde und Einzugsgebiet.
 
 </figcaption>
 
