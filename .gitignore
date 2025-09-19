@@ -1,23 +1,21 @@
-# Runtime/Build-Output (vom Script erzeugt)
-assets/build/
-assets/data.html
-assets/debug.html
-assets/devices_used.csv
-assets/devices_used.txt
-
-# Lokale Template-Overrides (werden vom Script bevorzugt, sollen aber nicht ins Repo)
-assets/templates/dashboard_template.local.html
-assets/dashboard_template.local.html
-
-# Lokale Daten (Runner spiegelt nach docs/data/, lokal nicht committen)
-data/
-!data/.keep
-
-# Python / Env
-.venv/
+# Python
 __pycache__/
 *.pyc
 
-# OS
-.DS_Store
-Thumbs.db
+# venvs
+.venv/
+.envrc
+
+# Runtime dashboard build (HTML/health) – wird nach docs/ gespiegelt
+assets/build/
+
+# Lokale Logs/Temp
+*.log
+
+# (Optional) lokale Daten ignorieren – auskommentieren, wenn ihr data/ versionieren wollt
+# data/
+# data/*.parquet
+# data/*.csv
+# data/*_raw.ndjson
+
+/.quarto/

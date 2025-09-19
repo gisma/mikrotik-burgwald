@@ -10,6 +10,15 @@ format: html
   </iframe>
 </div>
 <script>
+  window.addEventListener('message', (e) => {
+    if (e.data && e.data.type === 'TTN_IFRAME_SIZE') {
+      const ifr = document.getElementById('data-iframe');
+      if (ifr) ifr.style.height = Math.max(600, e.data.height) + 'px';
+    }
+  });
+</script>
+
+<script>
 (function () {
   const ifr = document.getElementById('data-iframe');
   window.addEventListener('message', function (ev) {
