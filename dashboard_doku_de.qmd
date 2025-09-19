@@ -1,285 +1,355 @@
----
-title: "README dashboard"
-subtitle: "version 0.1"
-author: "Chris Reudenbach"
-format:
-  html:
-    toc: true
-    toc-depth: 3
-    number-sections: true      
-    number-depth: 3           
+  ---
+  title: "README dashboard"
+  subtitle: "version 0.2"
+  author: "Chris Reudenbach"
+  format:
+    html:
+      toc: true
+      toc-depth: 3
+      number-sections: true      
+      number-depth: 3           
+  
+      code-copy: true
+      code-link: true
+      code-overflow: wrap
+      code-fold: true
+      highlight-style: github
+  execute:
+    mermaid: true
+  diagram:
+    mermaid:
+      engine: kroki
+      kroki-url: https://kroki.io
+  ---
 
-    code-copy: true
-    code-link: true
-    code-overflow: wrap
-    code-fold: true
-    highlight-style: github
-execute:
-  mermaid: true
-diagram:
-  mermaid:
-    engine: kroki
-    kroki-url: https://kroki.io
----
 
 # TTN Dashboard – Nutzung, Konfiguration und Deployment
 
-Dieses Repository enthält ein Python-Skript, das aus **The Things Network (TTN) Storage** ein HTML-Dashboard erzeugt.  
-Es erkennt automatisch alle Devices, zieht deren Uplinks, schreibt pro Gerät Parquet-Dateien und erstellt interaktive Plots.
+Dieses Repository erzeugt aus **The Things Network (TTN) Storage** ein interaktives HTML-Dashboard.  
+Das Script erkennt die Devices, zieht deren Uplinks, persistiert pro Gerät Parquet/CSV und baut eine HTML-Ansicht mit Plotly.
+
+Neu in **v0.2**:
+- **Strikte Trennung**: Templates & CSS (versioniert) vs. Runtime-Builds (nicht versioniert).
+- **Template + CSS** aus `assets/templates/` (Python enthält *keinen* HTML/CSS-Fallback mehr).
+- **Runtime-Ausgabe** nach `assets/build/` (statt `assets/`).
+- **Offline-Modus**: Dashboard rendern **ohne** Netzwerkzugriffe (liest lokale `data/`).
+- Vorsichtige Defaults gegen Rate-Limits (Backoff + Jitter).
+
+
+## Verzeichnisstruktur
+
+```
+assets/
+templates/
+dashboard\_template.html      # Dein HTML-Template
+dashboard.css                # Zentrales CSS (Info-Tab einspaltig)
+build/
+data.html                    # Laufzeit-Build (vom Script erzeugt)
+debug.html
+devices\_used.txt
+devices\_used.csv
+
+data/                            # Parquet/CSV/NDJSON pro Device (lokal, nicht versioniert)
+
+scripts/
+pull\_all\_devices.py            # Python-Script
+
+docs/
+assets/                        # wird aus assets/build/ gespiegelt (für Pages)
+data/                          # gepushte Daten-Artefakte (optional)
+
+```
+
+> **Wichtig:** `assets/build/` und `data/` sind **Runtime-Verzeichnisse** und gehören in `.gitignore`.
+
+Empfohlene `.gitignore` (Root):
+
+```gitignore
+/data/
+/assets/build/
+/_site/
+/.quarto/
+__pycache__/
+*.pyc
+```
 
 ---
 
-## Schnellstart (lokal)
+## Quickstart - lokal
 
-1. (Optional) Erstelle `scripts/.env`:
+1. **.env** (optional) neben `scripts/pull_all_devices.py` anlegen:
 
 ```env
-   TTN_APP_ID=gisma-hydro-testbed
-   TTN_REGION=eu1
-   TTN_API_KEY=NNSXS_...
-   RUN_DASH=1
-   TTN_AFTER_DAYS=2
-   DELAY_BETWEEN_DEVICES=0.3
-   # Health-Report (optional):
-   # STALE_HOURS=3
-   # DEV_INCLUDE=dds75-lb-.*
-   # DEV_EXCLUDE=
+TTN_APP_ID=gisma-hydro-testbed
+TTN_REGION=eu1
+TTN_API_KEY=NNSXS_...
+RUN_DASH=1
+TTN_AFTER_DAYS=2
+# Sicherer Standard gegen Rate-Limits:
+DELAY_BETWEEN_DEVICES=2.0
+JITTER_MAX_SECONDS=0.7
+# Health / Filter
+STALE_HOURS=3
+# DEV_INCLUDE=dds75-lb-.*
+# DEV_EXCLUDE=
 ```
 
-2. Ausführen:
+2. **Template & CSS** bereitstellen:
 
-   ```bash
-   python scripts/pull_all_devices.py
-   ```
+* `assets/templates/dashboard_template.html`
+* `assets/templates/dashboard.css`
 
-3. Ergebnisse liegen unter:
+Dein Template bindet die CSS z. B. so ein:
 
-   * `assets/data.html` (Haupt-Dashboard)
-   * `assets/debug.html` (Rohdaten-Beispiele & Parquet-Previews)
-   * Health-Report: `assets/devices_used.txt` und `assets/devices_used.csv`
+```html
+<link rel="stylesheet" href="dashboard.css?v=1">
+```
+
+3. **Ausführen**:
+
+```bash
+python scripts/pull_all_devices.py
+```
+
+4. **Ergebnis**:
+
+* `assets/build/data.html` (Dashboard)
+* `assets/build/debug.html`
+* Health: `assets/build/devices_used.txt` & `assets/build/devices_used.csv`
+* Daten (pro Gerät) in `data/<device>.parquet` (+ `.csv`, `*_raw.ndjson`)
+
+---
+
+## Offline-Modus (ohne TTN Zugriffe)
+
+Ideal zum Styling/Debuggen ohne Netzlast:
+
+```bash
+OFFLINE=1 RUN_DASH=1 python scripts/pull_all_devices.py
+```
+
+* Es werden **keine HTTP-Requests** ausgeführt.
+* Das Dashboard liest nur vorhandene `data/*.parquet`/`.csv`.
+
+---
+
+## Einbettung per `<iframe>`
+
+Wenn du `assets/build/data.html` in einer Seite einbindest:
+
+```html
+<div class="iframe-wrap">
+  <iframe id="ttn-dash" src="assets/build/data.html"
+          loading="lazy" width="100%" style="border:0;" height="900"
+          referrerpolicy="no-referrer"></iframe>
+</div>
+```
+
+Optionale Auto-Resize-Logik für die Hostseite (falls dein Template `postMessage` sendet):
+
+```html
+<script>
+  window.addEventListener('message', (ev) => {
+    if (!ev || !ev.data || ev.data.type !== 'TTN_IFRAME_SIZE') return;
+    const ifr = document.getElementById('ttn-dash');
+    if (ifr && ev.data.height) ifr.style.height = (ev.data.height + 40) + 'px';
+  });
+</script>
+```
 
 ---
 
 ## Environment-Variablen
 
-Diese können in `.env`, in der Shell oder im GitHub Actions Workflow (`env:`) gesetzt werden.
-Fehlt etwas, werden Standardwerte genutzt.
-
 ### Pflicht
 
-* `TTN_APP_ID` — deine TTN Application ID (z. B. `gisma-hydro-testbed`)
-* `TTN_REGION` — TTN-Cluster (z. B. `eu1`)
-* `TTN_API_KEY` — NNSXS-Key mit folgenden Scopes:
+* `TTN_APP_ID` – TTN Application ID
+* `TTN_REGION` – TTN Cluster (`eu1`, …)
+* `TTN_API_KEY` – NNSXS-Key (Scopes: View devices, View packages/storage, Read traffic)
 
-  * **View end devices** (für Auto-Discovery)
-  * **View application packages and associations** (Storage)
-  * (hilfreich) **View application info**, **Read application traffic/data**
+### Optional (Abruf/Backoff)
 
-### Optional (Verhalten)
+* `TTN_AFTER_DAYS` *(default 2)* – Zeitfenster; script setzt bei vorhandenen Parquet am letzten TS fort
+* `DEVICES` – Whitespace-Liste; wenn leer → Auto-Discovery
+* `DELAY_BETWEEN_DEVICES` *(default **2.0** s)* – Pause pro Device
+* `JITTER_MAX_SECONDS` *(default 0.7)* – Zufalls-Jitter zusätzlich zur Pause
+* `MAX_RETRIES` *(default 5)* – HTTP-Retries
+* `BACKOFF_BASE` *(default **1.2**)* – Exponentieller Backoff-Start
 
-* `RUN_DASH` (`"1"`)
-  `1` = HTML-Dashboard erzeugen; `0` = CLI-Testmodus (siehe unten).
-* `TTN_AFTER_DAYS` (`"2"`)
-  Gleitendes Fenster: *jetzt − N Tage*.
-  Falls bereits Parquet-Daten existieren, setzt das Skript am letzten Timestamp fort.
-* `DELAY_BETWEEN_DEVICES` (`"0.3"`)
-  Sekunden Pause zwischen den Devices (gegen Rate-Limits).
-* `DEVICES` (leer)
-  Liste mit Device-IDs (whitespace-separiert). Wenn **leer**, werden **alle Devices automatisch** erkannt.
+### Optional (Health/Debug)
 
-### Health-Report
+* `STALE_HOURS` *(default 3)*
+* `DEV_INCLUDE` *(default `.*`)*
+* `DEV_EXCLUDE` *(leer)*
+* `DEBUG_RECENT_MINUTES` *(default 90)*
+* `RAW_APPEND` *(0/1)* – `_raw.ndjson` anhängen statt überschreiben
+* `RAW_SNAPSHOT` *(0/1)* – zusätzliche Schnappschüsse
 
-* `STALE_HOURS` (`"3"`) — Gerät gilt als `STALE (xh)`, wenn `last_seen` älter ist.
-* `DEV_INCLUDE` (`".*"`) — Regex-Filter für Devices, die eingeschlossen werden sollen.
-* `DEV_EXCLUDE` (leer) — Regex-Filter für Devices, die ausgeschlossen werden sollen.
+### Steuerung
+
+* `RUN_DASH` *(1/0)* – 1 = HTML bauen, 0 = nur CLI/Smoke-Test
+* `OFFLINE` *(1/0)* – 1 = nur lokale Daten, **kein** HTTP
+* `ASSETS_BUILD_SUBDIR` *(default `build`)* – Zielunterordner in `assets/`
 
 ---
 
-## Outputs & Struktur
+## Template & CSS
 
-* `data/` — Parquet-Dateien pro Gerät: `data/<device>.parquet`
-* `assets/`
+* **Kein** HTML/CSS-Fallback im Python-Script mehr – das Template **muss** existieren:
 
-  * `data.html` — Dashboard
-  * `debug.html` — Debug-Ansicht mit Rohdaten
-  * `devices_used.txt` — **lesbarer** Health-Report
-  * `devices_used.csv` — **maschinenlesbarer** Health-Report
+  * `assets/templates/dashboard_template.html`
+  * `assets/templates/dashboard.css`
+* Der Info-Tab ist im CSS **einspaltig** (`.info-grid { grid-template-columns: 1fr; }` oder via Media-Queries).
+* Tabs/Interaktionen sind im Template implementiert (kleiner JS-Block).
+  Das Python-Script rendert nur Dateninhalte (Kacheln, Tabellen, Plots) in Platzhalter:
 
-> Hinweis: Beim Start kann `devices_used.txt` kurzzeitig nur die Liste der Devices enthalten. Am Ende wird sie mit dem Health-Report überschrieben.
+  * `{{OVERVIEW_CARDS}}`, `{{OVERVIEW_TABLE}}`, `{{TYPE_CARDS}}`, `{{DEBUG_CARDS}}`,
+  * `{{STAMP}}`, `{{APP}}`, `{{REG}}`, `{{AFTER_DAYS}}`, `{{AFTER}}`
+
+---
+
+## GitHub Actions 
+
+Ein **kombinierter** Workflow holt stündlich Daten **und** rendert die Site (Pages):
+
+```yaml
+name: TTN + Quarto Render (hourly)
+
+on:
+  schedule:
+    - cron: "0 * * * *"         # jede volle Stunde (UTC)
+  push:
+    branches: ["main"]          # Content-Pushes bauen ebenfalls (mit denselben Regeln)
+  workflow_dispatch:
+
+concurrency:
+  group: pages-build
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      TTN_APP_ID:  ${{ secrets.TTN_APP_ID }}
+      TTN_REGION:  ${{ secrets.TTN_REGION }}
+      TTN_API_KEY: ${{ secrets.TTN_API_KEY }}
+      ASSETS_BUILD_SUBDIR: build
+      DEBUG_RECENT_MINUTES: "90"
+      # Vorsichtige Defaults (kannst du per Secrets/ENV überschreiben)
+      DELAY_BETWEEN_DEVICES: "2.0"
+      JITTER_MAX_SECONDS: "0.7"
+
+    steps:
+      - name: Checkout (full history)
+        uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+
+      - name: Install Python deps
+        run: |
+          python -m pip install --upgrade pip wheel setuptools
+          pip install requests pandas plotly pyarrow python-dotenv
+
+      - name: Pull + build dashboard
+        run: |
+          set -e
+          RUN_DASH=1 TTN_AFTER_DAYS=7 python scripts/pull_all_devices.py
+          mkdir -p docs/assets
+          rsync -av assets/build/ docs/assets/
+
+      - name: Copy data artifacts (optional to Pages)
+        run: |
+          mkdir -p docs/data
+          cp -a data/*.parquet docs/data/ 2>/dev/null || true
+          cp -a data/*.csv     docs/data/ 2>/dev/null || true
+          cp -a data/*.ndjson  docs/data/ 2>/dev/null || true
+
+      - name: Build data index
+        run: |
+          python - << 'PY'
+          import json, pathlib
+          d = pathlib.Path("docs/data"); d.mkdir(parents=True, exist_ok=True)
+          items = []
+          for p in sorted(d.glob("*")):
+              suf = p.suffix.lower()
+              if suf not in (".parquet", ".csv", ".ndjson"): continue
+              st = p.stat()
+              items.append({"name": p.name, "size": st.st_size, "mtime": int(st.st_mtime),
+                            "type": "Parquet" if suf==".parquet" else ("NDJSON" if suf==".ndjson" else "CSV")})
+          (d/"index.json").write_text(json.dumps(items, ensure_ascii=False), encoding="utf-8")
+          PY
+
+      - name: Setup Quarto
+        uses: quarto-dev/quarto-actions/setup@v2
+
+      - name: Render site
+        run: |
+          quarto render --no-cache
+          touch docs/.nojekyll
+
+      - name: Commit docs/ only
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/
+          git commit -m "site build $(date -u +%Y-%m-%dT%H:%M:%SZ)" || echo "no changes"
+          git push
+```
+
+**Hinweise**
+
+* `data/` und `assets/build/` bleiben **unversioniert**. Es wird nur `docs/` gepusht.
+* **Content-Pushes** (z. B. Template/CSS/Text) triggern ebenfalls ein Build:
+  Script läuft, generiert Runtime-Assets neu, rendert Quarto und pusht `docs/`.
+
+---
+
+## Troubleshooting
+
+* **Untracked würden überschrieben (git pull)**
+  Ursache: `data/`/`assets/build/` wurden versioniert. Lösung:
+
+  1. `data/` & `assets/build/` sichern → aus dem Index entfernen → in `.gitignore`.
+  2. Nur `docs/` committen (siehe Workflow).
+
+* **HTTP 429 (Rate-Limit)**
+  `DELAY_BETWEEN_DEVICES` auf 1.0–3.0 erhöhen, `JITTER_MAX_SECONDS` > 0 setzen.
+  Backoff besteht aus `BACKOFF_BASE * 2^i + jitter`.
+
+* **Keine Daten / leeres Dashboard**
+  Prüfe Scopes des API-Keys, TTN Storage-Retention, Devices aktiv, Zeitfenster.
+
+* **Offline testen**
+  `OFFLINE=1` setzen. Das Script liest nur lokale Parquet/CSV und baut das Dashboard.
 
 ---
 
 ## CLI Smoke-Test
 
-Einzelnes Device abrufen (ohne Dashboard):
+Ohne Dashboard, einzelnes Device, kleines Fenster -> schnelle Diagnose, ob alles funktioniert – bevor du die stündlichen Builds/Pages anstößt.
 
 ```bash
 RUN_DASH=0 python scripts/pull_all_devices.py --device dds75-lb-13 --hours 6 -v
 ```
 
 * `--hours` überschreibt `TTN_AFTER_DAYS` nur für diesen Lauf.
-* Daten werden in `data/<device>.parquet` gespeichert und dedupliziert.
-
----
-
-## GitHub Actions (Pages oder Artefakt)
-
-Beispiel-Workflow:
-
-```yaml
-name: TTN all devices → Pages
-
-on:
-  schedule:
-    - cron: "*/30 * * * *"     # alle 30 Minuten (UTC)
-  workflow_dispatch:
-
-permissions:
-  contents: write
-
-concurrency:
-  group: ttn-pages
-  cancel-in-progress: true
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    env:
-      TTN_APP_ID:  ${{ secrets.TTN_APP_ID }}
-      TTN_REGION:  ${{ secrets.TTN_REGION }}
-      TTN_API_KEY: ${{ secrets.TTN_API_KEY }}
-      THEME_DEFAULT: "light"                 # optionales Theme fürs Dashboard
-      DEBUG_RECENT_MINUTES: "90"             # steuert die Debug-Tabelle (zuletzt X Minuten)
-
-    steps:
-      - name: Checkout (full history)
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Sync branch (rebase)
-        env:
-          BRANCH: ${{ github.ref_name }}
-        run: |
-          git config user.name  "ttn-bot"
-          git config user.email "ttn-bot@example.com"
-          git checkout "$BRANCH"
-          git pull --rebase origin "$BRANCH" || true
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install requests pandas plotly pyarrow python-dotenv
-
-      # Erzwingt HTML-Build und genügend Storage-Fenster
-      - name: Build dashboard (pull all devices)
-        run: |
-          RUN_DASH=1 TTN_AFTER_DAYS=7 python scripts/pull_all_devices.py
-
-          # Nach Build: frisch erzeugte Assets loggen
-          test -f assets/data.html  && ls -l --time-style=full-iso assets/data.html  || true
-          test -f assets/debug.html && ls -l --time-style=full-iso assets/debug.html || true
-
-          # In Pages-Verzeichnis spiegeln
-          mkdir -p docs/assets
-          cp -r assets/* docs/assets/ || true
-
-      - name: Publish data artifacts to docs/data
-        run: |
-          mkdir -p docs/data
-          cp -a data/*.parquet docs/data/ 2>/dev/null || true
-          cp -a data/*.ndjson  docs/data/ 2>/dev/null || true
-
-      - name: Build data index (JSON)
-        run: |
-          python - << 'PY'
-          import json, pathlib
-          d = pathlib.Path("docs/data")
-          d.mkdir(parents=True, exist_ok=True)
-          items = []
-          for p in sorted(d.glob("*")):
-              if p.suffix.lower() not in (".parquet", ".ndjson"):
-                  continue
-              st = p.stat()
-              items.append({
-                  "name": p.name,
-                  "size": st.st_size,
-                  "mtime": int(st.st_mtime),
-                  "type": "Parquet" if p.suffix.lower()==".parquet" else "NDJSON"
-              })
-          (d / "index.json").write_text(json.dumps(items, ensure_ascii=False), encoding="utf-8")
-          PY
-
-      - name: Ensure GitHub Pages flags
-        run: |
-          mkdir -p docs
-          touch docs/.nojekyll
-
-      - name: Sanity check before commit
-        run: |
-          echo "Listing freshly built assets:"
-          ls -l --time-style=full-iso docs/assets/ || true
-          echo "Listing data artifacts:"
-          ls -l --time-style=full-iso docs/data/ || true
-
-      - name: Commit docs/ and data/ (stash + rebase + push)
-        env:
-          BRANCH: ${{ github.ref_name }}
-        run: |
-          set -e
-          git config user.name  "ttn-bot"
-          git config user.email "ttn-bot@example.com"
-          git checkout "$BRANCH"
-
-          git add -A
-          git stash push --include-untracked --message "ci-wip" || true
-
-          git pull --rebase origin "$BRANCH" || true
-
-          git stash pop || true
-
-          git add docs/ data/ || true
-          git commit -m "update all-devices $(date -u +%FT%TZ)" || echo "no changes"
-          git push origin "$BRANCH"
-
-```
-
-**Repo-Einstellungen:**
-
-* Secrets: `TTN_API_KEY`, `TTN_APP_ID`, `TTN_REGION`.
-* GitHub Pages so einstellen, dass es `docs/` als Source nimmt.
-
----
-
-## Troubleshooting
-
-* **HTTP 400 invalid token**
-  Neuer Key nötig oder Scopes fehlen.
-* **HTTP 400 mit `after`**
-  Skript probiert automatisch kleinere `limit`-Werte und ohne `after`.
-* **Parquet-Engine fehlt**
-  `pyarrow` oder `fastparquet` installieren (Workflow erledigt das).
-* **Keine Daten**
-  TTN Console prüfen: Storage aktiviert? Device aktiv? Zeitfenster korrekt?
-* **429 Rate limit**
-  `DELAY_BETWEEN_DEVICES` auf 0.6–1.0 erhöhen.
-* **Viele STALE-Geräte**
-  `STALE_HOURS` anpassen oder per Regex filtern.
+* Parquet/CSV werden dedupliziert fortgeführt.
 
 ---
 
 ## Design-Notizen
 
-* Auto-Discovery → keine Device-Liste pflegen.
-* Pro-Device Parquet → inkrementelle Pulls, keine Duplikate.
-* Robuste Requests → mit Retries/Backoff.
-* Health-Report als Text & CSV für schnellen Überblick.
+* Auto-Discovery → keine Device-Liste pflegen (außer du setzt `DEVICES`!!).
+* Pro-Device Parquet → schnelle inkrementelle Pulls.
+* Robuste Requests → Retries/Backoff + Jitter.
+* Saubere Trennung von **Template/CSS** (versioniert) und **Runtime-Builds** (ignoriert).
 
 🌲📡 Viel Erfolg beim Monitoring!
+
 
