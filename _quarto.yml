@@ -37,14 +37,15 @@ website:
           #   href: index_data.qmd
           - text: "Dashboard"
             href: live-data.qmd
-          - text: "Dashboard Doku"
-            href: dashboard_doku_de.qmd          
+        
       - section: "Setup Doku"
         contents:
           - text: "Hub & TNN"
             href: lorawan_doku.qmd
           - text: "Dragino Sensoren"
             href: lorawan_dragino.qmd
+          - text: "Dashboard Doku"
+            href: dashboard_doku_de.qmd  
 
 
 format:
