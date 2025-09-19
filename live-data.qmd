@@ -4,7 +4,7 @@ format: html
 ---
 <div class="iframe-wrap" style="position:relative; width:100%;">
   <iframe id="ttn-dashboard"
-          src="assets/data.html?v=1"
+          src="assets/build/data.html?v=1"
           loading="lazy"
           style="border:0; width:100%; height:900px;">
   </iframe>
