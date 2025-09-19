@@ -40,4 +40,3 @@ ps-lb-18                 |   342 rec | last: 2025-09-19 21:22:15Z | OK
 ps-lb-19                 |   446 rec | last: 2025-09-19 21:20:39Z | OK
 ps-lb-20                 |   448 rec | last: 2025-09-19 21:14:11Z | OK
 ps-lb-21                 |   281 rec | last: 2025-09-19 21:19:18Z | OK
-sensecap-01              |     0 rec | last: –                    | NO DATA
