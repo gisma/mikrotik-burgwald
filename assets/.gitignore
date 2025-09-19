@@ -2,3 +2,8 @@ keys.csv
 .~lock.keys.csv#
 .~lock.keys.xlsx#
 keys.xlsx
+# Runtime-Builds
+assets/build/
+assets/*.html
+assets/devices_used.csv
+assets/devices_used.txt

@@ -20,8 +20,8 @@ jobs:
       TTN_APP_ID:  ${{ secrets.TTN_APP_ID }}
       TTN_REGION:  ${{ secrets.TTN_REGION }}
       TTN_API_KEY: ${{ secrets.TTN_API_KEY }}
-      DEBUG_RECENT_MINUTES: "90"      # wird vom Script gelesen
-      # TTN_AFTER_DAYS wird unten im Build-Step gesetzt
+      DEBUG_RECENT_MINUTES: "90"      # vom Script gelesen
+      ASSETS_BUILD_SUBDIR: build      # <--- Script schreibt nach assets/build/
 
     steps:
       - name: Checkout (full history)
@@ -44,39 +44,41 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
+          python -m pip install --upgrade pip wheel setuptools
           pip install requests pandas plotly pyarrow python-dotenv
 
       - name: Build dashboard (pull all devices)
         run: |
           set -e
-          # größeres Zeitfenster für initialen/fallschrittlichen Pull
+          # größeres Zeitfenster für initiale Läufe
           RUN_DASH=1 TTN_AFTER_DAYS=7 python scripts/pull_all_devices.py
 
-          # Nach Build: Assets protokollieren
-          ls -l assets/ || true
+          echo "== Laufzeit-Assets =="
+          ls -la assets/build/ || true
 
-          # In Pages-Verzeichnis spiegeln
+          # In Pages-Verzeichnis spiegeln (nur Runtime-Builds, keine Templates)
           mkdir -p docs/assets
-          cp -r assets/* docs/assets/ || true
+          if compgen -G "assets/build/*" > /dev/null; then
+            cp -r assets/build/* docs/assets/
+          fi
 
       - name: Publish data artifacts to docs/data
         run: |
           mkdir -p docs/data
           cp -a data/*.parquet docs/data/ 2>/dev/null || true
-          cp -a data/*.csv     docs/data/ 2>/dev/null || true   # <-- NEU: CSV mitnehmen
+          cp -a data/*.csv     docs/data/ 2>/dev/null || true
           cp -a data/*.ndjson  docs/data/ 2>/dev/null || true
 
       - name: Build data index (JSON)
         run: |
           python - << 'PY'
-          import json, pathlib, time
+          import json, pathlib
           d = pathlib.Path("docs/data")
           d.mkdir(parents=True, exist_ok=True)
           items = []
           for p in sorted(d.glob("*")):
               suf = p.suffix.lower()
-              if suf not in (".parquet", ".ndjson", ".csv"):  # <-- NEU: CSV berücksichtigen
+              if suf not in (".parquet", ".ndjson", ".csv"):
                   continue
               st = p.stat()
               items.append({

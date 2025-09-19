@@ -40,7 +40,7 @@ except Exception:
     _load_env_file(Path(__file__).with_name(".env"), override=False)
     _load_env_file(Path.cwd() / ".env", override=False)
 
-# -------- ENV: mit klarer Fehlermeldung statt KeyError --------
+# -------- ENV: mit klarer Fehlermeldung --------
 def _require_env(name: str) -> str:
     v = os.environ.get(name)
     if not v:
@@ -69,9 +69,12 @@ DEV_EXCLUDE  = os.environ.get("DEV_EXCLUDE", "")    # regex exclude (default: no
 RAW_APPEND   = os.environ.get("RAW_APPEND", "0") == "1"     # 1 = _raw.ndjson anhängen statt überschreiben
 RAW_SNAPSHOT = os.environ.get("RAW_SNAPSHOT", "0") == "1"   # 1 = zusätzlich Snapshot-Datei je Lauf schreiben
 
-# Folders
-DATA   = pathlib.Path("data");   DATA.mkdir(exist_ok=True, parents=True)     # Parquet/CSV/NDJSON
-ASSETS = pathlib.Path("assets"); ASSETS.mkdir(exist_ok=True, parents=True)   # HTML output
+# Folders: Templates & Runtime-Builds sauber trennen
+DATA   = pathlib.Path("data");   DATA.mkdir(exist_ok=True, parents=True)
+ASSETS = pathlib.Path("assets"); ASSETS.mkdir(exist_ok=True, parents=True)
+ASSETS_BUILD_SUBDIR = os.environ.get("ASSETS_BUILD_SUBDIR", "build")  # z.B. "build"
+ASSETS_BUILD = ASSETS / ASSETS_BUILD_SUBDIR if ASSETS_BUILD_SUBDIR else ASSETS
+ASSETS_BUILD.mkdir(exist_ok=True, parents=True)
 
 # ===== Discover device list from TTN (if DEVICES env is not set) =====
 def list_ttn_devices(app: str) -> List[str]:
@@ -105,9 +108,9 @@ else:
 # Deterministic order
 DEVS = sorted(set(DEVS))
 
-# (Initial) snapshot of discovered devices — will be overwritten later by the health report
+# (Initial) snapshot der gefundenen Devices – wird später von Health überschrieben
 try:
-    (ASSETS / "devices_used.txt").write_text("\n".join(DEVS), encoding="utf-8")
+    (ASSETS_BUILD / "devices_used.txt").write_text("\n".join(DEVS), encoding="utf-8")
 except Exception:
     pass
 
@@ -328,11 +331,9 @@ def device_pull(dev: str) -> pd.DataFrame:
             subset_cols = [c for c in ["device_id","received_at","f_port","payload_json"] if c in df.columns]
             df = df.drop_duplicates(subset=subset_cols).sort_values("received_at")
 
-            ok_parq = True
             try:
                 df.to_parquet(parq, index=False)
             except Exception as e:
-                ok_parq = False
                 print(f"[{dev}] WARN: parquet write failed: {e}")
 
             try:
@@ -759,7 +760,8 @@ if RUN_DASH:
       const tabs = document.querySelectorAll('.tabs button');
       const sections = { overview: document.getElementById('tab-overview'),
                          charts:   document.getElementById('tab-charts'),
-                         debug:    document.getElementById('tab-debug') };
+                         debug:    document.getElementById('tab-debug'),
+                         info:     document.getElementById('tab-info') };
       tabs.forEach(btn => btn.addEventListener('click', () => {
         tabs.forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
@@ -782,11 +784,20 @@ if RUN_DASH:
         "TABS_JS": tabs_js
     }
 
-    tpl_path = ASSETS / "dashboard_template.html"
-    if tpl_path.exists():
+    # Template-Kandidaten: lokale Overrides > templates/ > root
+    tpl_candidates = [
+        ASSETS / "templates/dashboard_template.local.html",
+        ASSETS / "dashboard_template.local.html",
+        ASSETS / "templates/dashboard_template.html",
+        ASSETS / "dashboard_template.html",
+    ]
+    tpl_path = next((p for p in tpl_candidates if p.exists()), None)
+
+    if tpl_path:
         tpl_html = tpl_path.read_text(encoding="utf-8")
         html = _render_template(tpl_html, ctx)
     else:
+        # eingebaute helle Fallback-Variante
         html = f"""<!doctype html>
         <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
         <title>TTN – All Devices (grouped by sensor type)</title>
@@ -799,12 +810,13 @@ if RUN_DASH:
           <button class="active" data-tab="overview">Übersicht</button>
           <button data-tab="charts">Diagramme</button>
           <button data-tab="debug">Debug</button>
+          <button data-tab="info">Info</button>
         </div>
 
         <section id="tab-overview">
           <div class="card"><h2>Übersicht (aktuelle Werte)</h2>{overview_cards_html}</div>
           <div class="card"><h2>Geräte-Tabelle</h2>{overview_table_html}
-            <p style="margin-top:8px">Parquet: <code>data/&lt;device&gt;.parquet</code></p>
+            <p style="margin-top:8px">Parquet: <code>data/&lt;device&gt;.parquet</code> • CSV: <code>data/&lt;device&gt;.csv</code> • NDJSON: <code>data/&lt;device&gt;_raw.ndjson</code></p>
           </div>
         </section>
 
@@ -818,6 +830,10 @@ if RUN_DASH:
           {"".join(debug_cards) if debug_cards else "<div class='card'><i>Keine aktuellen Daten.</i></div>"}
         </section>
 
+        <section id="tab-info" hidden>
+          <div class="card"><h2>Info</h2><p>Lege <code>assets/templates/dashboard_template.html</code> an, um dieses Fallback zu ersetzen.</p></div>
+        </section>
+
         {tabs_js}
         """
 
@@ -828,9 +844,9 @@ if RUN_DASH:
     {"".join(debug_cards) if debug_cards else "<div class='card'><i>Keine aktuellen Daten.</i></div>"}
     """
 
-    # Write HTML files
-    (ASSETS / "data.html").write_text(html, encoding="utf-8")
-    (ASSETS / "debug.html").write_text(dbg, encoding="utf-8")
+    # Write HTML files → in ASSETS_BUILD (Runtime)
+    (ASSETS_BUILD / "data.html").write_text(html, encoding="utf-8")
+    (ASSETS_BUILD / "debug.html").write_text(dbg, encoding="utf-8")
 
     # ===== Health report (text + CSV) =====
     import re as _re
@@ -875,10 +891,10 @@ if RUN_DASH:
         f"{r['device_id']:24s} | {r['records']:5d} rec | last: {r['last_seen'] or '–':20s} | {r['status']}"
         for r in health_rows
     )
-    (ASSETS / "devices_used.txt").write_text(health_txt, encoding="utf-8")
+    (ASSETS_BUILD / "devices_used.txt").write_text(health_txt, encoding="utf-8")
 
     # CSV for machines
-    pd.DataFrame(health_rows).to_csv(ASSETS / "devices_used.csv", index=False)
+    pd.DataFrame(health_rows).to_csv(ASSETS_BUILD / "devices_used.csv", index=False)
 
 # ========= Smoke-test / CLI =========
 if __name__ == "__main__":
