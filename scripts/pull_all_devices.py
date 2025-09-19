@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import os, json, pathlib, requests, pandas as pd, time
+import os, json, pathlib, requests, pandas as pd, time, random, re
 import plotly.express as px, plotly.io as pio
 import plotly.graph_objects as go  # Multi-Traces
 from datetime import datetime, timedelta, timezone
@@ -40,6 +40,9 @@ except Exception:
     _load_env_file(Path(__file__).with_name(".env"), override=False)
     _load_env_file(Path.cwd() / ".env", override=False)
 
+# -------- OFFLINE-Flag sehr früh lesen --------
+OFFLINE = os.environ.get("OFFLINE", "0") == "1"
+
 # -------- ENV: mit klarer Fehlermeldung --------
 def _require_env(name: str) -> str:
     v = os.environ.get(name)
@@ -51,13 +54,26 @@ def _require_env(name: str) -> str:
     return v
 
 # ===== ENV =====
-APP   = _require_env("TTN_APP_ID")            # e.g., gisma-hydro-testbed
-REG   = _require_env("TTN_REGION")            # e.g., eu1
-KEY   = _require_env("TTN_API_KEY")           # NNSXS....
+if OFFLINE:
+    # Für OFFLINE keine harten Requirements
+    APP = os.environ.get("TTN_APP_ID", "offline-app")
+    REG = os.environ.get("TTN_REGION", "eu1")
+    KEY = os.environ.get("TTN_API_KEY", "")
+else:
+    APP = _require_env("TTN_APP_ID")            # e.g., gisma-hydro-testbed
+    REG = _require_env("TTN_REGION")            # e.g., eu1
+    KEY = _require_env("TTN_API_KEY")           # NNSXS....
+
 AFTER_DAYS = int(os.environ.get("TTN_AFTER_DAYS", "2"))
 AFTER = (datetime.now(timezone.utc) - timedelta(days=AFTER_DAYS)).strftime("%Y-%m-%dT%H:%M:%SZ")
-HDRS  = {"Authorization": f"Bearer {KEY}"}    # robust NDJSON/SSE parsing
-DELAY_BETWEEN_DEVICES = float(os.environ.get("DELAY_BETWEEN_DEVICES", "0.3"))
+HDRS  = {"Authorization": f"Bearer {KEY}"} if KEY else {}
+
+# sehr konservative Defaults gegen Rate-Limits (per ENV überschreibbar)
+DELAY_BETWEEN_DEVICES = float(os.environ.get("DELAY_BETWEEN_DEVICES", "3.0"))
+JITTER_MAX_SECONDS    = float(os.environ.get("JITTER_MAX_SECONDS", "1.0"))
+MAX_RETRIES           = int(os.environ.get("MAX_RETRIES", "5"))
+BACKOFF_BASE          = float(os.environ.get("BACKOFF_BASE", "1.5"))
+
 DEBUG_RECENT_MINUTES = int(os.environ.get("DEBUG_RECENT_MINUTES", "90"))
 
 # Health report configuration
@@ -76,7 +92,7 @@ ASSETS_BUILD_SUBDIR = os.environ.get("ASSETS_BUILD_SUBDIR", "build")  # z.B. "bu
 ASSETS_BUILD = ASSETS / ASSETS_BUILD_SUBDIR if ASSETS_BUILD_SUBDIR else ASSETS
 ASSETS_BUILD.mkdir(exist_ok=True, parents=True)
 
-# ===== Discover device list from TTN (if DEVICES env is not set) =====
+# ===== Discover device list =====
 def list_ttn_devices(app: str) -> List[str]:
     """Return all end-device IDs for the given application (paginated)."""
     url = f"https://{REG}.cloud.thethings.network/api/v3/applications/{quote(app)}/devices"
@@ -98,12 +114,21 @@ def list_ttn_devices(app: str) -> List[str]:
             break
     return sorted(set(devs))
 
+def list_local_devices() -> List[str]:
+    devs = set()
+    for p in DATA.glob("*.parquet"): devs.add(p.stem)
+    for p in DATA.glob("*.csv"):     devs.add(p.stem)
+    for p in DATA.glob("*_raw.ndjson"):
+        name = p.name[:-len("_raw.ndjson")]
+        if name: devs.add(name)
+    return sorted(devs)
+
 DEVICES_ENV = os.environ.get("DEVICES", "").strip()
 if DEVICES_ENV:
     DEVS = [d for d in DEVICES_ENV.split() if d.strip()]
 else:
     # Auto-discovery fallback if DEVICES is not set
-    DEVS = list_ttn_devices(APP)
+    DEVS = list_local_devices() if OFFLINE else list_ttn_devices(APP)
 
 # Deterministic order
 DEVS = sorted(set(DEVS))
@@ -147,8 +172,6 @@ def _best_ts(o: dict):
 
 # ===== HTTP: retries/backoff =====
 RETRY_CODES = {429, 500, 502, 503, 504}
-MAX_RETRIES = 5
-BACKOFF_BASE = 0.6  # seconds
 
 def _do_get_with_retries(url, params, headers, timeout, dev):
     """GET with exponential backoff; resilient against 429/5xx/network glitches."""
@@ -157,15 +180,15 @@ def _do_get_with_retries(url, params, headers, timeout, dev):
         try:
             resp = requests.get(url, headers=headers, params=params, timeout=timeout)
             if resp.status_code in RETRY_CODES:
-                wait = BACKOFF_BASE * (2 ** i)
-                print(f"[{dev}] RETRY {i+1}/{MAX_RETRIES} HTTP {resp.status_code} → wait {wait:.1f}s")
+                wait = BACKOFF_BASE * (2 ** i) + random.uniform(0, JITTER_MAX_SECONDS)
+                print(f"[{dev}] RETRY {i+1}/{MAX_RETRIES} HTTP {resp.status_code} → wait {wait:.2f}s")
                 time.sleep(wait)
                 continue
             return resp
         except requests.RequestException as e:
             last_exc = e
-            wait = BACKOFF_BASE * (2 ** i)
-            print(f"[{dev}] RETRY {i+1}/{MAX_RETRIES} network error: {e} → {wait:.1f}s pause")
+            wait = BACKOFF_BASE * (2 ** i) + random.uniform(0, JITTER_MAX_SECONDS)
+            print(f"[{dev}] RETRY {i+1}/{MAX_RETRIES} network error: {e} → {wait:.2f}s pause")
             time.sleep(wait)
     if last_exc:
         raise last_exc
@@ -179,8 +202,25 @@ def device_pull(dev: str) -> pd.DataFrame:
     raw  = DATA / f"{dev}_raw.ndjson"
     url  = f"https://{REG}.cloud.thethings.network/api/v3/as/applications/{APP}/devices/{quote(dev)}/packages/storage/uplink_message"
 
-    limit_primary = 200
-    limit_fallback = 100
+    # --- OFFLINE: keinerlei HTTP, nur lokale Dateien lesen
+    if OFFLINE:
+        try:
+            if parq.exists():
+                df = pd.read_parquet(parq)
+            elif csv.exists():
+                df = pd.read_csv(csv)
+                if "received_at" in df.columns:
+                    df["received_at"] = pd.to_datetime(df["received_at"], utc=True, errors="coerce")
+            else:
+                df = pd.DataFrame(columns=["device_id","received_at","f_port","rssi","snr","payload_json"])
+            return df
+        except Exception as e:
+            print(f"[{dev}] OFFLINE read failed: {e}")
+            return pd.DataFrame(columns=["device_id","received_at","f_port","rssi","snr","payload_json"])
+
+    # konservativere Paging-Limits (per ENV änderbar)
+    limit_primary  = int(os.environ.get("TTN_LIMIT_PRIMARY", "120"))
+    limit_fallback = int(os.environ.get("TTN_LIMIT_FALLBACK", "60"))
 
     def _empty_df():
         return pd.DataFrame(columns=["device_id","received_at","f_port","rssi","snr","payload_json"])
@@ -445,14 +485,12 @@ def normalize_sensecap_messages(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 def normalize_all(df: pd.DataFrame) -> pd.DataFrame:
-    # Generische Numerik-Konvertierung: nur wenn komplett numerisch
+    # Generische Numerik-Konvertierung: nur wenn komplett numerisch (vermeidet FutureWarnings)
     for c in df.columns:
         if c not in ("device_id",) and df[c].dtype == "object":
             try:
-                # versuche komplette Spalte numerisch zu casten
-                df[c] = pd.to_numeric(df[c])  # errors='raise' (Default)
+                df[c] = pd.to_numeric(df[c])  # errors='raise' default
             except Exception:
-                # bei gemischten/ nicht-numerischen Werten Spalte so lassen
                 pass
 
     df = normalize_dds75(df)
@@ -487,36 +525,57 @@ def detect_sensor_type(df: pd.DataFrame, device_id: str) -> str:
     return "Other"
 
 def to_plot_html(df: pd.DataFrame, y: str, title: str) -> Optional[str]:
-    if y not in df.columns or not pd.api.types.is_numeric_dtype(df[y]): return None
+    if y not in df.columns or not pd.api.types.is_numeric_dtype(df[y]):
+        return None
     d = df[["received_at", y]].dropna()
-    if d.empty: return None
-    fig = px.line(d, x="received_at", y=y, title=title)
+    if d.empty:
+        return None
+
+    # Erzwinge SVG (= scatter, nicht scattergl), damit cliponaxis gültig ist
+    fig = px.line(d, x="received_at", y=y, title=title, render_mode="svg")
     fig.update_layout(
-      template="plotly_white",                     # Helles Theme
-      paper_bgcolor="rgba(0,0,0,0)",
-      plot_bgcolor="rgba(0,0,0,0)",
-      margin=dict(l=10, r=10, t=40, b=10),
-      font=dict(size=14),
-      xaxis=dict(showgrid=True, zeroline=False),
-      yaxis=dict(showgrid=True, zeroline=False),
+        template="plotly_white",
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        margin=dict(l=10, r=10, t=40, b=10),
+        font=dict(size=14),
+        xaxis=dict(showgrid=True, zeroline=False),
+        yaxis=dict(showgrid=True, zeroline=False),
     )
-    return pio.to_html(fig, include_plotlyjs="cdn", full_html=False,
-                       default_width="100%", default_height="350px")
+    # Nur für scatter anwenden (scattergl kennt cliponaxis nicht)
+    try:
+        fig.update_traces(cliponaxis=True, selector=dict(type="scatter"))
+    except Exception:
+        pass
+
+    return pio.to_html(
+        fig,
+        include_plotlyjs="cdn",
+        full_html=False,
+        default_width="100%",
+        default_height="350px",
+    )
 
 # --- Multi-Trace-Plot (Battery/RSSI/SNR/Power) ---
 def to_plot_multi_html(df: pd.DataFrame, y_cols: List[str], title: str) -> Optional[str]:
     y_cols = [c for c in y_cols if c in df.columns and pd.api.types.is_numeric_dtype(df[c])]
     if not y_cols:
         return None
-    d = df[["received_at"] + y_cols].copy()
-    d = d.dropna(how="all", subset=y_cols)
+    d = df[["received_at"] + y_cols].copy().dropna(how="all", subset=y_cols)
     if d.empty:
         return None
     d = d.sort_values("received_at")
 
     fig = go.Figure()
     for c in y_cols:
-        fig.add_trace(go.Scatter(x=d["received_at"], y=d[c], mode="lines", name=c))
+        # go.Scatter (SVG) → cliponaxis ist gültig
+        fig.add_trace(go.Scatter(
+            x=d["received_at"],
+            y=d[c],
+            mode="lines",
+            name=c,
+            cliponaxis=True,
+        ))
 
     fig.update_layout(
         template="plotly_white",
@@ -526,10 +585,16 @@ def to_plot_multi_html(df: pd.DataFrame, y_cols: List[str], title: str) -> Optio
         font=dict(size=14),
         xaxis=dict(showgrid=True, zeroline=False),
         yaxis=dict(showgrid=True, zeroline=False),
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0)
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0),
     )
-    return pio.to_html(fig, include_plotlyjs="cdn", full_html=False,
-                       default_width="100%", default_height="350px")
+
+    return pio.to_html(
+        fig,
+        include_plotlyjs="cdn",
+        full_html=False,
+        default_width="100%",
+        default_height="350px",
+    )
 
 PREFERRED_BY_TYPE = {
     "DDS75-LB": ["distance_cm","temperature","battery","rssi"],
@@ -659,7 +724,9 @@ if RUN_DASH:
           <div>{recent_html}</div>
         </div>""")
 
-        time.sleep(DELAY_BETWEEN_DEVICES)
+        # Nur online drosseln – offline sofort durch
+        if not OFFLINE:
+            time.sleep(DELAY_BETWEEN_DEVICES + random.uniform(0, JITTER_MAX_SECONDS))
 
     # Overview table for health/tab
     ov = pd.DataFrame(overview_rows)
@@ -689,7 +756,8 @@ if RUN_DASH:
     .device-grid{display:grid;grid-template-columns:repeat(2,minmax(320px,1fr));gap:14px;margin-top:12px}
     .device-tile{border:1px solid var(--border);border-radius:12px;padding:12px;background:#fff;box-shadow:0 1px 10px rgba(2,6,23,.06)}
     .device-tile h4{margin:.2rem 0 .6rem;font-size:15px}
-    .plot-wrap{border:1px solid var(--border);border-radius:10px;padding:6px;margin-bottom:10px;background:#fff}
+    .plot-wrap{position:relative; overflow:hidden; border:1px solid var(--border);border-radius:10px;padding:6px;margin-bottom:10px;background:#fff}
+    .plot-wrap .js-plotly-plot, .plot-wrap .plotly, .plot-wrap svg{display:block;max-width:100%}
 
     /* Tabs */
     .tabs{display:flex;gap:8px;margin:8px 0 12px}
@@ -715,6 +783,28 @@ if RUN_DASH:
     .badge.empty{background:#f1f5f9;color:#334155;border-color:#cbd5e1}
     .badge.err{background:#fee2e2;color:#991b1b;border-color:#fecaca}
     </style>
+    """
+
+    # ---------- Info-Content (einspaltig) ----------
+    info_content = """
+    <div class="card">
+      <h2>Allgemeine Formate im Repo</h2>
+      <p><strong>NDJSON</strong> (Newline Delimited JSON) speichert Ereignisse zeilenweise als JSON-Objekte.
+      Ideal für Streaming/APIs; z.&nbsp;B. <code>jq</code>, <code>pandas.read_json(..., lines=True)</code>.</p>
+      <p><strong>Parquet</strong> ist spaltenorientiert, binär, sehr platzsparend/schnell; Standard in Big-Data-Ecosystemen
+      (Spark, Hadoop, DuckDB, BigQuery, GDAL/GeoParquet).</p>
+      <p><em>Typischer Workflow:</em> Rohdaten als <strong>NDJSON</strong> persistieren → für Analyse/Archiv in <strong>Parquet</strong> konvertieren.
+      Zusätzlich wird hier <strong>CSV</strong> geschrieben, um einfache Kompatibilität zu sichern.</p>
+    </div>
+    <div class="card">
+      <h2>Sensoren</h2>
+      <ul>
+        <li><strong>DDS75-LB</strong> (<code>dds75-lb-*.parquet/csv</code>): <code>distance_cm</code> (aus <code>Distance_mm</code>), <code>temperature</code>, <code>battery</code>, Flags (<code>interrupt_flag</code>, <code>sensor_flag</code>).</li>
+        <li><strong>PS-LB</strong> (<code>burgwald-ps-lb-*.parquet/csv</code>): <code>water_cm</code> bzw. <code>pressure_kpa/_mpa</code>, zusätzlich <code>idc_input_ma</code>, <code>vdc_input_v</code>, <code>battery</code>, digitale Eingänge.</li>
+        <li><strong>SenseCAP</strong> (<code>burgwald-sensecap-*.parquet/csv</code>): <code>temperature</code>, <code>humidity</code>, <code>pressure_hpa</code>, <code>illumination</code>, ggf. <code>uv_index</code>, <code>wind_speed</code>, <code>wind_dir</code>, <code>rainfall</code>.</li>
+      </ul>
+      <p>Datenpfade: <code>data/&lt;device&gt;.parquet</code> • <code>data/&lt;device&gt;.csv</code> • Roh: <code>data/&lt;device&gt;_raw.ndjson</code></p>
+    </div>
     """
 
     # ---------- Kachel-Übersicht ----------
@@ -755,7 +845,6 @@ if RUN_DASH:
         type_cards_html.append(f'<div class="card"><h2>{typ}</h2><div class="device-grid">{"".join(device_tiles)}</div></div>')
 
     # ---------- Tabs + Template-Renderer ----------
-    import re
     def _render_template(tpl: str, ctx: dict) -> str:
         pattern = re.compile(r"{{\s*([A-Z0-9_]+)\s*}}")
         return pattern.sub(lambda m: str(ctx.get(m.group(1), "")), tpl)
@@ -766,16 +855,29 @@ if RUN_DASH:
 
     tabs_js = """
     <script>
-      const tabs = document.querySelectorAll('.tabs button');
-      const sections = { overview: document.getElementById('tab-overview'),
-                         charts:   document.getElementById('tab-charts'),
-                         debug:    document.getElementById('tab-debug'),
-                         info:     document.getElementById('tab-info') };
-      tabs.forEach(btn => btn.addEventListener('click', () => {
-        tabs.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        for (const k in sections) sections[k].hidden = (btn.dataset.tab !== k);
-      }));
+      (function(){
+        function postH(){
+          try{
+            var h = Math.max(document.documentElement.scrollHeight, document.body ? document.body.scrollHeight : 0);
+            parent.postMessage({ type: 'TTN_IFRAME_SIZE', height: h }, '*');
+          }catch(e){}
+        }
+        const tabs = document.querySelectorAll('.tabs button');
+        const sections = { overview: document.getElementById('tab-overview'),
+                           charts:   document.getElementById('tab-charts'),
+                           debug:    document.getElementById('tab-debug'),
+                           info:     document.getElementById('tab-info') };
+        tabs.forEach(btn => btn.addEventListener('click', () => {
+          tabs.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          for (const k in sections) sections[k].hidden = (btn.dataset.tab !== k);
+          setTimeout(postH, 50);
+        }));
+        window.addEventListener('load',  () => { postH(); setTimeout(postH,300); setTimeout(postH,1200); });
+        window.addEventListener('resize', postH);
+        const mo = new MutationObserver(() => postH());
+        mo.observe(document.documentElement, { childList:true, subtree:true });
+      })();
     </script>
     """
 
@@ -790,6 +892,7 @@ if RUN_DASH:
         "OVERVIEW_TABLE": overview_table_html,
         "TYPE_CARDS": "".join(type_cards_html) if type_cards_html else '<div class="card">Keine Daten zum Anzeigen.</div>',
         "DEBUG_CARDS": "".join(debug_cards) if debug_cards else "<div class='card'><i>Keine aktuellen Daten.</i></div>",
+        "INFO_CONTENT": info_content,
         "TABS_JS": tabs_js
     }
 
@@ -806,7 +909,7 @@ if RUN_DASH:
         tpl_html = tpl_path.read_text(encoding="utf-8")
         html = _render_template(tpl_html, ctx)
     else:
-        # eingebaute helle Fallback-Variante
+        # eingebaute helle Fallback-Variante (mit Info-Tab einspaltig)
         html = f"""<!doctype html>
         <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
         <title>TTN – All Devices (grouped by sensor type)</title>
@@ -840,7 +943,9 @@ if RUN_DASH:
         </section>
 
         <section id="tab-info" hidden>
-          <div class="card"><h2>Info</h2><p>Lege <code>assets/templates/dashboard_template.html</code> an, um dieses Fallback zu ersetzen.</p></div>
+          <div class="type-grid" style="grid-template-columns:1fr">
+            {info_content}
+          </div>
         </section>
 
         {tabs_js}
@@ -858,9 +963,8 @@ if RUN_DASH:
     (ASSETS_BUILD / "debug.html").write_text(dbg, encoding="utf-8")
 
     # ===== Health report (text + CSV) =====
-    import re as _re
-    inc_re = _re.compile(DEV_INCLUDE)
-    exc_re = _re.compile(DEV_EXCLUDE) if DEV_EXCLUDE else None
+    inc_re = re.compile(DEV_INCLUDE)
+    exc_re = re.compile(DEV_EXCLUDE) if DEV_EXCLUDE else None
 
     ov_for_health = ov.copy()
     if not ov_for_health.empty:
