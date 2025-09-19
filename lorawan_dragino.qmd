@@ -133,102 +133,162 @@ ps-lb-21,5,0
 ps-lb-42,20,0
 ```
 
-### Script: `downlink_hex_replace_map.sh`
+### Script: `set_dragino.sh`
 
 -   Nimmt **nur Hex** als Kommandos, wandelt intern in Base64.
 -   Legt pro Gerät **einen** `down/replace` mit bis zu 4 Downlinks (FIFO) ab.
 -   End-Intervall kommt aus der CSV (1–255 min unterstützt, typische Werte 5/15/20/30/60).
+-  `.env` ist jetzt verpflichtend Den Pfad kannst du überschreiben mit:` ENV_FILE=/custom/.env ./dragino_downlink.sh`
 
 ``` bash
 #!/usr/bin/env bash
 set -euo pipefail
+# -e : exit on error
+# -u : treat unset variables as errors
+# -o pipefail : a pipeline fails if any command within fails
 
-# ===== KONFIG =====
-APP="gisma-hydro-testbed"                 # Application-ID
-KEY="NNSXS.xxxxx..."                      # Application-API-Key (Write downlink)
-API="https://eu1.cloud.thethings.network/api/v3"
-CSV="devices.csv"                         # device_id,interval_min,ext_power
-FPORT=2
+# ==============================================================================
+# .env LOADING (REQUIRED)
+# - By default expects ./scripts/.env (override with: ENV_FILE=/path/.env ./script.sh)
+# - This file must define: TTN_APP_ID, TTN_REGION, TTN_API_KEY
+# - We do NOT hardcode secrets in this script.
+# ==============================================================================
+ENV_FILE="${ENV_FILE:-./scripts/.env}"
+if [ -f "$ENV_FILE" ]; then
+  set -a            # auto-export variables sourced from the .env
+  . "$ENV_FILE"
+  set +a
+else
+  echo "Error: ENV file '$ENV_FILE' not found." >&2
+  echo "Please create it and define TTN_APP_ID, TTN_REGION, TTN_API_KEY," >&2
+  echo "or run with: ENV_FILE=/absolute/path/to/.env ./dragino_downlink.sh" >&2
+  echo "Security note: never commit .env to Git; if a key was exposed, rotate it in TTN Console." >&2
+  exit 1
+fi
 
-need(){ command -v "$1" >/dev/null 2>&1 || { echo "Fehlt: $1"; exit 1; }; }
-need xxd; need base64; need curl; need jq; need awk
+# ==============================================================================
+# CONFIG FROM ENV (required: TTN_APP_ID / TTN_REGION / TTN_API_KEY)
+# Optional overrides via ENV or .env: CSV, FPORT
+# ==============================================================================
+APP="${TTN_APP_ID:?TTN_APP_ID is required}"
+REGION="${TTN_REGION:?TTN_REGION is required}"          # e.g. eu1
+KEY="${TTN_API_KEY:?TTN_API_KEY is required}"            # NNSXS
+API="https://${REGION}.cloud.thethings.network/api/v3"
 
-# -- Hex-Helper --
+CSV="${CSV:-devices.csv}"                                # CSV format: device_id,interval_min,ext_power
+FPORT="${FPORT:-2}"                                      # FPort used by Dragino downlinks
+
+# ==============================================================================
+# TOOL CHECKS (hard dependencies)
+# ==============================================================================
+need(){ command -v "$1" >/dev/null 2>&1 || { echo "Missing dependency: $1" >&2; exit 1; }; }
+need xxd
+need base64
+need curl
+need jq
+need awk
+
+# ==============================================================================
+# HELPERS
+# 1) Hex -> base64 (TTN expects base64 in frm_payload)
+# 2) Minutes -> seconds -> 3-byte big-endian hex (for TDC command payload)
+# ==============================================================================
 to_b64(){ printf "%s" "$1" | xxd -r -p | base64; }
 
-# TDC-Hex aus Minuten berechnen (3-Byte Big-Endian Sekunden)
-# Limitation: 1..65535 Sekunden; für unsere Intervalle (1..1440 min) ok.
 tdc_hex_from_minutes(){
   local min="$1"
-  local sec=$(( min*60 ))
-  # in 3 Bytes big-endian verpacken
+  local sec=$(( min * 60 ))
+  # format as 3-byte big-endian hex (6 uppercase hex chars)
   printf "%06X" "$sec"
 }
 
-# Fixe Hex-Commands
-HEX_PROBE="080002"           # Wassertiefe-Profil 0–2 m
-HEX_TDC_60S="0100003C"       # TDC=60s (Schnellphase)
-HEX_12V_8S="07031F40"        # 12V=8000ms (nur wenn PS-LB speist)
+# ==============================================================================
+# FIXED DRAGINO COMMANDS (hex; converted to base64 right before POST)
+# Adjust only if your device profile/firmware requires different values.
+# ==============================================================================
+HEX_PROBE="080002"      # Depth profile 0–2 m
+HEX_TDC_60S="0100003C"  # TDC = 60 s (fast phase to quickly drain the queue)
+HEX_12V_8S="07031F40"   # 12V pulse = 8000 ms (only used when external PS-LB powers the probe)
 
-[[ -f "$CSV" ]] || { echo "CSV '$CSV' fehlt."; exit 1; }
+# ==============================================================================
+# INPUT CSV
+# Expected columns (no header needed):
+#   device_id,interval_min,ext_power
+#   - device_id     : TTN device ID
+#   - interval_min  : final target interval in minutes
+#   - ext_power     : "0" => also send 12V pulse; anything else => skip 12V pulse
+# ==============================================================================
+if [ ! -f "$CSV" ]; then
+  echo "Error: CSV '$CSV' not found. Expecting 'device_id,interval_min,ext_power' rows." >&2
+  exit 1
+fi
 
-# Sanfte Drossel zwischen Geräten
-DELAY_BETWEEN_DEV=0.2
-
+# ==============================================================================
+# MAIN LOOP
+# Build a FIFO downlink queue per device and replace (POST /down/replace):
+#   1) set TDC=60s (fast phase)
+#   2) set measurement profile (PROBE)
+#   3) optionally send 12V pulse (if ext_power == 0)
+#   4) set final TDC from CSV (minutes -> 3-byte hex)
+# Notes:
+# - We DO NOT set 'confirmed' or 'priority' here (lean payload).
+# - Class A: downlinks are delivered AFTER the next uplink; typically 1 per uplink.
+# ==============================================================================
 while IFS=, read -r DEV MINUTES EXT; do
-  # Leerzeilen/Kommentare überspringen
+  # skip empty lines / comments
   [[ -z "${DEV// }" || "$DEV" =~ ^# ]] && continue
 
-  # Whitespace trim
+  # trim whitespace
   DEV="$(echo "$DEV" | awk '{$1=$1};1')"
   MINUTES="$(echo "$MINUTES" | awk '{$1=$1};1')"
   EXT="$(echo "$EXT" | awk '{$1=$1};1')"
 
-  # End-TDC aus Minuten → Sekunden → 3-Byte Hex → komplettes Setz-Command (01 + 3 Byte)
-  TDC3=$(tdc_hex_from_minutes "$MINUTES")      # z.B. 15min -> 000384
+  # final TDC payload: 01 + 3-byte big-endian seconds
+  TDC3=$(tdc_hex_from_minutes "$MINUTES")   # e.g., 15 -> 000384
   HEX_TDC_FINAL="01${TDC3}"
 
-  # In Base64 umwandeln
+  # convert hex to base64 (what TTN expects in frm_payload)
   P_TDC60=$(to_b64 "$HEX_TDC_60S")
   P_PROBE=$(to_b64 "$HEX_PROBE")
   P_12V8=$(to_b64 "$HEX_12V_8S")
   P_TDCF=$(to_b64 "$HEX_TDC_FINAL")
 
-  echo "== $DEV (Endintervall ${MINUTES} min, ext_power=${EXT}) =="
+  echo "== ${DEV} (final interval ${MINUTES} min, ext_power=${EXT}) =="
 
-  # Downlink-Liste zusammenbauen (FIFO: TDC60 -> PROBE -> optional 12V -> TDCfinal)
+  # compose downlinks array (no 'confirmed', no 'priority')
   if [[ "$EXT" == "0" ]]; then
-    JSON=$(jq -n --arg p1 "$P_TDC60" --arg p2 "$P_PROBE" --arg p3 "$P_12V8" --arg p4 "$P_TDCF" --argjson fp $FPORT \
+    JSON=$(jq -n --arg p1 "$P_TDC60" --arg p2 "$P_PROBE" --arg p3 "$P_12V8" --arg p4 "$P_TDCF" --argjson fp "$FPORT" \
       '{downlinks:[
-        {f_port:$fp, frm_payload:$p1, confirmed:true, priority:"NORMAL"},
-        {f_port:$fp, frm_payload:$p2, confirmed:true, priority:"NORMAL"},
-        {f_port:$fp, frm_payload:$p3, confirmed:true, priority:"NORMAL"},
-        {f_port:$fp, frm_payload:$p4, confirmed:true, priority:"NORMAL"}
+        {f_port:$fp, frm_payload:$p1},
+        {f_port:$fp, frm_payload:$p2},
+        {f_port:$fp, frm_payload:$p3},
+        {f_port:$fp, frm_payload:$p4}
       ]}')
   else
-    JSON=$(jq -n --arg p1 "$P_TDC60" --arg p2 "$P_PROBE" --arg p4 "$P_TDCF" --argjson fp $FPORT \
+    JSON=$(jq -n --arg p1 "$P_TDC60" --arg p2 "$P_PROBE" --arg p4 "$P_TDCF" --argjson fp "$FPORT" \
       '{downlinks:[
-        {f_port:$fp, frm_payload:$p1, confirmed:true, priority:"NORMAL"},
-        {f_port:$fp, frm_payload:$p2, confirmed:true, priority:"NORMAL"},
-        {f_port:$fp, frm_payload:$p4, confirmed:true, priority:"NORMAL"}
+        {f_port:$fp, frm_payload:$p1},
+        {f_port:$fp, frm_payload:$p2},
+        {f_port:$fp, frm_payload:$p4}
       ]}')
   fi
 
-  # Ein API-Call pro Gerät: down/replace
+  # single API call per device: replace the queue
   HTTP=$(curl -sS -o /tmp/resp.json -w "%{http_code}" \
     -X POST "$API/as/applications/$APP/devices/$DEV/down/replace" \
-    -H "Authorization: Bearer $KEY" -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $KEY" \
+    -H "Content-Type: application/json" \
     -d "$JSON")
 
   echo "HTTP: $HTTP"
   cat /tmp/resp.json; echo
-  [[ "$HTTP" =~ ^2 ]] || { echo "Fehler bei $DEV – siehe oben."; exit 1; }
+  [[ "$HTTP" =~ ^2 ]] || { echo "Error while queuing downlinks for $DEV — see response above." >&2; exit 1; }
 
-  sleep "$DELAY_BETWEEN_DEV"
 done < "$CSV"
 
-echo "Hinweis: Class A → Downlinks kommen NACH dem nächsten Uplink (FIFO, meist 1 pro Uplink).
-Lass TDC=60s aktiv, bis die Queue bei jedem Gerät abgearbeitet ist."
+echo "Note (Class A): downlinks are delivered AFTER the next uplink (usually one downlink per uplink)."
+echo "Keep TDC=60s active until each device has drained its queue, then it will switch to the final interval."
+
 ```
 
 -   Das Script baut für jedes Gerät die **gleiche Start-Sequenz** (60 s → PROBE → optional externe Stromversorgung) und setzt dann das **End-Intervall aus der CSV**.

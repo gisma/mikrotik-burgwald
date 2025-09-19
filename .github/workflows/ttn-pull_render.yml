@@ -1,15 +1,20 @@
 name: TTN hourly + Quarto
 
 on:
+  # A) Scheduled run (UTC): pulls fresh TTN data and rebuilds the dashboard hourly.
   schedule:
-    - cron: "0 * * * *"     # stündlich (UTC)
+    - cron: "0 * * * *"
+  # B) Content pushes to main (docs, CSS, templates, QMD): rebuild the site *offline*
+  #    using the already-committed data files to avoid extra load on TTN.
   push:
     branches: [ "main" ]
+  # C) Manual trigger from the Actions tab (does the same as the hourly run).
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: write   # needed to commit docs/ and data/ back to the repo
 
+# Prevent overlapping runs that might race on committing docs/
 concurrency:
   group: site-build
   cancel-in-progress: true
@@ -18,26 +23,32 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    # Environment passed into Python and scripts.
+    # Provide the three TTN secrets in the repo settings:
+    #   TTN_APP_ID, TTN_REGION, TTN_API_KEY
     env:
       TTN_APP_ID:  ${{ secrets.TTN_APP_ID }}
       TTN_REGION:  ${{ secrets.TTN_REGION }}
       TTN_API_KEY: ${{ secrets.TTN_API_KEY }}
-      DEVICES:     ${{ secrets.TTN_DEVICES }}   # optional
-      TTN_AFTER_DAYS: "2"
+      DEVICES:     ${{ secrets.TTN_DEVICES }}   # optional: restrict to a space-separated list
+      TTN_AFTER_DAYS: "2"                       # default lookback window (script may override)
       DEBUG_RECENT_MINUTES: "90"
-      ASSETS_BUILD_SUBDIR: "build"              # Script schreibt nach assets/build/
+      ASSETS_BUILD_SUBDIR: "build"              # script writes runtime HTML/CSS to assets/build/
 
     steps:
+      # 1) Pull the repo (full history helps when rebasing or inspecting logs)
       - name: Checkout (full history)
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      # 2) Python runtime (matches local dev; script uses 3.11/3.12 fine)
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
+      # 3) Speed up pip installs between runs (best-effort; falls back if no requirements.txt)
       - name: Cache pip
         uses: actions/cache@v4
         with:
@@ -46,27 +57,29 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
 
+      # 4) Install only what the pull/render script needs (no heavy optional deps)
       - name: Install Python deps
         run: |
           python -m pip install --upgrade pip wheel setuptools
           pip install requests pandas plotly pyarrow python-dotenv
 
-      # === A) Stundenlauf: echte Pulls + Build ===
+      # 5A) Hourly / manual: real TTN pulls + render dashboard
+      #     Uses a wider lookback (7 days) to bootstrap new repos or catch gaps.
       - name: Pull TTN + build dashboard (hourly)
         if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         run: |
           set -e
-          # für Erstläufe: größeres Fenster
           RUN_DASH=1 TTN_AFTER_DAYS=7 python scripts/pull_all_devices.py
 
-      # === B) Content-Push: nur offline neu rendern (keine HTTP-Calls) ===
+      # 5B) Content push: do NOT hit TTN; just rebuild HTML from committed data files.
+      #     This keeps pushes cheap and prevents rate-limit headaches.
       - name: Rebuild dashboard (offline, content push)
         if: github.event_name == 'push'
         run: |
           set -e
           OFFLINE=1 RUN_DASH=1 python scripts/pull_all_devices.py
 
-      # CSS neben data.html legen (gilt für beide Fälle)
+      # 6) Ensure the CSS that your template links to is available next to data.html in build/
       - name: Ensure dashboard.css in build/
         run: |
           mkdir -p assets/build
@@ -75,21 +88,24 @@ jobs:
           fi
           ls -la assets/build || true
 
-      # Laufzeit-Assets + Daten nach docs/
+      # 7) Stage everything that should be published to GitHub Pages under docs/
+      #    - Runtime HTML/CSS → docs/assets/
+      #    - Data artifacts (parquet/csv/ndjson) → docs/data/
+      #    - A tiny JSON index for quick browsing
       - name: Prepare docs/
         run: |
           set -e
           mkdir -p docs/assets docs/data
-          # Runtime-HTML/CSS
+          # Runtime HTML/CSS from the build step
           if compgen -G "assets/build/*" > /dev/null; then
             rsync -a --delete assets/build/ docs/assets/
           fi
-          # Datenartefakte
+          # Data artifacts (optional but useful for download/debug)
           cp -a data/*.parquet docs/data/ 2>/dev/null || true
           cp -a data/*.csv     docs/data/ 2>/dev/null || true
           cp -a data/*.ndjson  docs/data/ 2>/dev/null || true
 
-          # Mini-Index
+          # Minimal JSON index for the data directory (name/size/mtime/type)
           python - << 'PY'
           import json, pathlib
           d = pathlib.Path("docs/data"); d.mkdir(parents=True, exist_ok=True)
@@ -103,19 +119,24 @@ jobs:
           (d/"index.json").write_text(json.dumps(items, ensure_ascii=False), encoding="utf-8")
           PY
 
+          # Avoid Jekyll processing on Pages
           touch docs/.nojekyll
 
+      # 8) Quarto: render the rest of the site (if you have QMD/MD content).
+      #    OFFLINE=1 prevents accidental network access from embedded Python code blocks.
       - name: Set up Quarto
         uses: quarto-dev/quarto-actions/setup@v2
 
       - name: Render site (Quarto)
         env:
-          OFFLINE: "1"   # falls du Python-Blocks in QMD hast -> keine zusätzlichen Calls
+          OFFLINE: "1"
         run: |
           set -e
           quarto render --no-cache
           ls -lAh docs || true
 
+      # 9) Commit changes (docs/ + optionally data/) back to main.
+      #    If there are no changes, the commit step becomes a no-op.
       - name: Commit & push
         env:
           GIT_AUTHOR_NAME:  site-bot
@@ -127,4 +148,3 @@ jobs:
           git add docs/ data/ || true
           git commit -m "site build ${GITHUB_SHA::7} $(date -u +%Y-%m-%dT%H:%M:%SZ)" || echo "no changes"
           git push
-

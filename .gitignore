@@ -19,3 +19,8 @@ assets/build/
 # data/*_raw.ndjson
 
 /.quarto/
+.Rproj.user
+/data/
+
+.env
+*.env

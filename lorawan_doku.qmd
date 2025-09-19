@@ -397,7 +397,7 @@ TTN‑interner Speicher mit einfachem HTTP‑Abruf (NDJSON). Ideal für erste Te
 ``` bash
 APP_ID="gisma-hydro-testbed"
 REGION="eu1"
-API_KEY="NNSXS.***api_key***"
+API_KEY="NNSXS***api_key***"
 
 curl -s -H "Authorization: Bearer $API_KEY" \
 "https://${REGION}.cloud.thethings.network/api/v3/as/applications/${APP_ID}/packages/storage/uplink_message?limit=100" \
@@ -428,7 +428,7 @@ Abonnieren des TTN‑MQTT‑Feeds und direkte Umwandlung in CSV mit `jq`.
 ``` bash
 APP_ID="gisma-hydro-testbed"
 REGION="eu1"
-API_KEY="NNSXS.***api_key***"
+API_KEY="NNSXS***api_key***"
 
 mosquitto_sub -h "${REGION}.cloud.thethings.network" -p 8883 \
   -u "${APP_ID}" -P "${API_KEY}" --cafile /etc/ssl/certs/ca-certificates.crt \
@@ -473,7 +473,7 @@ from paho.mqtt.client import Client
 
 APP_ID  = "gisma-hydro-testbed"
 REGION  = "eu1"
-API_KEY = "NNSXS.***api_key***"
+API_KEY = "NNSXS***api_key***"
 TOPIC   = f"v3/{APP_ID}@ttn/devices/+/up"
 BROKER  = f"{REGION}.cloud.thethings.network"
 
@@ -549,7 +549,7 @@ volumes:
   servers = ["ssl://eu1.cloud.thethings.network:8883"]
   topics  = ["v3/gisma-hydro-testbed@ttn/devices/+/up"]
   username = "gisma-hydro-testbed"
-  password = "NNSXS.***api_key***"
+  password = "NNSXS***api_key***"
   data_format = "json"
   json_time_key = "received_at"
   json_time_format = "2006-01-02T15:04:05Z07:00"
