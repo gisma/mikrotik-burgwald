@@ -8,7 +8,7 @@
 
 <meta name="author" content="Chris Reudenbach">
 
-<title>README dashboard – Hydro-Messnetz Burgwald</title>
+<title>dashboard_doku_de – Hydro-Messnetz Burgwald</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -396,20 +396,24 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#ttn-dashboard-nutzung-konfiguration-und-deployment" id="toc-ttn-dashboard-nutzung-konfiguration-und-deployment" class="nav-link active" data-scroll-target="#ttn-dashboard-nutzung-konfiguration-und-deployment"><span class="header-section-number">1</span> TTN Dashboard – Nutzung, Konfiguration und Deployment</a>
+  <li><a href="#ttn-dashboard-nutzung-konfiguration-und-deployment" id="toc-ttn-dashboard-nutzung-konfiguration-und-deployment" class="nav-link active" data-scroll-target="#ttn-dashboard-nutzung-konfiguration-und-deployment">TTN Dashboard – Nutzung, Konfiguration und Deployment</a>
   <ul class="collapse">
-  <li><a href="#schnellstart-lokal" id="toc-schnellstart-lokal" class="nav-link" data-scroll-target="#schnellstart-lokal"><span class="header-section-number">1.1</span> Schnellstart (lokal)</a></li>
-  <li><a href="#environment-variablen" id="toc-environment-variablen" class="nav-link" data-scroll-target="#environment-variablen"><span class="header-section-number">1.2</span> Environment-Variablen</a>
+  <li><a href="#verzeichnisstruktur" id="toc-verzeichnisstruktur" class="nav-link" data-scroll-target="#verzeichnisstruktur">Verzeichnisstruktur</a></li>
+  <li><a href="#quickstart---lokal" id="toc-quickstart---lokal" class="nav-link" data-scroll-target="#quickstart---lokal">Quickstart - lokal</a></li>
+  <li><a href="#offline-modus-ohne-ttn-zugriffe" id="toc-offline-modus-ohne-ttn-zugriffe" class="nav-link" data-scroll-target="#offline-modus-ohne-ttn-zugriffe">Offline-Modus (ohne TTN Zugriffe)</a></li>
+  <li><a href="#einbettung-per-iframe" id="toc-einbettung-per-iframe" class="nav-link" data-scroll-target="#einbettung-per-iframe">Einbettung per <code>&lt;iframe&gt;</code></a></li>
+  <li><a href="#environment-variablen" id="toc-environment-variablen" class="nav-link" data-scroll-target="#environment-variablen">Environment-Variablen</a>
   <ul class="collapse">
-  <li><a href="#pflicht" id="toc-pflicht" class="nav-link" data-scroll-target="#pflicht"><span class="header-section-number">1.2.1</span> Pflicht</a></li>
-  <li><a href="#optional-verhalten" id="toc-optional-verhalten" class="nav-link" data-scroll-target="#optional-verhalten"><span class="header-section-number">1.2.2</span> Optional (Verhalten)</a></li>
-  <li><a href="#health-report" id="toc-health-report" class="nav-link" data-scroll-target="#health-report"><span class="header-section-number">1.2.3</span> Health-Report</a></li>
+  <li><a href="#pflicht" id="toc-pflicht" class="nav-link" data-scroll-target="#pflicht">Pflicht</a></li>
+  <li><a href="#optional-abrufbackoff" id="toc-optional-abrufbackoff" class="nav-link" data-scroll-target="#optional-abrufbackoff">Optional (Abruf/Backoff)</a></li>
+  <li><a href="#optional-healthdebug" id="toc-optional-healthdebug" class="nav-link" data-scroll-target="#optional-healthdebug">Optional (Health/Debug)</a></li>
+  <li><a href="#steuerung" id="toc-steuerung" class="nav-link" data-scroll-target="#steuerung">Steuerung</a></li>
   </ul></li>
-  <li><a href="#outputs-struktur" id="toc-outputs-struktur" class="nav-link" data-scroll-target="#outputs-struktur"><span class="header-section-number">1.3</span> Outputs &amp; Struktur</a></li>
-  <li><a href="#cli-smoke-test" id="toc-cli-smoke-test" class="nav-link" data-scroll-target="#cli-smoke-test"><span class="header-section-number">1.4</span> CLI Smoke-Test</a></li>
-  <li><a href="#github-actions-pages-oder-artefakt" id="toc-github-actions-pages-oder-artefakt" class="nav-link" data-scroll-target="#github-actions-pages-oder-artefakt"><span class="header-section-number">1.5</span> GitHub Actions (Pages oder Artefakt)</a></li>
-  <li><a href="#troubleshooting" id="toc-troubleshooting" class="nav-link" data-scroll-target="#troubleshooting"><span class="header-section-number">1.6</span> Troubleshooting</a></li>
-  <li><a href="#design-notizen" id="toc-design-notizen" class="nav-link" data-scroll-target="#design-notizen"><span class="header-section-number">1.7</span> Design-Notizen</a></li>
+  <li><a href="#template-css" id="toc-template-css" class="nav-link" data-scroll-target="#template-css">Template &amp; CSS</a></li>
+  <li><a href="#github-actions" id="toc-github-actions" class="nav-link" data-scroll-target="#github-actions">GitHub Actions</a></li>
+  <li><a href="#troubleshooting" id="toc-troubleshooting" class="nav-link" data-scroll-target="#troubleshooting">Troubleshooting</a></li>
+  <li><a href="#cli-smoke-test" id="toc-cli-smoke-test" class="nav-link" data-scroll-target="#cli-smoke-test">CLI Smoke-Test</a></li>
+  <li><a href="#design-notizen" id="toc-design-notizen" class="nav-link" data-scroll-target="#design-notizen">Design-Notizen</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -421,7 +425,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
 <h1 class="title d-none d-lg-block">README dashboard</h1>
-<p class="subtitle lead">version 0.1</p>
+<p class="subtitle lead">version 0.2</p>
 </div>
 
 
@@ -444,249 +448,300 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<section id="ttn-dashboard-nutzung-konfiguration-und-deployment" class="level1" data-number="1">
-<h1 data-number="1"><span class="header-section-number">1</span> TTN Dashboard – Nutzung, Konfiguration und Deployment</h1>
-<p>Dieses Repository enthält ein Python-Skript, das aus <strong>The Things Network (TTN) Storage</strong> ein HTML-Dashboard erzeugt.<br>
-Es erkennt automatisch alle Devices, zieht deren Uplinks, schreibt pro Gerät Parquet-Dateien und erstellt interaktive Plots.</p>
-<hr>
-<section id="schnellstart-lokal" class="level2" data-number="1.1">
-<h2 data-number="1.1" class="anchored" data-anchor-id="schnellstart-lokal"><span class="header-section-number">1.1</span> Schnellstart (lokal)</h2>
-<ol type="1">
-<li>(Optional) Erstelle <code>scripts/.env</code>:</li>
-</ol>
-<pre class="env"><code>   TTN_APP_ID=gisma-hydro-testbed
-   TTN_REGION=eu1
-   TTN_API_KEY=NNSXS_...
-   RUN_DASH=1
-   TTN_AFTER_DAYS=2
-   DELAY_BETWEEN_DEVICES=0.3
-   # Health-Report (optional):
-   # STALE_HOURS=3
-   # DEV_INCLUDE=dds75-lb-.*
-   # DEV_EXCLUDE=</code></pre>
-<ol start="2" type="1">
-<li><p>Ausführen:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> scripts/pull_all_devices.py</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></li>
-<li><p>Ergebnisse liegen unter:</p>
-<ul>
-<li><code>assets/data.html</code> (Haupt-Dashboard)</li>
-<li><code>assets/debug.html</code> (Rohdaten-Beispiele &amp; Parquet-Previews)</li>
-<li>Health-Report: <code>assets/devices_used.txt</code> und <code>assets/devices_used.csv</code></li>
-</ul></li>
-</ol>
-<hr>
-</section>
-<section id="environment-variablen" class="level2" data-number="1.2">
-<h2 data-number="1.2" class="anchored" data-anchor-id="environment-variablen"><span class="header-section-number">1.2</span> Environment-Variablen</h2>
-<p>Diese können in <code>.env</code>, in der Shell oder im GitHub Actions Workflow (<code>env:</code>) gesetzt werden. Fehlt etwas, werden Standardwerte genutzt.</p>
-<section id="pflicht" class="level3" data-number="1.2.1">
-<h3 data-number="1.2.1" class="anchored" data-anchor-id="pflicht"><span class="header-section-number">1.2.1</span> Pflicht</h3>
-<ul>
-<li><p><code>TTN_APP_ID</code> — deine TTN Application ID (z. B. <code>gisma-hydro-testbed</code>)</p></li>
-<li><p><code>TTN_REGION</code> — TTN-Cluster (z. B. <code>eu1</code>)</p></li>
-<li><p><code>TTN_API_KEY</code> — NNSXS-Key mit folgenden Scopes:</p>
-<ul>
-<li><strong>View end devices</strong> (für Auto-Discovery)</li>
-<li><strong>View application packages and associations</strong> (Storage)</li>
-<li>(hilfreich) <strong>View application info</strong>, <strong>Read application traffic/data</strong></li>
-</ul></li>
-</ul>
-</section>
-<section id="optional-verhalten" class="level3" data-number="1.2.2">
-<h3 data-number="1.2.2" class="anchored" data-anchor-id="optional-verhalten"><span class="header-section-number">1.2.2</span> Optional (Verhalten)</h3>
-<ul>
-<li><code>RUN_DASH</code> (<code>"1"</code>) <code>1</code> = HTML-Dashboard erzeugen; <code>0</code> = CLI-Testmodus (siehe unten).</li>
-<li><code>TTN_AFTER_DAYS</code> (<code>"2"</code>) Gleitendes Fenster: <em>jetzt − N Tage</em>. Falls bereits Parquet-Daten existieren, setzt das Skript am letzten Timestamp fort.</li>
-<li><code>DELAY_BETWEEN_DEVICES</code> (<code>"0.3"</code>) Sekunden Pause zwischen den Devices (gegen Rate-Limits).</li>
-<li><code>DEVICES</code> (leer) Liste mit Device-IDs (whitespace-separiert). Wenn <strong>leer</strong>, werden <strong>alle Devices automatisch</strong> erkannt.</li>
-</ul>
-</section>
-<section id="health-report" class="level3" data-number="1.2.3">
-<h3 data-number="1.2.3" class="anchored" data-anchor-id="health-report"><span class="header-section-number">1.2.3</span> Health-Report</h3>
-<ul>
-<li><code>STALE_HOURS</code> (<code>"3"</code>) — Gerät gilt als <code>STALE (xh)</code>, wenn <code>last_seen</code> älter ist.</li>
-<li><code>DEV_INCLUDE</code> (<code>".*"</code>) — Regex-Filter für Devices, die eingeschlossen werden sollen.</li>
-<li><code>DEV_EXCLUDE</code> (leer) — Regex-Filter für Devices, die ausgeschlossen werden sollen.</li>
-</ul>
-<hr>
-</section>
-</section>
-<section id="outputs-struktur" class="level2" data-number="1.3">
-<h2 data-number="1.3" class="anchored" data-anchor-id="outputs-struktur"><span class="header-section-number">1.3</span> Outputs &amp; Struktur</h2>
-<ul>
-<li><p><code>data/</code> — Parquet-Dateien pro Gerät: <code>data/&lt;device&gt;.parquet</code></p></li>
-<li><p><code>assets/</code></p>
-<ul>
-<li><code>data.html</code> — Dashboard</li>
-<li><code>debug.html</code> — Debug-Ansicht mit Rohdaten</li>
-<li><code>devices_used.txt</code> — <strong>lesbarer</strong> Health-Report</li>
-<li><code>devices_used.csv</code> — <strong>maschinenlesbarer</strong> Health-Report</li>
-</ul></li>
-</ul>
+<section id="ttn-dashboard-nutzung-konfiguration-und-deployment" class="level1">
+<h1>TTN Dashboard – Nutzung, Konfiguration und Deployment</h1>
+<p>Dieses Repository erzeugt aus <strong>The Things Network (TTN) Storage</strong> ein interaktives HTML-Dashboard.<br>
+Das Script erkennt die Devices, zieht deren Uplinks, persistiert pro Gerät Parquet/CSV und baut eine HTML-Ansicht mit Plotly.</p>
+<p>Neu in <strong>v0.2</strong>: - <strong>Strikte Trennung</strong>: Templates &amp; CSS (versioniert) vs.&nbsp;Runtime-Builds (nicht versioniert). - <strong>Template + CSS</strong> aus <code>assets/templates/</code> (Python enthält <em>keinen</em> HTML/CSS-Fallback mehr). - <strong>Runtime-Ausgabe</strong> nach <code>assets/build/</code> (statt <code>assets/</code>). - <strong>Offline-Modus</strong>: Dashboard rendern <strong>ohne</strong> Netzwerkzugriffe (liest lokale <code>data/</code>). - Vorsichtige Defaults gegen Rate-Limits (Backoff + Jitter).</p>
+<section id="verzeichnisstruktur" class="level2">
+<h2 class="anchored" data-anchor-id="verzeichnisstruktur">Verzeichnisstruktur</h2>
+<pre><code>assets/
+templates/
+dashboard\_template.html      # Dein HTML-Template
+dashboard.css                # Zentrales CSS (Info-Tab einspaltig)
+build/
+data.html                    # Laufzeit-Build (vom Script erzeugt)
+debug.html
+devices\_used.txt
+devices\_used.csv
+
+data/                            # Parquet/CSV/NDJSON pro Device (lokal, nicht versioniert)
+
+scripts/
+pull\_all\_devices.py            # Python-Script
+
+docs/
+assets/                        # wird aus assets/build/ gespiegelt (für Pages)
+data/                          # gepushte Daten-Artefakte (optional)
+</code></pre>
 <blockquote class="blockquote">
-<p>Hinweis: Beim Start kann <code>devices_used.txt</code> kurzzeitig nur die Liste der Devices enthalten. Am Ende wird sie mit dem Health-Report überschrieben.</p>
+<p><strong>Wichtig:</strong> <code>assets/build/</code> und <code>data/</code> sind <strong>Runtime-Verzeichnisse</strong> und gehören in <code>.gitignore</code>.</p>
 </blockquote>
+<p>Empfohlene <code>.gitignore</code> (Root):</p>
+<pre class="gitignore"><code>/data/
+/assets/build/
+/_site/
+/.quarto/
+__pycache__/
+*.pyc</code></pre>
 <hr>
 </section>
-<section id="cli-smoke-test" class="level2" data-number="1.4">
-<h2 data-number="1.4" class="anchored" data-anchor-id="cli-smoke-test"><span class="header-section-number">1.4</span> CLI Smoke-Test</h2>
-<p>Einzelnes Device abrufen (ohne Dashboard):</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="va">RUN_DASH</span><span class="op">=</span>0 <span class="ex">python</span> scripts/pull_all_devices.py <span class="at">--device</span> dds75-lb-13 <span class="at">--hours</span> 6 <span class="at">-v</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="quickstart---lokal" class="level2">
+<h2 class="anchored" data-anchor-id="quickstart---lokal">Quickstart - lokal</h2>
+<ol type="1">
+<li><strong>.env</strong> (optional) neben <code>scripts/pull_all_devices.py</code> anlegen:</li>
+</ol>
+<pre class="env"><code>TTN_APP_ID=gisma-hydro-testbed
+TTN_REGION=eu1
+TTN_API_KEY=NNSXS_...
+RUN_DASH=1
+TTN_AFTER_DAYS=2
+# Sicherer Standard gegen Rate-Limits:
+DELAY_BETWEEN_DEVICES=2.0
+JITTER_MAX_SECONDS=0.7
+# Health / Filter
+STALE_HOURS=3
+# DEV_INCLUDE=dds75-lb-.*
+# DEV_EXCLUDE=</code></pre>
+<ol start="2" type="1">
+<li><strong>Template &amp; CSS</strong> bereitstellen:</li>
+</ol>
+<ul>
+<li><code>assets/templates/dashboard_template.html</code></li>
+<li><code>assets/templates/dashboard.css</code></li>
+</ul>
+<p>Dein Template bindet die CSS z. B. so ein:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode html code-with-copy"><code class="sourceCode html"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">link</span><span class="ot"> rel</span><span class="op">=</span><span class="st">"stylesheet"</span><span class="ot"> href</span><span class="op">=</span><span class="st">"dashboard.css?v=1"</span><span class="dt">&gt;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ol start="3" type="1">
+<li><strong>Ausführen</strong>:</li>
+</ol>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> scripts/pull_all_devices.py</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ol start="4" type="1">
+<li><strong>Ergebnis</strong>:</li>
+</ol>
+<ul>
+<li><code>assets/build/data.html</code> (Dashboard)</li>
+<li><code>assets/build/debug.html</code></li>
+<li>Health: <code>assets/build/devices_used.txt</code> &amp; <code>assets/build/devices_used.csv</code></li>
+<li>Daten (pro Gerät) in <code>data/&lt;device&gt;.parquet</code> (+ <code>.csv</code>, <code>*_raw.ndjson</code>)</li>
+</ul>
+<hr>
+</section>
+<section id="offline-modus-ohne-ttn-zugriffe" class="level2">
+<h2 class="anchored" data-anchor-id="offline-modus-ohne-ttn-zugriffe">Offline-Modus (ohne TTN Zugriffe)</h2>
+<p>Ideal zum Styling/Debuggen ohne Netzlast:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="va">OFFLINE</span><span class="op">=</span>1 <span class="va">RUN_DASH</span><span class="op">=</span>1 <span class="ex">python</span> scripts/pull_all_devices.py</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li>Es werden <strong>keine HTTP-Requests</strong> ausgeführt.</li>
+<li>Das Dashboard liest nur vorhandene <code>data/*.parquet</code>/<code>.csv</code>.</li>
+</ul>
+<hr>
+</section>
+<section id="einbettung-per-iframe" class="level2">
+<h2 class="anchored" data-anchor-id="einbettung-per-iframe">Einbettung per <code>&lt;iframe&gt;</code></h2>
+<p>Wenn du <code>assets/build/data.html</code> in einer Seite einbindest:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode html code-with-copy"><code class="sourceCode html"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">div</span><span class="ot"> class</span><span class="op">=</span><span class="st">"iframe-wrap"</span><span class="dt">&gt;</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&lt;</span><span class="kw">iframe</span><span class="ot"> id</span><span class="op">=</span><span class="st">"ttn-dash"</span><span class="ot"> src</span><span class="op">=</span><span class="st">"assets/build/data.html"</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="ot">          loading</span><span class="op">=</span><span class="st">"lazy"</span><span class="ot"> width</span><span class="op">=</span><span class="st">"100%"</span><span class="ot"> style</span><span class="op">=</span><span class="st">"border:0;"</span><span class="ot"> height</span><span class="op">=</span><span class="st">"900"</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="ot">          referrerpolicy</span><span class="op">=</span><span class="st">"no-referrer"</span><span class="dt">&gt;&lt;/</span><span class="kw">iframe</span><span class="dt">&gt;</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;/</span><span class="kw">div</span><span class="dt">&gt;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Optionale Auto-Resize-Logik für die Hostseite (falls dein Template <code>postMessage</code> sendet):</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode html code-with-copy"><code class="sourceCode html"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">script</span><span class="dt">&gt;</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="bu">window</span><span class="op">.</span><span class="fu">addEventListener</span>(<span class="st">'message'</span><span class="op">,</span> (ev) <span class="kw">=&gt;</span> {</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="op">!</span>ev <span class="op">||</span> <span class="op">!</span>ev<span class="op">.</span><span class="at">data</span> <span class="op">||</span> ev<span class="op">.</span><span class="at">data</span><span class="op">.</span><span class="at">type</span> <span class="op">!==</span> <span class="st">'TTN_IFRAME_SIZE'</span>) <span class="cf">return</span><span class="op">;</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> ifr <span class="op">=</span> <span class="bu">document</span><span class="op">.</span><span class="fu">getElementById</span>(<span class="st">'ttn-dash'</span>)<span class="op">;</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (ifr <span class="op">&amp;&amp;</span> ev<span class="op">.</span><span class="at">data</span><span class="op">.</span><span class="at">height</span>) ifr<span class="op">.</span><span class="at">style</span><span class="op">.</span><span class="at">height</span> <span class="op">=</span> (ev<span class="op">.</span><span class="at">data</span><span class="op">.</span><span class="at">height</span> <span class="op">+</span> <span class="dv">40</span>) <span class="op">+</span> <span class="st">'px'</span><span class="op">;</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  })<span class="op">;</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;/</span><span class="kw">script</span><span class="dt">&gt;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+<section id="environment-variablen" class="level2">
+<h2 class="anchored" data-anchor-id="environment-variablen">Environment-Variablen</h2>
+<section id="pflicht" class="level3">
+<h3 class="anchored" data-anchor-id="pflicht">Pflicht</h3>
+<ul>
+<li><code>TTN_APP_ID</code> – TTN Application ID</li>
+<li><code>TTN_REGION</code> – TTN Cluster (<code>eu1</code>, …)</li>
+<li><code>TTN_API_KEY</code> – NNSXS-Key (Scopes: View devices, View packages/storage, Read traffic)</li>
+</ul>
+</section>
+<section id="optional-abrufbackoff" class="level3">
+<h3 class="anchored" data-anchor-id="optional-abrufbackoff">Optional (Abruf/Backoff)</h3>
+<ul>
+<li><code>TTN_AFTER_DAYS</code> <em>(default 2)</em> – Zeitfenster; script setzt bei vorhandenen Parquet am letzten TS fort</li>
+<li><code>DEVICES</code> – Whitespace-Liste; wenn leer → Auto-Discovery</li>
+<li><code>DELAY_BETWEEN_DEVICES</code> <em>(default <strong>2.0</strong> s)</em> – Pause pro Device</li>
+<li><code>JITTER_MAX_SECONDS</code> <em>(default 0.7)</em> – Zufalls-Jitter zusätzlich zur Pause</li>
+<li><code>MAX_RETRIES</code> <em>(default 5)</em> – HTTP-Retries</li>
+<li><code>BACKOFF_BASE</code> <em>(default <strong>1.2</strong>)</em> – Exponentieller Backoff-Start</li>
+</ul>
+</section>
+<section id="optional-healthdebug" class="level3">
+<h3 class="anchored" data-anchor-id="optional-healthdebug">Optional (Health/Debug)</h3>
+<ul>
+<li><code>STALE_HOURS</code> <em>(default 3)</em></li>
+<li><code>DEV_INCLUDE</code> <em>(default <code>.*</code>)</em></li>
+<li><code>DEV_EXCLUDE</code> <em>(leer)</em></li>
+<li><code>DEBUG_RECENT_MINUTES</code> <em>(default 90)</em></li>
+<li><code>RAW_APPEND</code> <em>(0/1)</em> – <code>_raw.ndjson</code> anhängen statt überschreiben</li>
+<li><code>RAW_SNAPSHOT</code> <em>(0/1)</em> – zusätzliche Schnappschüsse</li>
+</ul>
+</section>
+<section id="steuerung" class="level3">
+<h3 class="anchored" data-anchor-id="steuerung">Steuerung</h3>
+<ul>
+<li><code>RUN_DASH</code> <em>(1/0)</em> – 1 = HTML bauen, 0 = nur CLI/Smoke-Test</li>
+<li><code>OFFLINE</code> <em>(1/0)</em> – 1 = nur lokale Daten, <strong>kein</strong> HTTP</li>
+<li><code>ASSETS_BUILD_SUBDIR</code> <em>(default <code>build</code>)</em> – Zielunterordner in <code>assets/</code></li>
+</ul>
+<hr>
+</section>
+</section>
+<section id="template-css" class="level2">
+<h2 class="anchored" data-anchor-id="template-css">Template &amp; CSS</h2>
+<ul>
+<li><p><strong>Kein</strong> HTML/CSS-Fallback im Python-Script mehr – das Template <strong>muss</strong> existieren:</p>
+<ul>
+<li><code>assets/templates/dashboard_template.html</code></li>
+<li><code>assets/templates/dashboard.css</code></li>
+</ul></li>
+<li><p>Der Info-Tab ist im CSS <strong>einspaltig</strong> (<code>.info-grid { grid-template-columns: 1fr; }</code> oder via Media-Queries).</p></li>
+<li><p>Tabs/Interaktionen sind im Template implementiert (kleiner JS-Block). Das Python-Script rendert nur Dateninhalte (Kacheln, Tabellen, Plots) in Platzhalter:</p>
+<ul>
+<li><code>{OVERVIEW_CARDS}</code>, <code>{OVERVIEW_TABLE}</code>, <code>{TYPE_CARDS}</code>, <code>{DEBUG_CARDS}</code>,</li>
+<li><code>{STAMP}</code>, <code>{APP}</code>, <code>{REG}</code>, <code>{AFTER_DAYS}</code>, <code>{AFTER}</code></li>
+</ul></li>
+</ul>
+<hr>
+</section>
+<section id="github-actions" class="level2">
+<h2 class="anchored" data-anchor-id="github-actions">GitHub Actions</h2>
+<p>Ein <strong>kombinierter</strong> Workflow holt stündlich Daten <strong>und</strong> rendert die Site (Pages):</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">name</span><span class="kw">:</span><span class="at"> TTN + Quarto Render (hourly)</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="fu">on</span><span class="kw">:</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">schedule</span><span class="kw">:</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">cron</span><span class="kw">:</span><span class="at"> </span><span class="st">"0 * * * *"</span><span class="co">         # jede volle Stunde (UTC)</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">push</span><span class="kw">:</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">branches</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="st">"main"</span><span class="kw">]</span><span class="co">          # Content-Pushes bauen ebenfalls (mit denselben Regeln)</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">workflow_dispatch</span><span class="kw">:</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="fu">concurrency</span><span class="kw">:</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">group</span><span class="kw">:</span><span class="at"> pages-build</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">cancel-in-progress</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="fu">permissions</span><span class="kw">:</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">contents</span><span class="kw">:</span><span class="at"> write</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a><span class="fu">jobs</span><span class="kw">:</span></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">build</span><span class="kw">:</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">runs-on</span><span class="kw">:</span><span class="at"> ubuntu-latest</span></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">env</span><span class="kw">:</span></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">TTN_APP_ID</span><span class="kw">:</span><span class="at">  ${{ secrets.TTN_APP_ID }}</span></span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">TTN_REGION</span><span class="kw">:</span><span class="at">  ${{ secrets.TTN_REGION }}</span></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">TTN_API_KEY</span><span class="kw">:</span><span class="at"> ${{ secrets.TTN_API_KEY }}</span></span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">ASSETS_BUILD_SUBDIR</span><span class="kw">:</span><span class="at"> build</span></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">DEBUG_RECENT_MINUTES</span><span class="kw">:</span><span class="at"> </span><span class="st">"90"</span></span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a><span class="co">      # Vorsichtige Defaults (kannst du per Secrets/ENV überschreiben)</span></span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">DELAY_BETWEEN_DEVICES</span><span class="kw">:</span><span class="at"> </span><span class="st">"2.0"</span></span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">JITTER_MAX_SECONDS</span><span class="kw">:</span><span class="at"> </span><span class="st">"0.7"</span></span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">steps</span><span class="kw">:</span></span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Checkout (full history)</span></span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> actions/checkout@v4</span></span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">with</span><span class="kw">:</span><span class="at"> </span><span class="kw">{</span><span class="at"> </span><span class="fu">fetch-depth</span><span class="kw">:</span><span class="at"> </span><span class="dv">0</span><span class="at"> </span><span class="kw">}</span></span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Setup Python</span></span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> actions/setup-python@v5</span></span>
+<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">with</span><span class="kw">:</span><span class="at"> </span><span class="kw">{</span><span class="at"> </span><span class="fu">python-version</span><span class="kw">:</span><span class="at"> </span><span class="st">"3.12"</span><span class="at"> </span><span class="kw">}</span></span>
+<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Install Python deps</span></span>
+<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a><span class="fu">        run</span><span class="kw">: </span><span class="ch">|</span></span>
+<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a>          python -m pip install --upgrade pip wheel setuptools</span>
+<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a>          pip install requests pandas plotly pyarrow python-dotenv</span>
+<span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-44"><a href="#cb9-44" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Pull + build dashboard</span></span>
+<span id="cb9-45"><a href="#cb9-45" aria-hidden="true" tabindex="-1"></a><span class="fu">        run</span><span class="kw">: </span><span class="ch">|</span></span>
+<span id="cb9-46"><a href="#cb9-46" aria-hidden="true" tabindex="-1"></a>          set -e</span>
+<span id="cb9-47"><a href="#cb9-47" aria-hidden="true" tabindex="-1"></a>          RUN_DASH=1 TTN_AFTER_DAYS=7 python scripts/pull_all_devices.py</span>
+<span id="cb9-48"><a href="#cb9-48" aria-hidden="true" tabindex="-1"></a>          mkdir -p docs/assets</span>
+<span id="cb9-49"><a href="#cb9-49" aria-hidden="true" tabindex="-1"></a>          rsync -av assets/build/ docs/assets/</span>
+<span id="cb9-50"><a href="#cb9-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-51"><a href="#cb9-51" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Copy data artifacts (optional to Pages)</span></span>
+<span id="cb9-52"><a href="#cb9-52" aria-hidden="true" tabindex="-1"></a><span class="fu">        run</span><span class="kw">: </span><span class="ch">|</span></span>
+<span id="cb9-53"><a href="#cb9-53" aria-hidden="true" tabindex="-1"></a>          mkdir -p docs/data</span>
+<span id="cb9-54"><a href="#cb9-54" aria-hidden="true" tabindex="-1"></a>          cp -a data/*.parquet docs/data/ 2&gt;/dev/null || true</span>
+<span id="cb9-55"><a href="#cb9-55" aria-hidden="true" tabindex="-1"></a>          cp -a data/*.csv     docs/data/ 2&gt;/dev/null || true</span>
+<span id="cb9-56"><a href="#cb9-56" aria-hidden="true" tabindex="-1"></a>          cp -a data/*.ndjson  docs/data/ 2&gt;/dev/null || true</span>
+<span id="cb9-57"><a href="#cb9-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-58"><a href="#cb9-58" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Build data index</span></span>
+<span id="cb9-59"><a href="#cb9-59" aria-hidden="true" tabindex="-1"></a><span class="fu">        run</span><span class="kw">: </span><span class="ch">|</span></span>
+<span id="cb9-60"><a href="#cb9-60" aria-hidden="true" tabindex="-1"></a>          python - &lt;&lt; 'PY'</span>
+<span id="cb9-61"><a href="#cb9-61" aria-hidden="true" tabindex="-1"></a>          import json, pathlib</span>
+<span id="cb9-62"><a href="#cb9-62" aria-hidden="true" tabindex="-1"></a>          d = pathlib.Path("docs/data"); d.mkdir(parents=True, exist_ok=True)</span>
+<span id="cb9-63"><a href="#cb9-63" aria-hidden="true" tabindex="-1"></a>          items = []</span>
+<span id="cb9-64"><a href="#cb9-64" aria-hidden="true" tabindex="-1"></a>          for p in sorted(d.glob("*")):</span>
+<span id="cb9-65"><a href="#cb9-65" aria-hidden="true" tabindex="-1"></a>              suf = p.suffix.lower()</span>
+<span id="cb9-66"><a href="#cb9-66" aria-hidden="true" tabindex="-1"></a>              if suf not in (".parquet", ".csv", ".ndjson"): continue</span>
+<span id="cb9-67"><a href="#cb9-67" aria-hidden="true" tabindex="-1"></a>              st = p.stat()</span>
+<span id="cb9-68"><a href="#cb9-68" aria-hidden="true" tabindex="-1"></a>              items.append({"name": p.name, "size": st.st_size, "mtime": int(st.st_mtime),</span>
+<span id="cb9-69"><a href="#cb9-69" aria-hidden="true" tabindex="-1"></a>                            "type": "Parquet" if suf==".parquet" else ("NDJSON" if suf==".ndjson" else "CSV")})</span>
+<span id="cb9-70"><a href="#cb9-70" aria-hidden="true" tabindex="-1"></a>          (d/"index.json").write_text(json.dumps(items, ensure_ascii=False), encoding="utf-8")</span>
+<span id="cb9-71"><a href="#cb9-71" aria-hidden="true" tabindex="-1"></a>          PY</span>
+<span id="cb9-72"><a href="#cb9-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-73"><a href="#cb9-73" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Setup Quarto</span></span>
+<span id="cb9-74"><a href="#cb9-74" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> quarto-dev/quarto-actions/setup@v2</span></span>
+<span id="cb9-75"><a href="#cb9-75" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-76"><a href="#cb9-76" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Render site</span></span>
+<span id="cb9-77"><a href="#cb9-77" aria-hidden="true" tabindex="-1"></a><span class="fu">        run</span><span class="kw">: </span><span class="ch">|</span></span>
+<span id="cb9-78"><a href="#cb9-78" aria-hidden="true" tabindex="-1"></a>          quarto render --no-cache</span>
+<span id="cb9-79"><a href="#cb9-79" aria-hidden="true" tabindex="-1"></a>          touch docs/.nojekyll</span>
+<span id="cb9-80"><a href="#cb9-80" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-81"><a href="#cb9-81" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Commit docs/ only</span></span>
+<span id="cb9-82"><a href="#cb9-82" aria-hidden="true" tabindex="-1"></a><span class="fu">        run</span><span class="kw">: </span><span class="ch">|</span></span>
+<span id="cb9-83"><a href="#cb9-83" aria-hidden="true" tabindex="-1"></a>          git config user.name  "github-actions[bot]"</span>
+<span id="cb9-84"><a href="#cb9-84" aria-hidden="true" tabindex="-1"></a>          git config user.email "github-actions[bot]@users.noreply.github.com"</span>
+<span id="cb9-85"><a href="#cb9-85" aria-hidden="true" tabindex="-1"></a>          git add docs/</span>
+<span id="cb9-86"><a href="#cb9-86" aria-hidden="true" tabindex="-1"></a>          git commit -m "site build $(date -u +%Y-%m-%dT%H:%M:%SZ)" || echo "no changes"</span>
+<span id="cb9-87"><a href="#cb9-87" aria-hidden="true" tabindex="-1"></a>          git push</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Hinweise</strong></p>
+<ul>
+<li><code>data/</code> und <code>assets/build/</code> bleiben <strong>unversioniert</strong>. Es wird nur <code>docs/</code> gepusht.</li>
+<li><strong>Content-Pushes</strong> (z. B. Template/CSS/Text) triggern ebenfalls ein Build: Script läuft, generiert Runtime-Assets neu, rendert Quarto und pusht <code>docs/</code>.</li>
+</ul>
+<hr>
+</section>
+<section id="troubleshooting" class="level2">
+<h2 class="anchored" data-anchor-id="troubleshooting">Troubleshooting</h2>
+<ul>
+<li><p><strong>Untracked würden überschrieben (git pull)</strong> Ursache: <code>data/</code>/<code>assets/build/</code> wurden versioniert. Lösung:</p>
+<ol type="1">
+<li><code>data/</code> &amp; <code>assets/build/</code> sichern → aus dem Index entfernen → in <code>.gitignore</code>.</li>
+<li>Nur <code>docs/</code> committen (siehe Workflow).</li>
+</ol></li>
+<li><p><strong>HTTP 429 (Rate-Limit)</strong> <code>DELAY_BETWEEN_DEVICES</code> auf 1.0–3.0 erhöhen, <code>JITTER_MAX_SECONDS</code> &gt; 0 setzen. Backoff besteht aus <code>BACKOFF_BASE * 2^i + jitter</code>.</p></li>
+<li><p><strong>Keine Daten / leeres Dashboard</strong> Prüfe Scopes des API-Keys, TTN Storage-Retention, Devices aktiv, Zeitfenster.</p></li>
+<li><p><strong>Offline testen</strong> <code>OFFLINE=1</code> setzen. Das Script liest nur lokale Parquet/CSV und baut das Dashboard.</p></li>
+</ul>
+<hr>
+</section>
+<section id="cli-smoke-test" class="level2">
+<h2 class="anchored" data-anchor-id="cli-smoke-test">CLI Smoke-Test</h2>
+<p>Ohne Dashboard, einzelnes Device, kleines Fenster -&gt; schnelle Diagnose, ob alles funktioniert – bevor du die stündlichen Builds/Pages anstößt.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="va">RUN_DASH</span><span class="op">=</span>0 <span class="ex">python</span> scripts/pull_all_devices.py <span class="at">--device</span> dds75-lb-13 <span class="at">--hours</span> 6 <span class="at">-v</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <ul>
 <li><code>--hours</code> überschreibt <code>TTN_AFTER_DAYS</code> nur für diesen Lauf.</li>
-<li>Daten werden in <code>data/&lt;device&gt;.parquet</code> gespeichert und dedupliziert.</li>
+<li>Parquet/CSV werden dedupliziert fortgeführt.</li>
 </ul>
 <hr>
 </section>
-<section id="github-actions-pages-oder-artefakt" class="level2" data-number="1.5">
-<h2 data-number="1.5" class="anchored" data-anchor-id="github-actions-pages-oder-artefakt"><span class="header-section-number">1.5</span> GitHub Actions (Pages oder Artefakt)</h2>
-<p>Beispiel-Workflow:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">name</span><span class="kw">:</span><span class="at"> TTN all devices → Pages</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">on</span><span class="kw">:</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">schedule</span><span class="kw">:</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">cron</span><span class="kw">:</span><span class="at"> </span><span class="st">"*/30 * * * *"</span><span class="co">     # alle 30 Minuten (UTC)</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">workflow_dispatch</span><span class="kw">:</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="fu">permissions</span><span class="kw">:</span></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">contents</span><span class="kw">:</span><span class="at"> write</span></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="fu">concurrency</span><span class="kw">:</span></span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">group</span><span class="kw">:</span><span class="at"> ttn-pages</span></span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">cancel-in-progress</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="fu">jobs</span><span class="kw">:</span></span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">build</span><span class="kw">:</span></span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">runs-on</span><span class="kw">:</span><span class="at"> ubuntu-latest</span></span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">env</span><span class="kw">:</span></span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">TTN_APP_ID</span><span class="kw">:</span><span class="at">  ${{ secrets.TTN_APP_ID }}</span></span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">TTN_REGION</span><span class="kw">:</span><span class="at">  ${{ secrets.TTN_REGION }}</span></span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">TTN_API_KEY</span><span class="kw">:</span><span class="at"> ${{ secrets.TTN_API_KEY }}</span></span>
-<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">THEME_DEFAULT</span><span class="kw">:</span><span class="at"> </span><span class="st">"light"</span><span class="co">                 # optionales Theme fürs Dashboard</span></span>
-<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">DEBUG_RECENT_MINUTES</span><span class="kw">:</span><span class="at"> </span><span class="st">"90"</span><span class="co">             # steuert die Debug-Tabelle (zuletzt X Minuten)</span></span>
-<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">steps</span><span class="kw">:</span></span>
-<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Checkout (full history)</span></span>
-<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> actions/checkout@v4</span></span>
-<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">with</span><span class="kw">:</span></span>
-<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="fu">fetch-depth</span><span class="kw">:</span><span class="at"> </span><span class="dv">0</span></span>
-<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Sync branch (rebase)</span></span>
-<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">env</span><span class="kw">:</span></span>
-<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="fu">BRANCH</span><span class="kw">:</span><span class="at"> ${{ github.ref_name }}</span></span>
-<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a><span class="fu">        run</span><span class="kw">: </span><span class="ch">|</span></span>
-<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>          git config user.name  "ttn-bot"</span>
-<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>          git config user.email "ttn-bot@example.com"</span>
-<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>          git checkout "$BRANCH"</span>
-<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>          git pull --rebase origin "$BRANCH" || true</span>
-<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Set up Python</span></span>
-<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> actions/setup-python@v5</span></span>
-<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">with</span><span class="kw">:</span></span>
-<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="fu">python-version</span><span class="kw">:</span><span class="at"> </span><span class="st">'3.12'</span></span>
-<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Install dependencies</span></span>
-<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a><span class="fu">        run</span><span class="kw">: </span><span class="ch">|</span></span>
-<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a>          python -m pip install --upgrade pip</span>
-<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a>          pip install requests pandas plotly pyarrow python-dotenv</span>
-<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a><span class="co">      # Erzwingt HTML-Build und genügend Storage-Fenster</span></span>
-<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Build dashboard (pull all devices)</span></span>
-<span id="cb4-53"><a href="#cb4-53" aria-hidden="true" tabindex="-1"></a><span class="fu">        run</span><span class="kw">: </span><span class="ch">|</span></span>
-<span id="cb4-54"><a href="#cb4-54" aria-hidden="true" tabindex="-1"></a>          RUN_DASH=1 TTN_AFTER_DAYS=7 python scripts/pull_all_devices.py</span>
-<span id="cb4-55"><a href="#cb4-55" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-56"><a href="#cb4-56" aria-hidden="true" tabindex="-1"></a>          # Nach Build: frisch erzeugte Assets loggen</span>
-<span id="cb4-57"><a href="#cb4-57" aria-hidden="true" tabindex="-1"></a>          test -f assets/data.html  &amp;&amp; ls -l --time-style=full-iso assets/data.html  || true</span>
-<span id="cb4-58"><a href="#cb4-58" aria-hidden="true" tabindex="-1"></a>          test -f assets/debug.html &amp;&amp; ls -l --time-style=full-iso assets/debug.html || true</span>
-<span id="cb4-59"><a href="#cb4-59" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-60"><a href="#cb4-60" aria-hidden="true" tabindex="-1"></a>          # In Pages-Verzeichnis spiegeln</span>
-<span id="cb4-61"><a href="#cb4-61" aria-hidden="true" tabindex="-1"></a>          mkdir -p docs/assets</span>
-<span id="cb4-62"><a href="#cb4-62" aria-hidden="true" tabindex="-1"></a>          cp -r assets/* docs/assets/ || true</span>
-<span id="cb4-63"><a href="#cb4-63" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-64"><a href="#cb4-64" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Publish data artifacts to docs/data</span></span>
-<span id="cb4-65"><a href="#cb4-65" aria-hidden="true" tabindex="-1"></a><span class="fu">        run</span><span class="kw">: </span><span class="ch">|</span></span>
-<span id="cb4-66"><a href="#cb4-66" aria-hidden="true" tabindex="-1"></a>          mkdir -p docs/data</span>
-<span id="cb4-67"><a href="#cb4-67" aria-hidden="true" tabindex="-1"></a>          cp -a data/*.parquet docs/data/ 2&gt;/dev/null || true</span>
-<span id="cb4-68"><a href="#cb4-68" aria-hidden="true" tabindex="-1"></a>          cp -a data/*.ndjson  docs/data/ 2&gt;/dev/null || true</span>
-<span id="cb4-69"><a href="#cb4-69" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-70"><a href="#cb4-70" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Build data index (JSON)</span></span>
-<span id="cb4-71"><a href="#cb4-71" aria-hidden="true" tabindex="-1"></a><span class="fu">        run</span><span class="kw">: </span><span class="ch">|</span></span>
-<span id="cb4-72"><a href="#cb4-72" aria-hidden="true" tabindex="-1"></a>          python - &lt;&lt; 'PY'</span>
-<span id="cb4-73"><a href="#cb4-73" aria-hidden="true" tabindex="-1"></a>          import json, pathlib</span>
-<span id="cb4-74"><a href="#cb4-74" aria-hidden="true" tabindex="-1"></a>          d = pathlib.Path("docs/data")</span>
-<span id="cb4-75"><a href="#cb4-75" aria-hidden="true" tabindex="-1"></a>          d.mkdir(parents=True, exist_ok=True)</span>
-<span id="cb4-76"><a href="#cb4-76" aria-hidden="true" tabindex="-1"></a>          items = []</span>
-<span id="cb4-77"><a href="#cb4-77" aria-hidden="true" tabindex="-1"></a>          for p in sorted(d.glob("*")):</span>
-<span id="cb4-78"><a href="#cb4-78" aria-hidden="true" tabindex="-1"></a>              if p.suffix.lower() not in (".parquet", ".ndjson"):</span>
-<span id="cb4-79"><a href="#cb4-79" aria-hidden="true" tabindex="-1"></a>                  continue</span>
-<span id="cb4-80"><a href="#cb4-80" aria-hidden="true" tabindex="-1"></a>              st = p.stat()</span>
-<span id="cb4-81"><a href="#cb4-81" aria-hidden="true" tabindex="-1"></a>              items.append({</span>
-<span id="cb4-82"><a href="#cb4-82" aria-hidden="true" tabindex="-1"></a>                  "name": p.name,</span>
-<span id="cb4-83"><a href="#cb4-83" aria-hidden="true" tabindex="-1"></a>                  "size": st.st_size,</span>
-<span id="cb4-84"><a href="#cb4-84" aria-hidden="true" tabindex="-1"></a>                  "mtime": int(st.st_mtime),</span>
-<span id="cb4-85"><a href="#cb4-85" aria-hidden="true" tabindex="-1"></a>                  "type": "Parquet" if p.suffix.lower()==".parquet" else "NDJSON"</span>
-<span id="cb4-86"><a href="#cb4-86" aria-hidden="true" tabindex="-1"></a>              })</span>
-<span id="cb4-87"><a href="#cb4-87" aria-hidden="true" tabindex="-1"></a>          (d / "index.json").write_text(json.dumps(items, ensure_ascii=False), encoding="utf-8")</span>
-<span id="cb4-88"><a href="#cb4-88" aria-hidden="true" tabindex="-1"></a>          PY</span>
-<span id="cb4-89"><a href="#cb4-89" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-90"><a href="#cb4-90" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Ensure GitHub Pages flags</span></span>
-<span id="cb4-91"><a href="#cb4-91" aria-hidden="true" tabindex="-1"></a><span class="fu">        run</span><span class="kw">: </span><span class="ch">|</span></span>
-<span id="cb4-92"><a href="#cb4-92" aria-hidden="true" tabindex="-1"></a>          mkdir -p docs</span>
-<span id="cb4-93"><a href="#cb4-93" aria-hidden="true" tabindex="-1"></a>          touch docs/.nojekyll</span>
-<span id="cb4-94"><a href="#cb4-94" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-95"><a href="#cb4-95" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Sanity check before commit</span></span>
-<span id="cb4-96"><a href="#cb4-96" aria-hidden="true" tabindex="-1"></a><span class="fu">        run</span><span class="kw">: </span><span class="ch">|</span></span>
-<span id="cb4-97"><a href="#cb4-97" aria-hidden="true" tabindex="-1"></a>          echo "Listing freshly built assets:"</span>
-<span id="cb4-98"><a href="#cb4-98" aria-hidden="true" tabindex="-1"></a>          ls -l --time-style=full-iso docs/assets/ || true</span>
-<span id="cb4-99"><a href="#cb4-99" aria-hidden="true" tabindex="-1"></a>          echo "Listing data artifacts:"</span>
-<span id="cb4-100"><a href="#cb4-100" aria-hidden="true" tabindex="-1"></a>          ls -l --time-style=full-iso docs/data/ || true</span>
-<span id="cb4-101"><a href="#cb4-101" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-102"><a href="#cb4-102" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Commit docs/ and data/ (stash + rebase + push)</span></span>
-<span id="cb4-103"><a href="#cb4-103" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">env</span><span class="kw">:</span></span>
-<span id="cb4-104"><a href="#cb4-104" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="fu">BRANCH</span><span class="kw">:</span><span class="at"> ${{ github.ref_name }}</span></span>
-<span id="cb4-105"><a href="#cb4-105" aria-hidden="true" tabindex="-1"></a><span class="fu">        run</span><span class="kw">: </span><span class="ch">|</span></span>
-<span id="cb4-106"><a href="#cb4-106" aria-hidden="true" tabindex="-1"></a>          set -e</span>
-<span id="cb4-107"><a href="#cb4-107" aria-hidden="true" tabindex="-1"></a>          git config user.name  "ttn-bot"</span>
-<span id="cb4-108"><a href="#cb4-108" aria-hidden="true" tabindex="-1"></a>          git config user.email "ttn-bot@example.com"</span>
-<span id="cb4-109"><a href="#cb4-109" aria-hidden="true" tabindex="-1"></a>          git checkout "$BRANCH"</span>
-<span id="cb4-110"><a href="#cb4-110" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-111"><a href="#cb4-111" aria-hidden="true" tabindex="-1"></a>          git add -A</span>
-<span id="cb4-112"><a href="#cb4-112" aria-hidden="true" tabindex="-1"></a>          git stash push --include-untracked --message "ci-wip" || true</span>
-<span id="cb4-113"><a href="#cb4-113" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-114"><a href="#cb4-114" aria-hidden="true" tabindex="-1"></a>          git pull --rebase origin "$BRANCH" || true</span>
-<span id="cb4-115"><a href="#cb4-115" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-116"><a href="#cb4-116" aria-hidden="true" tabindex="-1"></a>          git stash pop || true</span>
-<span id="cb4-117"><a href="#cb4-117" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-118"><a href="#cb4-118" aria-hidden="true" tabindex="-1"></a>          git add docs/ data/ || true</span>
-<span id="cb4-119"><a href="#cb4-119" aria-hidden="true" tabindex="-1"></a>          git commit -m "update all-devices $(date -u +%FT%TZ)" || echo "no changes"</span>
-<span id="cb4-120"><a href="#cb4-120" aria-hidden="true" tabindex="-1"></a>          git push origin "$BRANCH"</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p><strong>Repo-Einstellungen:</strong></p>
+<section id="design-notizen" class="level2">
+<h2 class="anchored" data-anchor-id="design-notizen">Design-Notizen</h2>
 <ul>
-<li>Secrets: <code>TTN_API_KEY</code>, <code>TTN_APP_ID</code>, <code>TTN_REGION</code>.</li>
-<li>GitHub Pages so einstellen, dass es <code>docs/</code> als Source nimmt.</li>
-</ul>
-<hr>
-</section>
-<section id="troubleshooting" class="level2" data-number="1.6">
-<h2 data-number="1.6" class="anchored" data-anchor-id="troubleshooting"><span class="header-section-number">1.6</span> Troubleshooting</h2>
-<ul>
-<li><strong>HTTP 400 invalid token</strong> Neuer Key nötig oder Scopes fehlen.</li>
-<li><strong>HTTP 400 mit <code>after</code></strong> Skript probiert automatisch kleinere <code>limit</code>-Werte und ohne <code>after</code>.</li>
-<li><strong>Parquet-Engine fehlt</strong> <code>pyarrow</code> oder <code>fastparquet</code> installieren (Workflow erledigt das).</li>
-<li><strong>Keine Daten</strong> TTN Console prüfen: Storage aktiviert? Device aktiv? Zeitfenster korrekt?</li>
-<li><strong>429 Rate limit</strong> <code>DELAY_BETWEEN_DEVICES</code> auf 0.6–1.0 erhöhen.</li>
-<li><strong>Viele STALE-Geräte</strong> <code>STALE_HOURS</code> anpassen oder per Regex filtern.</li>
-</ul>
-<hr>
-</section>
-<section id="design-notizen" class="level2" data-number="1.7">
-<h2 data-number="1.7" class="anchored" data-anchor-id="design-notizen"><span class="header-section-number">1.7</span> Design-Notizen</h2>
-<ul>
-<li>Auto-Discovery → keine Device-Liste pflegen.</li>
-<li>Pro-Device Parquet → inkrementelle Pulls, keine Duplikate.</li>
-<li>Robuste Requests → mit Retries/Backoff.</li>
-<li>Health-Report als Text &amp; CSV für schnellen Überblick.</li>
+<li>Auto-Discovery → keine Device-Liste pflegen (außer du setzt <code>DEVICES</code>!!).</li>
+<li>Pro-Device Parquet → schnelle inkrementelle Pulls.</li>
+<li>Robuste Requests → Retries/Backoff + Jitter.</li>
+<li>Saubere Trennung von <strong>Template/CSS</strong> (versioniert) und <strong>Runtime-Builds</strong> (ignoriert).</li>
 </ul>
 <p>🌲📡 Viel Erfolg beim Monitoring!</p>
 
