@@ -155,7 +155,7 @@ set -euo pipefail
 # ==============================================================================
 ENV_FILE="${ENV_FILE:-./scripts/.env}"
 if [ -f "$ENV_FILE" ]; then
-  set -a            # auto-export variables sourced from the .env
+  set -a
   . "$ENV_FILE"
   set +a
 else
@@ -168,15 +168,18 @@ fi
 
 # ==============================================================================
 # CONFIG FROM ENV (required: TTN_APP_ID / TTN_REGION / TTN_API_KEY)
-# Optional overrides via ENV or .env: CSV, FPORT
+# Optional overrides via ENV or .env: CSV, FPORT, DELAY_BETWEEN_DEV
 # ==============================================================================
 APP="${TTN_APP_ID:?TTN_APP_ID is required}"
 REGION="${TTN_REGION:?TTN_REGION is required}"          # e.g. eu1
-KEY="${TTN_API_KEY:?TTN_API_KEY is required}"            # NNSXS
+KEY="${TTN_API_KEY:?TTN_API_KEY is required}"            # NNSXS...
 API="https://${REGION}.cloud.thethings.network/api/v3"
 
 CSV="${CSV:-devices.csv}"                                # CSV format: device_id,interval_min,ext_power
 FPORT="${FPORT:-2}"                                      # FPort used by Dragino downlinks
+
+# NEW: simple per-device delay (seconds). No jitter.
+DELAY_BETWEEN_DEV="${DELAY_BETWEEN_DEV:-1.0}"
 
 # ==============================================================================
 # TOOL CHECKS (hard dependencies)
@@ -283,6 +286,9 @@ while IFS=, read -r DEV MINUTES EXT; do
   echo "HTTP: $HTTP"
   cat /tmp/resp.json; echo
   [[ "$HTTP" =~ ^2 ]] || { echo "Error while queuing downlinks for $DEV — see response above." >&2; exit 1; }
+
+  # NEW: simple delay between devices (no jitter)
+  sleep "$DELAY_BETWEEN_DEV"
 
 done < "$CSV"
 
