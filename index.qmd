@@ -15,7 +15,7 @@ format:
 ## Hydrologisches Echtzeit-Monitoring Burgwald (Hessen)
 
 Die Karte zeigt **geplante Stationen** zur Erfassung von (Niederschlag noch nicht ausgeplant), Bodenfeuchte, Grundwasser und Abfluss.\
-Farben = **Sensortyp-Kombinationen** (z. B. Ultraschall, Druck, Hobo). Klick auf Marker ⇒ Popup mit Standort-Infos.
+Farben = **Sensortyp-Kombinationen** (z. B. Distanzmessung, Wasserstandsmessung, Diverse Sensoren). Klick auf Marker ⇒ Popup mit Standort-Infos.
 
 
 
