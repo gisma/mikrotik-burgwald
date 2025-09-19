@@ -2,30 +2,33 @@
 title: "Daten "
 format: html
 ---
-<div class="iframe-wrap">
-  <iframe id="data-iframe"
-          src="assets/build/data.html?v=5"
+<div class="iframe-wrap" style="position:relative; width:100%;">
+  <iframe id="ttn-dashboard"
+          src="assets/data.html?v=1"
           loading="lazy"
-          style="width:100%;border:0;display:block;min-height:60vh;">
+          style="border:0; width:100%; height:900px;">
   </iframe>
 </div>
 <script>
+(function(){
+  const fr = document.getElementById('ttn-dashboard');
+
+  // 1) Auto-Resize: Dashboard sendet Höhe per postMessage
   window.addEventListener('message', (e) => {
-    if (e.data && e.data.type === 'TTN_IFRAME_SIZE') {
-      const ifr = document.getElementById('data-iframe');
-      if (ifr) ifr.style.height = Math.max(600, e.data.height) + 'px';
+    if (e && e.data && e.data.type === 'TTN_IFRAME_SIZE' && typeof e.data.height === 'number') {
+      fr.style.height = (e.data.height) + 'px';
     }
   });
-</script>
 
-<script>
-(function () {
-  const ifr = document.getElementById('data-iframe');
-  window.addEventListener('message', function (ev) {
-    if (!ev.data || ev.data.type !== 'TTN_IFRAME_SIZE') return;
-    const h = parseInt(ev.data.height, 10);
-    if (!isNaN(h) && h > 0) ifr.style.height = (h + 20) + 'px';
-  }, false);
+  // 2) Fallback: gleiche-Origin -> beim Laden Höhe messen
+  function resizeFallback(){
+    try {
+      const doc = fr.contentDocument;
+      if (!doc) return;
+      const h = Math.max(doc.documentElement.scrollHeight, doc.body ? doc.body.scrollHeight : 0);
+      if (h && h > 0) fr.style.height = h + 'px';
+    } catch(e){}
+  }
+  fr.addEventListener('load', resizeFallback);
 })();
 </script>
-
