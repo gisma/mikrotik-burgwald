@@ -870,7 +870,7 @@ flowchart TB
 <p><strong>Abruf (NDJSON):</strong></p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="va">APP_ID</span><span class="op">=</span><span class="st">"gisma-hydro-testbed"</span></span>
 <span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="va">REGION</span><span class="op">=</span><span class="st">"eu1"</span></span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="va">API_KEY</span><span class="op">=</span><span class="st">"NNSXS.***api_key***"</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="va">API_KEY</span><span class="op">=</span><span class="st">"NNSXS***api_key***"</span></span>
 <span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> <span class="at">-H</span> <span class="st">"Authorization: Bearer </span><span class="va">$API_KEY</span><span class="st">"</span> <span class="dt">\</span></span>
 <span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a><span class="st">"https://</span><span class="va">${REGION}</span><span class="st">.cloud.thethings.network/api/v3/as/applications/</span><span class="va">${APP_ID}</span><span class="st">/packages/storage/uplink_message?limit=100"</span> <span class="dt">\</span></span>
@@ -892,7 +892,7 @@ flowchart TB
 <p><strong>Abonnieren:</strong></p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb23"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="va">APP_ID</span><span class="op">=</span><span class="st">"gisma-hydro-testbed"</span></span>
 <span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="va">REGION</span><span class="op">=</span><span class="st">"eu1"</span></span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="va">API_KEY</span><span class="op">=</span><span class="st">"NNSXS.***api_key***"</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="va">API_KEY</span><span class="op">=</span><span class="st">"NNSXS***api_key***"</span></span>
 <span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a><span class="ex">mosquitto_sub</span> <span class="at">-h</span> <span class="st">"</span><span class="va">${REGION}</span><span class="st">.cloud.thethings.network"</span> <span class="at">-p</span> 8883 <span class="dt">\</span></span>
 <span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">-u</span> <span class="st">"</span><span class="va">${APP_ID}</span><span class="st">"</span> <span class="at">-P</span> <span class="st">"</span><span class="va">${API_KEY}</span><span class="st">"</span> <span class="at">--cafile</span> /etc/ssl/certs/ca-certificates.crt <span class="dt">\</span></span>
@@ -930,7 +930,7 @@ flowchart TB
 <span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>APP_ID  <span class="op">=</span> <span class="st">"gisma-hydro-testbed"</span></span>
 <span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>REGION  <span class="op">=</span> <span class="st">"eu1"</span></span>
-<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>API_KEY <span class="op">=</span> <span class="st">"NNSXS.***api_key***"</span></span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>API_KEY <span class="op">=</span> <span class="st">"NNSXS***api_key***"</span></span>
 <span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>TOPIC   <span class="op">=</span> <span class="ss">f"v3/</span><span class="sc">{</span>APP_ID<span class="sc">}</span><span class="ss">@ttn/devices/+/up"</span></span>
 <span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>BROKER  <span class="op">=</span> <span class="ss">f"</span><span class="sc">{</span>REGION<span class="sc">}</span><span class="ss">.cloud.thethings.network"</span></span>
 <span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a></span>
@@ -994,7 +994,7 @@ flowchart TB
 <span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">servers</span> <span class="op">=</span> <span class="op">[</span><span class="st">"ssl://eu1.cloud.thethings.network:8883"</span><span class="op">]</span></span>
 <span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">topics</span>  <span class="op">=</span> <span class="op">[</span><span class="st">"v3/gisma-hydro-testbed@ttn/devices/+/up"</span><span class="op">]</span></span>
 <span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">username</span> <span class="op">=</span> <span class="st">"gisma-hydro-testbed"</span></span>
-<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">password</span> <span class="op">=</span> <span class="st">"NNSXS.***api_key***"</span></span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">password</span> <span class="op">=</span> <span class="st">"NNSXS***api_key***"</span></span>
 <span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a>  <span class="dt">data_format</span> <span class="op">=</span> <span class="st">"json"</span></span>
 <span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a>  <span class="dt">json_time_key</span> <span class="op">=</span> <span class="st">"received_at"</span></span>
 <span id="cb28-12"><a href="#cb28-12" aria-hidden="true" tabindex="-1"></a>  <span class="dt">json_time_format</span> <span class="op">=</span> <span class="st">"2006-01-02T15:04:05Z07:00"</span></span>
