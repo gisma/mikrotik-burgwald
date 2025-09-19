@@ -133,7 +133,7 @@ ps-lb-21,5,0
 ps-lb-42,20,0
 ```
 
-### Script: `set_dragino.sh`
+### Script: `dragino_downlink.sh`
 
 -   Nimmt **nur Hex** als Kommandos, wandelt intern in Base64.
 -   Legt pro Gerät **einen** `down/replace` mit bis zu 4 Downlinks (FIFO) ab.
