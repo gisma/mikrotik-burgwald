@@ -445,17 +445,26 @@ def normalize_sensecap_messages(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 def normalize_all(df: pd.DataFrame) -> pd.DataFrame:
-    # Generic numeric casting
+    # Generische Numerik-Konvertierung: nur wenn komplett numerisch
     for c in df.columns:
         if c not in ("device_id",) and df[c].dtype == "object":
-            df[c] = pd.to_numeric(df[c], errors="ignore")
+            try:
+                # versuche komplette Spalte numerisch zu casten
+                df[c] = pd.to_numeric(df[c])  # errors='raise' (Default)
+            except Exception:
+                # bei gemischten/ nicht-numerischen Werten Spalte so lassen
+                pass
+
     df = normalize_dds75(df)
     df = normalize_pslb(df)
     df = normalize_sensecap_messages(df)
+
     for col in ("rssi","snr"):
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors="coerce")
+
     return df
+
 
 # ===== Type detection & plotting =====
 def detect_sensor_type(df: pd.DataFrame, device_id: str) -> str:

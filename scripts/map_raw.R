@@ -25,9 +25,9 @@ df_ok <- df_ok %>%
   mutate(across(c("Radar","Druck","Hobo"),
                 ~ ifelse(is.na(.x) | .x=="", "", "✓"))) %>%
   mutate(Sensoren = trimws(paste0(
-    ifelse(Radar=="✓","Ultraschall ",""),
+    ifelse(Radar=="✓","Distanz ",""),
     ifelse(Druck=="✓","Wassertiefe ",""),
-    ifelse(Hobo =="✓","Diverse","")
+    ifelse(Hobo =="✓","Div. Sensoren","")
   )))
 
 # 6) sf-Punkte (WGS84)
@@ -66,4 +66,4 @@ m@map <- leaflet::fitBounds(
 m
 
 # 10) Speichern (optional)
-htmlwidgets::saveWidget(m@map, "assets/karte_burgwald_sonden.html", selfcontained = TRUE)
+htmlwidgets::saveWidget(m@map, "assets/templates/karte_burgwald_sonden.html", selfcontained = TRUE)
