@@ -26,8 +26,8 @@ df_ok <- df_ok %>%
                 ~ ifelse(is.na(.x) | .x=="", "", "✓"))) %>%
   mutate(Sensoren = trimws(paste0(
     ifelse(Radar=="✓","Ultraschall ",""),
-    ifelse(Druck=="✓","Druck ",""),
-    ifelse(Hobo =="✓","Hobo","")
+    ifelse(Druck=="✓","Wassertiefe ",""),
+    ifelse(Hobo =="✓","Diverse","")
   )))
 
 # 6) sf-Punkte (WGS84)
@@ -37,7 +37,7 @@ pts <- sf::st_as_sf(df_ok, coords = c("East","North"), crs = 4326, remove = FALS
 popup_cols <- intersect(c("Gewässer","Einzugsgebiet","Gemeinde","Sensoren","North","East"),
                         names(sf::st_drop_geometry(pts)))
 
-# 8) Karte: Legende nach „Sensoren“, Popup per Klick
+# Karte: Legende nach „Sensoren“, Popup per Klick
 m <- mapview::mapview(
   pts,
   zcol = "Sensoren",               # Legende/Farbe nach Sensortyp
@@ -53,7 +53,7 @@ m <- mapview::mapview(
 
 # 9) Auf Extent zoomen (mit kleinem Rand)
 bb  <- sf::st_bbox(pts)
-pad <- 0.01
+pad <- 0.0001
 m@map <- leaflet::fitBounds(
   m@map,
   lng1 = as.numeric(bb["xmin"])-pad,

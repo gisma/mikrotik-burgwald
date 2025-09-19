@@ -35,8 +35,6 @@ website:
         contents:
           # - text: "Daten Repository"
           #   href: index_data.qmd
-          - text: "Status Informationen"
-            href: debug-data.qmd
           - text: "Dashboard"
             href: live-data.qmd
           - text: "Dashboard Doku"

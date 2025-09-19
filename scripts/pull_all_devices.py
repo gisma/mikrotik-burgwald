@@ -3,36 +3,74 @@
 
 import os, json, pathlib, requests, pandas as pd, time
 import plotly.express as px, plotly.io as pio
+import plotly.graph_objects as go  # Multi-Traces
 from datetime import datetime, timedelta, timezone
 from urllib.parse import quote
 from typing import List, Dict, Tuple, Optional
 from pathlib import Path
 
-# Load .env (optional; ignored if python-dotenv is not installed)
+# ===== .env laden – robust & installationsfrei =====
+def _load_env_file(path: Path, override: bool = False) -> bool:
+    """Einfacher .env-Parser; wird verwendet, falls python-dotenv fehlt oder nichts lädt."""
+    try:
+        if not path.exists():
+            return False
+        for line in path.read_text(encoding="utf-8").splitlines():
+            s = line.strip()
+            if not s or s.startswith("#") or "=" not in s:
+                continue
+            k, v = s.split("=", 1)
+            k = k.strip()
+            v = v.strip().strip('"').strip("'")
+            if override or k not in os.environ:
+                os.environ[k] = v
+        return True
+    except Exception:
+        return False
+
 try:
     from dotenv import load_dotenv
-    load_dotenv(Path(__file__).with_name(".env"))
+    DOTENV_PATH = Path(__file__).with_name(".env")
+    loaded = load_dotenv(DOTENV_PATH, override=True)
+    loaded = load_dotenv(override=False) or loaded  # zusätzlich CWD
+    if not loaded:
+        _load_env_file(DOTENV_PATH, override=False)
+        _load_env_file(Path.cwd() / ".env", override=False)
 except Exception:
-    pass
+    _load_env_file(Path(__file__).with_name(".env"), override=False)
+    _load_env_file(Path.cwd() / ".env", override=False)
+
+# -------- ENV: mit klarer Fehlermeldung statt KeyError --------
+def _require_env(name: str) -> str:
+    v = os.environ.get(name)
+    if not v:
+        raise RuntimeError(
+            f"ENV '{name}' fehlt. Setze es in .env (neben dem Script oder im CWD) "
+            f"oder per Shell-ENV. Pflicht: TTN_APP_ID, TTN_REGION, TTN_API_KEY."
+        )
+    return v
 
 # ===== ENV =====
-APP   = os.environ["TTN_APP_ID"]              # e.g., gisma-hydro-testbed
-REG   = os.environ["TTN_REGION"]              # e.g., eu1
-KEY   = os.environ["TTN_API_KEY"]             # NNSXS....
+APP   = _require_env("TTN_APP_ID")            # e.g., gisma-hydro-testbed
+REG   = _require_env("TTN_REGION")            # e.g., eu1
+KEY   = _require_env("TTN_API_KEY")           # NNSXS....
 AFTER_DAYS = int(os.environ.get("TTN_AFTER_DAYS", "2"))
 AFTER = (datetime.now(timezone.utc) - timedelta(days=AFTER_DAYS)).strftime("%Y-%m-%dT%H:%M:%SZ")
 HDRS  = {"Authorization": f"Bearer {KEY}"}    # robust NDJSON/SSE parsing
 DELAY_BETWEEN_DEVICES = float(os.environ.get("DELAY_BETWEEN_DEVICES", "0.3"))
 DEBUG_RECENT_MINUTES = int(os.environ.get("DEBUG_RECENT_MINUTES", "90"))
 
-
 # Health report configuration
 STALE_HOURS  = int(os.environ.get("STALE_HOURS", "3"))
 DEV_INCLUDE  = os.environ.get("DEV_INCLUDE", ".*")  # regex include (default: all)
 DEV_EXCLUDE  = os.environ.get("DEV_EXCLUDE", "")    # regex exclude (default: none)
 
+# Optional: Rohdaten-Verhalten steuern
+RAW_APPEND   = os.environ.get("RAW_APPEND", "0") == "1"     # 1 = _raw.ndjson anhängen statt überschreiben
+RAW_SNAPSHOT = os.environ.get("RAW_SNAPSHOT", "0") == "1"   # 1 = zusätzlich Snapshot-Datei je Lauf schreiben
+
 # Folders
-DATA   = pathlib.Path("data");   DATA.mkdir(exist_ok=True, parents=True)     # Parquet/NDJSON
+DATA   = pathlib.Path("data");   DATA.mkdir(exist_ok=True, parents=True)     # Parquet/CSV/NDJSON
 ASSETS = pathlib.Path("assets"); ASSETS.mkdir(exist_ok=True, parents=True)   # HTML output
 
 # ===== Discover device list from TTN (if DEVICES env is not set) =====
@@ -134,6 +172,7 @@ def _do_get_with_retries(url, params, headers, timeout, dev):
 def device_pull(dev: str) -> pd.DataFrame:
     """Fetch TTN Storage data for a device (with paging + fallbacks)."""
     parq = DATA / f"{dev}.parquet"
+    csv  = DATA / f"{dev}.csv"
     raw  = DATA / f"{dev}_raw.ndjson"
     url  = f"https://{REG}.cloud.thethings.network/api/v3/as/applications/{APP}/devices/{quote(dev)}/packages/storage/uplink_message"
 
@@ -144,18 +183,31 @@ def device_pull(dev: str) -> pd.DataFrame:
         return pd.DataFrame(columns=["device_id","received_at","f_port","rssi","snr","payload_json"])
 
     try:
-        # Start time: AFTER; if a parquet exists, continue from its last timestamp
+        # Start time: AFTER; wenn persistente Daten vorhanden, weiter ab last_ts
         current_after = pd.to_datetime(AFTER, utc=True, errors="coerce")
         used_after = False
-        if parq.exists():
+
+        if parq.exists() or csv.exists():
             try:
-                df_old_ts = pd.read_parquet(parq)
+                if parq.exists():
+                    df_old_ts = pd.read_parquet(parq)
+                else:
+                    raise FileNotFoundError("parquet missing, try CSV")
+            except Exception as e:
+                print(f"[{dev}] WARN: failed reading parquet ({e}) -> try CSV")
+                try:
+                    df_old_ts = pd.read_csv(csv)
+                    if "received_at" in df_old_ts.columns:
+                        df_old_ts["received_at"] = pd.to_datetime(df_old_ts["received_at"], utc=True, errors="coerce")
+                except Exception as e2:
+                    print(f"[{dev}] WARN: failed reading CSV too: {e2}")
+                    df_old_ts = None
+
+            if df_old_ts is not None and not df_old_ts.empty:
                 last_old = pd.to_datetime(df_old_ts["received_at"], utc=True, errors="coerce").max()
                 if pd.notna(last_old):
                     current_after = max(current_after, last_old + pd.Timedelta(seconds=1))
                     used_after = True
-            except Exception as e:
-                print(f"[{dev}] WARN: failed reading parquet: {e}")
 
         all_rows: List[Dict] = []
         ndjson_chunks: List[str] = []
@@ -230,9 +282,16 @@ def device_pull(dev: str) -> pd.DataFrame:
             current_after = max_ts + pd.Timedelta(seconds=1)
             used_after = True
 
-        # Write raw NDJSON for debugging
+        # --- Rohdaten NDJSON schreiben (Debug) ---
         if ndjson_chunks:
-            raw.write_text("".join(ndjson_chunks), encoding="utf-8")
+            mode = "a" if RAW_APPEND else "w"
+            with raw.open(mode, encoding="utf-8") as f:
+                if mode == "a":
+                    f.write("\n")
+                f.write("".join(ndjson_chunks))
+            if RAW_SNAPSHOT:
+                snap = DATA / f"{dev}_raw_{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}.ndjson"
+                snap.write_text("".join(ndjson_chunks), encoding="utf-8")
 
         # Build dataframe for new rows
         df_new = pd.DataFrame(all_rows)
@@ -240,26 +299,47 @@ def device_pull(dev: str) -> pd.DataFrame:
             df_new["received_at"] = pd.to_datetime(df_new["received_at"], utc=True, errors="coerce")
             df_new = df_new.dropna(subset=["received_at"]).sort_values("received_at")
 
-        # Merge with existing parquet
-        if parq.exists():
+        # Merge mit bestehenden Daten (Parquet bevorzugt, CSV Fallback)
+        if parq.exists() or csv.exists():
             try:
-                df_old = pd.read_parquet(parq)
-                df_old["received_at"] = pd.to_datetime(df_old["received_at"], utc=True, errors="coerce")
-                df = pd.concat([df_old, df_new], ignore_index=True) if not df_new.empty else df_old
+                if parq.exists():
+                    df_old = pd.read_parquet(parq)
+                else:
+                    raise FileNotFoundError("parquet missing, try CSV")
             except Exception as e:
-                print(f"[{dev}] WARN: parquet merge failed: {e}")
-                df = df_new
+                print(f"[{dev}] WARN: read old parquet failed ({e}) -> try CSV")
+                try:
+                    df_old = pd.read_csv(csv)
+                    if "received_at" in df_old.columns:
+                        df_old["received_at"] = pd.to_datetime(df_old["received_at"], utc=True, errors="coerce")
+                except Exception as e2:
+                    print(f"[{dev}] WARN: read old CSV failed: {e2}")
+                    df_old = pd.DataFrame()
+
+            if not df_old.empty and not df_new.empty:
+                df = pd.concat([df_old, df_new], ignore_index=True)
+            else:
+                df = df_old if df_new.empty else df_new
         else:
             df = df_new
 
-        # De-duplicate and persist
+        # De-duplicate und Persistenz: immer Parquet + CSV schreiben (Parquet kann ggf. scheitern)
         if not df.empty:
             subset_cols = [c for c in ["device_id","received_at","f_port","payload_json"] if c in df.columns]
             df = df.drop_duplicates(subset=subset_cols).sort_values("received_at")
+
+            ok_parq = True
             try:
                 df.to_parquet(parq, index=False)
             except Exception as e:
+                ok_parq = False
                 print(f"[{dev}] WARN: parquet write failed: {e}")
+
+            try:
+                df.to_csv(csv, index=False)
+            except Exception as e:
+                print(f"[{dev}] WARN: csv write failed: {e}")
+
             return df
 
         return _empty_df()
@@ -402,13 +482,41 @@ def to_plot_html(df: pd.DataFrame, y: str, title: str) -> Optional[str]:
     if d.empty: return None
     fig = px.line(d, x="received_at", y=y, title=title)
     fig.update_layout(
-      template="plotly_dark",
+      template="plotly_white",                     # Helles Theme
       paper_bgcolor="rgba(0,0,0,0)",
       plot_bgcolor="rgba(0,0,0,0)",
       margin=dict(l=10, r=10, t=40, b=10),
-      font=dict(size=14),  # +1
-      xaxis=dict(gridcolor="rgba(255,255,255,.12)", zerolinecolor="rgba(255,255,255,.18)"),
-      yaxis=dict(gridcolor="rgba(255,255,255,.12)", zerolinecolor="rgba(255,255,255,.18)"),
+      font=dict(size=14),
+      xaxis=dict(showgrid=True, zeroline=False),
+      yaxis=dict(showgrid=True, zeroline=False),
+    )
+    return pio.to_html(fig, include_plotlyjs="cdn", full_html=False,
+                       default_width="100%", default_height="350px")
+
+# --- Multi-Trace-Plot (Battery/RSSI/SNR/Power) ---
+def to_plot_multi_html(df: pd.DataFrame, y_cols: List[str], title: str) -> Optional[str]:
+    y_cols = [c for c in y_cols if c in df.columns and pd.api.types.is_numeric_dtype(df[c])]
+    if not y_cols:
+        return None
+    d = df[["received_at"] + y_cols].copy()
+    d = d.dropna(how="all", subset=y_cols)
+    if d.empty:
+        return None
+    d = d.sort_values("received_at")
+
+    fig = go.Figure()
+    for c in y_cols:
+        fig.add_trace(go.Scatter(x=d["received_at"], y=d[c], mode="lines", name=c))
+
+    fig.update_layout(
+        template="plotly_white",
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        margin=dict(l=10, r=10, t=40, b=10),
+        font=dict(size=14),
+        xaxis=dict(showgrid=True, zeroline=False),
+        yaxis=dict(showgrid=True, zeroline=False),
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0)
     )
     return pio.to_html(fig, include_plotlyjs="cdn", full_html=False,
                        default_width="100%", default_height="350px")
@@ -419,6 +527,70 @@ PREFERRED_BY_TYPE = {
     "SenseCAP": ["temperature","humidity","pressure_hpa","illumination"],
     "Other":    ["battery","rssi","snr"]
 }
+
+# --- Inhalt vs. Betriebsmetriken + Labels/Units ---
+NON_CONTENT = {
+    "battery","rssi","snr","vdc_input_v","idc_input_ma",
+    "probe_mode","interrupt_flag","sensor_flag","f_port"
+}
+CONTENT_BY_TYPE = {
+    "DDS75-LB": ["distance_cm","temperature"],
+    "PS-LB":    ["water_cm","pressure_kpa","pressure_mpa","diff_pressure_pa"],
+    "SenseCAP": ["temperature","humidity","pressure_hpa","illumination","uv_index","wind_speed","wind_dir","rainfall"],
+    "Other":    ["temperature","humidity","pressure_hpa","distance_cm","water_cm"]
+}
+LABELS = {
+    "temperature":"Temperature", "humidity":"Humidity", "pressure_hpa":"Pressure",
+    "illumination":"Light", "uv_index":"UV Index", "wind_speed":"Wind Speed",
+    "wind_dir":"Wind Dir", "rainfall":"Rain", "distance_cm":"Distance",
+    "water_cm":"Water", "pressure_kpa":"Pressure (kPa)", "pressure_mpa":"Pressure (MPa)",
+    "diff_pressure_pa":"ΔPressure (Pa)"
+}
+UNITS = {
+    "temperature":"°C","humidity":"%","pressure_hpa":"hPa",
+    "illumination":"lx","uv_index":"","wind_speed":"m/s","wind_dir":"°",
+    "rainfall":"mm","distance_cm":"cm","water_cm":"cm","pressure_kpa":"kPa",
+    "pressure_mpa":"MPa","diff_pressure_pa":"Pa"
+}
+def _fmt_val(key: str, v) -> Optional[str]:
+    if v is None or (isinstance(v, float) and pd.isna(v)): return None
+    try:
+        fv = float(v)
+        if key in ("temperature","pressure_hpa","water_cm","distance_cm","pressure_kpa","pressure_mpa"):
+            fv = round(fv, 1)
+        elif key in ("humidity","uv_index","wind_dir","rainfall"):
+            fv = round(fv, 0)
+        else:
+            fv = round(fv, 2)
+        unit = UNITS.get(key,"")
+        return f"{fv:g}{(' ' + unit) if unit else ''}"
+    except Exception:
+        return str(v)
+
+# --- Kachel mit aktuellen Werten pro Device ---
+def device_value_card_html(device_id: str, df: pd.DataFrame, typ: str) -> str:
+    if df.empty:
+        return f'<div class="val-card"><h4>{device_id}</h4><div class="vals"><em>No data</em></div></div>'
+
+    dfl = df.sort_values("received_at")
+    row = dfl.iloc[-1]
+
+    cand = [c for c in CONTENT_BY_TYPE.get(typ, CONTENT_BY_TYPE["Other"]) if c in df.columns]
+    if not cand:
+        num = [c for c in df.columns if c not in NON_CONTENT and c != "received_at" and pd.api.types.is_numeric_dtype(df[c])]
+        cand = num[:4]
+
+    items = []
+    for c in cand:
+        val = _fmt_val(c, row.get(c))
+        if val is not None:
+            label = LABELS.get(c, c)
+            items.append(f'<div class="kv"><div class="k">{label}</div><div class="v">{val}</div></div>')
+
+    if not items:
+        items = ['<div class="kv"><div class="k">—</div><div class="v">—</div></div>']
+
+    return f'<div class="val-card"><h4>{device_id}</h4><div class="vals">{"".join(items)}</div></div>'
 
 # ===== Main (Dashboard/HTML) =====
 RUN_DASH = os.environ.get("RUN_DASH", "1") == "1"
@@ -444,7 +616,6 @@ if RUN_DASH:
             print(f"[{dev}] ERROR: {e!r}")
             df = pd.DataFrame()
 
-        # Overview row for table + health
         overview_rows.append({
             "device_id": dev,
             "records": 0 if df.empty else len(df),
@@ -452,7 +623,7 @@ if RUN_DASH:
             "status": status
         })
 
-        # --- DEBUG: nur Daten der letzten DEBUG_RECENT_MINUTES Minuten anzeigen ---
+        # DEBUG (letzte Minuten)
         recent_html = "<i>no recent data</i>"
         try:
             df_dev = df.copy()
@@ -464,7 +635,6 @@ if RUN_DASH:
                 prefer = ["received_at","f_port","battery","water_cm","idc_input_ma","vdc_input_v","rssi","snr"]
                 cols = [c for c in prefer if c in dfr.columns]
                 if not cols:
-                    # Fallback: alles Numerische + Zeitstempel (max 6 Werte)
                     num_cols = [c for c in dfr.columns
                                 if c != "received_at" and pd.api.types.is_numeric_dtype(dfr[c])]
                     cols = ["received_at"] + num_cols[:6]
@@ -479,10 +649,9 @@ if RUN_DASH:
           <div>{recent_html}</div>
         </div>""")
 
-        # Gentle rate limiting
         time.sleep(DELAY_BETWEEN_DEVICES)
 
-    # Overview table (for HTML)
+    # Overview table for health/tab
     ov = pd.DataFrame(overview_rows)
     def _badge(s: str) -> str:
        cls = "badge"
@@ -496,79 +665,161 @@ if RUN_DASH:
        ov["status"] = ov["status"].apply(_badge)
        ov["last_seen_utc"] = pd.to_datetime(ov["last_seen_utc"], utc=True, errors="coerce").dt.strftime("%Y-%m-%d %H:%M:%SZ")
 
-    overview_html = ov[["device_id","records","last_seen_utc","status"]].sort_values("device_id") \
-        .to_html(index=False, escape=False)  # wichtig: escape=False für HTML-Badges
-
-    # Build HTML dashboard
-    stamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%SZ")
-
+    # ---------- Styling (hell) ----------
     style = """
     <style>
-    body{font-family:system-ui,Segoe UI,Roboto,Ubuntu,Arial,sans-serif;margin:20px}
-    .card{background:#fff;border:1px solid #eee;border-radius:12px;box-shadow:0 1px 6px rgba(0,0,0,.05);padding:16px;margin:16px 0}
-    .card h2{margin:0 0 .25rem}
-    .card h3{margin:.25rem 0 .5rem}
-    table{border-collapse:collapse;width:100%} th,td{border:1px solid #ddd;padding:6px 8px;text-align:left}
+    :root{--card-bg:#fff;--muted:#334155;--border:#cbd5e1}
+    html,body{background:#f8fafc}
+    body{font-family:system-ui,Segoe UI,Roboto,Ubuntu,Arial,sans-serif;margin:20px;color:#0b1221}
+    h1,h2,h3,h4{margin:0 0 .4rem}
+    .card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;box-shadow:0 1px 10px rgba(2,6,23,.06);padding:16px;margin:16px 0}
+    table{border-collapse:collapse;width:100%} th,td{border:1px solid var(--border);padding:8px 10px;text-align:left}
+
     .type-grid{display:grid;grid-template-columns:1fr;gap:16px}
-    .device-grid{display:grid;grid-template-columns:repeat(2,minmax(280px,1fr));gap:14px;margin-top:12px}
-    .device-tile{border:1px solid #ddd;border-radius:12px;padding:10px}
+    .device-grid{display:grid;grid-template-columns:repeat(2,minmax(320px,1fr));gap:14px;margin-top:12px}
+    .device-tile{border:1px solid var(--border);border-radius:12px;padding:12px;background:#fff;box-shadow:0 1px 10px rgba(2,6,23,.06)}
     .device-tile h4{margin:.2rem 0 .6rem;font-size:15px}
-    .plot-wrap{border:1px solid #eee;border-radius:10px;padding:4px;margin-bottom:8px}
-    @media (max-width:800px){ .device-grid{grid-template-columns:1fr} }
+    .plot-wrap{border:1px solid var(--border);border-radius:10px;padding:6px;margin-bottom:10px;background:#fff}
+
+    /* Tabs */
+    .tabs{display:flex;gap:8px;margin:8px 0 12px}
+    .tabs button{border:1px solid var(--border);background:#fff;border-radius:10px;padding:8px 12px;cursor:pointer;font-weight:600}
+    .tabs button.active{background:#111827;color:#fff;border-color:#111827}
+    [hidden]{display:none !important}
+
+    /* Value cards (Übersicht) */
+    .val-grid{display:grid;grid-template-columns:repeat(3,minmax(260px,1fr));gap:14px}
+    .val-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px;box-shadow:0 1px 10px rgba(2,6,23,.06)}
+    .val-card h4{margin:.1rem 0 .7rem;font-weight:700}
+    .vals{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px}
+    .kv{display:contents}
+    .kv .k{color:var(--muted);font-weight:600}
+    .kv .v{text-align:right;font-weight:700;font-size:1.05rem}
+    @media (max-width:1100px){ .val-grid{grid-template-columns:repeat(2,minmax(240px,1fr))} }
+    @media (max-width:900px){ .device-grid{grid-template-columns:1fr} .val-grid{grid-template-columns:1fr} }
+
+    /* Badges */
+    .badge{display:inline-block;padding:.15rem .5rem;border-radius:999px;font-size:.8rem;font-weight:700;border:1px solid transparent}
+    .badge.ok{background:#e1f7e6;color:#065f46;border-color:#a7f3d0}
+    .badge.stale{background:#fff4e6;color:#92400e;border-color:#fed7aa}
+    .badge.empty{background:#f1f5f9;color:#334155;border-color:#cbd5e1}
+    .badge.err{background:#fee2e2;color:#991b1b;border-color:#fecaca}
     </style>
     """
 
+    # ---------- Kachel-Übersicht ----------
+    cards_by_type_html = []
+    for typ, items in by_type.items():
+        card_list = []
+        for dev, df in sorted(items, key=lambda x: x[0]):
+            card_list.append(device_value_card_html(dev, df, typ))
+        cards_by_type_html.append(f'<div class="card"><h2>{typ}</h2><div class="val-grid">{"".join(card_list)}</div></div>')
+    overview_cards_html = "".join(cards_by_type_html) if cards_by_type_html else '<div class="card">Keine Daten zum Anzeigen.</div>'
+
+    # ---------- Diagramme (inkl. Sammel-Plot der NON_CONTENT) ----------
     type_cards_html = []
     for typ, items in by_type.items():
         device_tiles = []
         preferred = PREFERRED_BY_TYPE.get(typ, PREFERRED_BY_TYPE["Other"])
         for dev, df in sorted(items, key=lambda x: x[0]):
             numeric_cols = [c for c in df.columns if pd.api.types.is_numeric_dtype(df[c]) and c not in {"f_port"}]
-            ordered = [c for c in preferred if c in numeric_cols] + [c for c in numeric_cols if c not in preferred]
-            plots, used = [], set()
+            misc_cols = [c for c in ("battery","rssi","snr","vdc_input_v","idc_input_ma") if c in numeric_cols]
+            plots = []
+            if misc_cols:
+                m = to_plot_multi_html(df, misc_cols, "Betrieb (Battery/RSSI/SNR/Power)")
+                if m: plots.append(f'<div class="plot-wrap">{m}</div>')
+            ordered = [c for c in preferred if c in numeric_cols and c not in misc_cols] \
+                    + [c for c in numeric_cols if c not in set(preferred) | set(misc_cols)]
+            used = set()
             for col in ordered:
                 if col in used: continue
                 html_plot = to_plot_html(df, col, f"{col}")
                 if html_plot:
                     plots.append(f'<div class="plot-wrap">{html_plot}</div>')
                     used.add(col)
-                if len(plots) >= 4:
+                if len(plots) >= 4:  # 1 Sammel + bis zu 3 Einzel
                     break
             if not plots:
                 plots.append('<div class="plot-wrap"><em>No numeric fields found.</em></div>')
             device_tiles.append(f'<div class="device-tile"><h4>{dev}</h4>{"".join(plots)}</div>')
         type_cards_html.append(f'<div class="card"><h2>{typ}</h2><div class="device-grid">{"".join(device_tiles)}</div></div>')
 
-    html = f"""<!doctype html>
-    <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>TTN – All Devices (grouped by sensor type)</title>
-    {style}
-    <link rel="stylesheet" href="./theme-ecowitt.css?v={stamp}">link rel="stylesheet" href="theme-ecowitt.css">
-    <script>document.documentElement.classList.add('light');</script>
-    <h1>TTN Dashboard – Grouped by Sensor Type</h1>
-    <small>As of: {stamp} • Source: TTN Storage ({APP}@{REG}) • Window: last {AFTER_DAYS} days • AFTER={AFTER}</small>
-   <!-- Theme-Toggle -->
-<div style="display:flex;gap:10px;align-items:center;margin:10px 0 16px">
-  <button id="themeBtn">Theme wechseln</button>
-  <small>Aktuell: <span id="themeName">Dark</span></small>
-</div>
-<script>
-  const body = document.documentElement;
-  const btn  = document.getElementById('themeBtn');
-  const name = document.getElementById('themeName');
-  let dark = true;
-  btn.onclick = () => {{
-    dark = !dark;
-    body.classList.toggle('light', !dark);
-    name.textContent = dark ? 'Dark' : 'Light';
-  }};
-</script>
+    # ---------- Tabs + Template-Renderer ----------
+    import re
+    def _render_template(tpl: str, ctx: dict) -> str:
+        pattern = re.compile(r"{{\s*([A-Z0-9_]+)\s*}}")
+        return pattern.sub(lambda m: str(ctx.get(m.group(1), "")), tpl)
 
-<div class="card"><h2>Übersicht</h2>{overview_html}<p style="margin-top:8px">Parquet: <code>data/&lt;device&gt;.parquet</code></p></div>
-<div class="type-grid">
-{"".join(type_cards_html) if type_cards_html else '<div class="card">Keine Daten zum Anzeigen.</div>'}
-</div>
-"""
+    stamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%SZ")
+    overview_table_html = ov[["device_id","records","last_seen_utc","status"]].sort_values("device_id") \
+        .to_html(index=False, escape=False)
+
+    tabs_js = """
+    <script>
+      const tabs = document.querySelectorAll('.tabs button');
+      const sections = { overview: document.getElementById('tab-overview'),
+                         charts:   document.getElementById('tab-charts'),
+                         debug:    document.getElementById('tab-debug') };
+      tabs.forEach(btn => btn.addEventListener('click', () => {
+        tabs.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        for (const k in sections) sections[k].hidden = (btn.dataset.tab !== k);
+      }));
+    </script>
+    """
+
+    ctx = {
+        "STYLE": style,
+        "STAMP": stamp,
+        "APP": APP,
+        "REG": REG,
+        "AFTER_DAYS": AFTER_DAYS,
+        "AFTER": AFTER,
+        "OVERVIEW_CARDS": overview_cards_html,
+        "OVERVIEW_TABLE": overview_table_html,
+        "TYPE_CARDS": "".join(type_cards_html) if type_cards_html else '<div class="card">Keine Daten zum Anzeigen.</div>',
+        "DEBUG_CARDS": "".join(debug_cards) if debug_cards else "<div class='card'><i>Keine aktuellen Daten.</i></div>",
+        "TABS_JS": tabs_js
+    }
+
+    tpl_path = ASSETS / "dashboard_template.html"
+    if tpl_path.exists():
+        tpl_html = tpl_path.read_text(encoding="utf-8")
+        html = _render_template(tpl_html, ctx)
+    else:
+        html = f"""<!doctype html>
+        <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+        <title>TTN – All Devices (grouped by sensor type)</title>
+        {style}
+
+        <h1>TTN Dashboard – Grouped by Sensor Type</h1>
+        <small>As of: {stamp} • Source: TTN Storage ({APP}@{REG}) • Window: last {AFTER_DAYS} days • AFTER={AFTER}</small>
+
+        <div class="tabs">
+          <button class="active" data-tab="overview">Übersicht</button>
+          <button data-tab="charts">Diagramme</button>
+          <button data-tab="debug">Debug</button>
+        </div>
+
+        <section id="tab-overview">
+          <div class="card"><h2>Übersicht (aktuelle Werte)</h2>{overview_cards_html}</div>
+          <div class="card"><h2>Geräte-Tabelle</h2>{overview_table_html}
+            <p style="margin-top:8px">Parquet: <code>data/&lt;device&gt;.parquet</code></p>
+          </div>
+        </section>
+
+        <section id="tab-charts" hidden>
+          <div class="type-grid">
+            {"".join(type_cards_html) if type_cards_html else '<div class="card">Keine Daten zum Anzeigen.</div>'}
+          </div>
+        </section>
+
+        <section id="tab-debug" hidden>
+          {"".join(debug_cards) if debug_cards else "<div class='card'><i>Keine aktuellen Daten.</i></div>"}
+        </section>
+
+        {tabs_js}
+        """
 
     # --- Debug-Seite schreiben (nur recent) ---
     dbg = f"""<!doctype html><meta charset="utf-8"><title>Debug (recent)</title>
@@ -582,11 +833,10 @@ if RUN_DASH:
     (ASSETS / "debug.html").write_text(dbg, encoding="utf-8")
 
     # ===== Health report (text + CSV) =====
-    import re
-    inc_re = re.compile(DEV_INCLUDE)
-    exc_re = re.compile(DEV_EXCLUDE) if DEV_EXCLUDE else None
+    import re as _re
+    inc_re = _re.compile(DEV_INCLUDE)
+    exc_re = _re.compile(DEV_EXCLUDE) if DEV_EXCLUDE else None
 
-    # Convert last_seen_utc back to machine-friendly for age calculation
     ov_for_health = ov.copy()
     if not ov_for_health.empty:
         ov_for_health["last_seen_utc"] = pd.to_datetime(ov_for_health["last_seen_utc"], utc=True, errors="coerce")
@@ -626,7 +876,6 @@ if RUN_DASH:
         for r in health_rows
     )
     (ASSETS / "devices_used.txt").write_text(health_txt, encoding="utf-8")
-
 
     # CSV for machines
     pd.DataFrame(health_rows).to_csv(ASSETS / "devices_used.csv", index=False)
