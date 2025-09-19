@@ -31,10 +31,6 @@ website:
       - section: "Über..."
         contents:
           - index.qmd
-      - section: "Daten-Interface"
-        contents:
-          # - text: "Daten Repository"
-          #   href: index_data.qmd
           - text: "Dashboard"
             href: live-data.qmd
         
