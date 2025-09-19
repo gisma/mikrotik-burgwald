@@ -72,42 +72,6 @@
     ]
   },
   {
-    "objectID": "debug-data.html",
-    "href": "debug-data.html",
-    "title": "Status Informationen",
-    "section": "",
-    "text": "NDJSON und Parquet sind beides Datenformate, die sich gut ergänzen:\n\nNDJSON (Newline Delimited JSON) speichert Ereignisse zeilenweise als JSON-Objekte.\n→ Ideal für Streaming und APIs, weil jede Zeile ein eigenständiger Datensatz ist.\n→ Lässt sich mit Tools wie jq, pandas.read_json(lines=True) oder jsonlite::stream_in() direkt auswerten.\nParquet ist ein spaltenorientiertes, binäres Format für große Datenmengen.\n→ Optimiert für Analysen und Abfragen, sehr platzsparend und schnell.\n→ Standard in Big-Data-Ecosystemen (Spark, Hadoop, DuckDB, BigQuery, GDAL/GeoParquet).\n\nTypischer Workflow: Rohdaten zunächst als NDJSON persistieren → für Analyse/Archiv in Parquet konvertieren.",
-    "crumbs": [
-      "Impressum",
-      "Daten-Interface",
-      "Status Informationen"
-    ]
-  },
-  {
-    "objectID": "debug-data.html#allgemeine-formate-im-repo",
-    "href": "debug-data.html#allgemeine-formate-im-repo",
-    "title": "Status Informationen",
-    "section": "",
-    "text": "NDJSON und Parquet sind beides Datenformate, die sich gut ergänzen:\n\nNDJSON (Newline Delimited JSON) speichert Ereignisse zeilenweise als JSON-Objekte.\n→ Ideal für Streaming und APIs, weil jede Zeile ein eigenständiger Datensatz ist.\n→ Lässt sich mit Tools wie jq, pandas.read_json(lines=True) oder jsonlite::stream_in() direkt auswerten.\nParquet ist ein spaltenorientiertes, binäres Format für große Datenmengen.\n→ Optimiert für Analysen und Abfragen, sehr platzsparend und schnell.\n→ Standard in Big-Data-Ecosystemen (Spark, Hadoop, DuckDB, BigQuery, GDAL/GeoParquet).\n\nTypischer Workflow: Rohdaten zunächst als NDJSON persistieren → für Analyse/Archiv in Parquet konvertieren.",
-    "crumbs": [
-      "Impressum",
-      "Daten-Interface",
-      "Status Informationen"
-    ]
-  },
-  {
-    "objectID": "debug-data.html#sensoren",
-    "href": "debug-data.html#sensoren",
-    "title": "Status Informationen",
-    "section": "Sensoren",
-    "text": "Sensoren\n\nDDS75-LB (dds75-lb-*.parquet): distance_cm (bzw. Distance_mm), temperature, battery, Flags (interrupt_flag, sensor_flag).\nPS-LB (burgwald-ps-lb-*.parquet): water_cm bzw. pressure_kpa/_mpa, zusätzlich idc_input_ma, vdc_input_v, battery, digitale Eingänge.\nSenseCAP (burgwald-sensecap-*.parquet): temperature, humidity, pressure_hpa, illumination, ggf. uv_index, wind_speed, wind_dir, rainfall.",
-    "crumbs": [
-      "Impressum",
-      "Daten-Interface",
-      "Status Informationen"
-    ]
-  },
-  {
     "objectID": "dashboard_doku_de.html",
     "href": "dashboard_doku_de.html",
     "title": "README dashboard",
@@ -202,69 +166,6 @@
       "Daten-Interface",
       "Dashboard Doku"
     ]
-  },
-  {
-    "objectID": "about.html",
-    "href": "about.html",
-    "title": "Hydro-Messnetz Burgwald",
-    "section": "",
-    "text": "Im Burgwald in Hessen wird ein hydrologisches Echtzeit-Monitoring eingerichtet, das kontinuierlich Daten zu Niederschlag, Bodenfeuchte, Grundwasser und Abfluss liefert. Sensoren erfassen die relevanten Größen und übertragen sie per Funk oder Mobilfunk in zentrale Datenbanken. So können Veränderungen in Moor- und Quellbereichen zeitnah erkannt und für Wasserhaushaltsanalysen genutzt werden. Diese Webseite dient der technischen und inhaltlichen Dokumentation des Monitorings und stellt perspektivisch auch die erhobenen Datensätze für Forschung, Praxis und Öffentlichkeit zur Verfügung."
-  },
-  {
-    "objectID": "dashboard_doku_en.html",
-    "href": "dashboard_doku_en.html",
-    "title": "README dashboard",
-    "section": "",
-    "text": "This repo contains a Python script that builds an HTML dashboard from The Things Network (TTN) Storage.\nIt auto-discovers devices, fetches uplinks, writes per-device Parquet files, and renders interactive plots.\n\n\n\n\n(Optional) Create scripts/.env:\nTTN_APP_ID=gisma-hydro-testbed\nTTN_REGION=eu1\nTTN_API_KEY=NNSXS_...\nRUN_DASH=1\nTTN_AFTER_DAYS=2\nDELAY_BETWEEN_DEVICES=0.3\n# Health report (optional):\n# STALE_HOURS=3\n# DEV_INCLUDE=dds75-lb-.*\n# DEV_EXCLUDE=\nRun:\npython scripts/pull_all_devices.py\nOpen the dashboard at:\n\nassets/data.html (main)\nassets/debug.html (raw samples & heads)\nHealth summary: assets/devices_used.txt and assets/devices_used.csv\n\n\n\n\n\n\nSet these in .env, your shell, or GitHub Actions env:. If missing, defaults (in parentheses) are used.\n\n\n\nTTN_APP_ID — your TTN application id (e.g., gisma-hydro-testbed)\nTTN_REGION — TTN cluster (e.g., eu1)\nTTN_API_KEY — NNSXS key with scopes:\n\nView end devices (auto-discovery)\nView application packages and associations (Storage)\n(helpful) View application info, Read application traffic/data\n\n\n\n\n\n\nRUN_DASH (\"1\") 1 = build HTML dashboard; 0 = CLI smoke-test mode (see below).\nTTN_AFTER_DAYS (\"2\") Sliding storage window: now − N days. If Parquet exists, the script resumes from the last saved timestamp.\nDELAY_BETWEEN_DEVICES (\"0.3\") Seconds to sleep between device pulls (avoid rate limits).\nDEVICES (unset) Whitespace-separated list. If unset, the script auto-discovers all devices in the app.\n\n\n\n\n\nSTALE_HOURS (\"3\") — mark as STALE (xh) if last_seen older than this.\nDEV_INCLUDE (\".*\") — regex include (e.g., dds75-lb-.*).\nDEV_EXCLUDE (empty) — regex exclude (e.g., dds75-lb-11).\n\n\n\n\n\n\n\ndata/ — per-device Parquet files: data/&lt;device&gt;.parquet\nassets/\n\ndata.html — interactive dashboard\ndebug.html — debug cards with raw NDJSON samples & parquet heads\ndevices_used.txt — human-readable health summary\ndevices_used.csv — machine-readable health table\n\n\n\nNote: At start, devices_used.txt may temporarily contain only the discovered device list; it’s overwritten at the end with the full health summary.\n\n\n\n\n\nRun an ad-hoc pull for one device without building the full dashboard:\nRUN_DASH=0 python scripts/pull_all_devices.py --device dds75-lb-13 --hours 6 -v\n\n--hours overrides TTN_AFTER_DAYS for this run only.\nData is merged into data/&lt;device&gt;.parquet with de-duplication.\n\n\n\n\n\nUse a workflow like:\nname: TTN all devices → Pages\n\non:\n  schedule:\n    - cron: \"*/15 * * * *\"\n  workflow_dispatch:\n\npermissions:\n  contents: write\n\njobs:\n  build:\n    runs-on: ubuntu-latest\n    env:\n      TTN_API_KEY:  ${{ secrets.TTN_API_KEY }}\n      TTN_APP_ID:   ${{ secrets.TTN_APP_ID }}\n      TTN_REGION:   ${{ secrets.TTN_REGION }}\n      TTN_AFTER_DAYS: \"2\"\n      RUN_DASH: \"1\"\n      DELAY_BETWEEN_DEVICES: \"0.4\"\n      # Leave DEVICES unset for auto-discovery.\n      # Optionally add STALE_HOURS / DEV_INCLUDE / DEV_EXCLUDE here.\n\n    steps:\n      - uses: actions/checkout@v4\n\n      - name: Set up Python\n        uses: actions/setup-python@v5\n        with:\n          python-version: \"3.12\"\n\n      - name: Install deps\n        run: |\n          python -m pip install --upgrade pip\n          pip install requests pandas plotly pyarrow fastparquet python-dotenv\n\n      - name: Build dashboard\n        run: |\n          python scripts/pull_all_devices.py\n          mkdir -p docs\n          cp -r assets/* docs/\n\n      - name: Commit docs/ and data/\n        run: |\n          git config user.name  \"ttn-bot\"\n          git config user.email \"ttn-bot@example.com\"\n          git add docs/ data/ || true\n          git diff --cached --quiet || git commit -m \"update all-devices $(date -u +%FT%TZ)\"\n          git push\nRepo settings:\n\nAdd TTN_API_KEY (secret), TTN_APP_ID, TTN_REGION (secrets or variables).\nEnable GitHub Pages to serve the docs/ folder (or change the workflow to upload a Pages artifact).\n\n\n\n\n\n\nHTTP 400 invalid token Wrong key or missing scopes → create a new API key with the scopes listed above.\nHTTP 400 with after The script automatically retries with smaller limit and without after.\nMissing Parquet engine Install pyarrow or fastparquet (included in the workflow deps).\nNo data Check TTN Console: Storage Integration enabled? Device sent uplinks within window?\n429 rate limit Increase DELAY_BETWEEN_DEVICES to 0.6–1.0.\nToo many STALE devices Increase STALE_HOURS or adjust include/exclude regex.\n\n\n\n\n\n\nAuto-discovery (no device list maintenance).\nPer-device Parquet for incremental pulls & deduplication.\nRobust fetch with retries/backoff and conservative fallbacks.\nHealth report written as text & CSV for quick oversight."
-  },
-  {
-    "objectID": "dashboard_doku_en.html#quick-start-local",
-    "href": "dashboard_doku_en.html#quick-start-local",
-    "title": "README dashboard",
-    "section": "",
-    "text": "(Optional) Create scripts/.env:\nTTN_APP_ID=gisma-hydro-testbed\nTTN_REGION=eu1\nTTN_API_KEY=NNSXS_...\nRUN_DASH=1\nTTN_AFTER_DAYS=2\nDELAY_BETWEEN_DEVICES=0.3\n# Health report (optional):\n# STALE_HOURS=3\n# DEV_INCLUDE=dds75-lb-.*\n# DEV_EXCLUDE=\nRun:\npython scripts/pull_all_devices.py\nOpen the dashboard at:\n\nassets/data.html (main)\nassets/debug.html (raw samples & heads)\nHealth summary: assets/devices_used.txt and assets/devices_used.csv"
-  },
-  {
-    "objectID": "dashboard_doku_en.html#environment-variables",
-    "href": "dashboard_doku_en.html#environment-variables",
-    "title": "README dashboard",
-    "section": "",
-    "text": "Set these in .env, your shell, or GitHub Actions env:. If missing, defaults (in parentheses) are used.\n\n\n\nTTN_APP_ID — your TTN application id (e.g., gisma-hydro-testbed)\nTTN_REGION — TTN cluster (e.g., eu1)\nTTN_API_KEY — NNSXS key with scopes:\n\nView end devices (auto-discovery)\nView application packages and associations (Storage)\n(helpful) View application info, Read application traffic/data\n\n\n\n\n\n\nRUN_DASH (\"1\") 1 = build HTML dashboard; 0 = CLI smoke-test mode (see below).\nTTN_AFTER_DAYS (\"2\") Sliding storage window: now − N days. If Parquet exists, the script resumes from the last saved timestamp.\nDELAY_BETWEEN_DEVICES (\"0.3\") Seconds to sleep between device pulls (avoid rate limits).\nDEVICES (unset) Whitespace-separated list. If unset, the script auto-discovers all devices in the app.\n\n\n\n\n\nSTALE_HOURS (\"3\") — mark as STALE (xh) if last_seen older than this.\nDEV_INCLUDE (\".*\") — regex include (e.g., dds75-lb-.*).\nDEV_EXCLUDE (empty) — regex exclude (e.g., dds75-lb-11)."
-  },
-  {
-    "objectID": "dashboard_doku_en.html#outputs-layout",
-    "href": "dashboard_doku_en.html#outputs-layout",
-    "title": "README dashboard",
-    "section": "",
-    "text": "data/ — per-device Parquet files: data/&lt;device&gt;.parquet\nassets/\n\ndata.html — interactive dashboard\ndebug.html — debug cards with raw NDJSON samples & parquet heads\ndevices_used.txt — human-readable health summary\ndevices_used.csv — machine-readable health table\n\n\n\nNote: At start, devices_used.txt may temporarily contain only the discovered device list; it’s overwritten at the end with the full health summary."
-  },
-  {
-    "objectID": "dashboard_doku_en.html#cli-smoke-test",
-    "href": "dashboard_doku_en.html#cli-smoke-test",
-    "title": "README dashboard",
-    "section": "",
-    "text": "Run an ad-hoc pull for one device without building the full dashboard:\nRUN_DASH=0 python scripts/pull_all_devices.py --device dds75-lb-13 --hours 6 -v\n\n--hours overrides TTN_AFTER_DAYS for this run only.\nData is merged into data/&lt;device&gt;.parquet with de-duplication."
-  },
-  {
-    "objectID": "dashboard_doku_en.html#github-actions-pages-or-artifact",
-    "href": "dashboard_doku_en.html#github-actions-pages-or-artifact",
-    "title": "README dashboard",
-    "section": "",
-    "text": "Use a workflow like:\nname: TTN all devices → Pages\n\non:\n  schedule:\n    - cron: \"*/15 * * * *\"\n  workflow_dispatch:\n\npermissions:\n  contents: write\n\njobs:\n  build:\n    runs-on: ubuntu-latest\n    env:\n      TTN_API_KEY:  ${{ secrets.TTN_API_KEY }}\n      TTN_APP_ID:   ${{ secrets.TTN_APP_ID }}\n      TTN_REGION:   ${{ secrets.TTN_REGION }}\n      TTN_AFTER_DAYS: \"2\"\n      RUN_DASH: \"1\"\n      DELAY_BETWEEN_DEVICES: \"0.4\"\n      # Leave DEVICES unset for auto-discovery.\n      # Optionally add STALE_HOURS / DEV_INCLUDE / DEV_EXCLUDE here.\n\n    steps:\n      - uses: actions/checkout@v4\n\n      - name: Set up Python\n        uses: actions/setup-python@v5\n        with:\n          python-version: \"3.12\"\n\n      - name: Install deps\n        run: |\n          python -m pip install --upgrade pip\n          pip install requests pandas plotly pyarrow fastparquet python-dotenv\n\n      - name: Build dashboard\n        run: |\n          python scripts/pull_all_devices.py\n          mkdir -p docs\n          cp -r assets/* docs/\n\n      - name: Commit docs/ and data/\n        run: |\n          git config user.name  \"ttn-bot\"\n          git config user.email \"ttn-bot@example.com\"\n          git add docs/ data/ || true\n          git diff --cached --quiet || git commit -m \"update all-devices $(date -u +%FT%TZ)\"\n          git push\nRepo settings:\n\nAdd TTN_API_KEY (secret), TTN_APP_ID, TTN_REGION (secrets or variables).\nEnable GitHub Pages to serve the docs/ folder (or change the workflow to upload a Pages artifact)."
-  },
-  {
-    "objectID": "dashboard_doku_en.html#troubleshooting",
-    "href": "dashboard_doku_en.html#troubleshooting",
-    "title": "README dashboard",
-    "section": "",
-    "text": "HTTP 400 invalid token Wrong key or missing scopes → create a new API key with the scopes listed above.\nHTTP 400 with after The script automatically retries with smaller limit and without after.\nMissing Parquet engine Install pyarrow or fastparquet (included in the workflow deps).\nNo data Check TTN Console: Storage Integration enabled? Device sent uplinks within window?\n429 rate limit Increase DELAY_BETWEEN_DEVICES to 0.6–1.0.\nToo many STALE devices Increase STALE_HOURS or adjust include/exclude regex."
-  },
-  {
-    "objectID": "dashboard_doku_en.html#design-notes",
-    "href": "dashboard_doku_en.html#design-notes",
-    "title": "README dashboard",
-    "section": "",
-    "text": "Auto-discovery (no device list maintenance).\nPer-device Parquet for incremental pulls & deduplication.\nRobust fetch with retries/backoff and conservative fallbacks.\nHealth report written as text & CSV for quick oversight."
   },
   {
     "objectID": "impressum.html#content-responsibility",
