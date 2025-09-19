@@ -6,7 +6,7 @@ format: html
 
 <div class="iframe-wrap">
   <iframe id="data-iframe"
-          src="assets/data.html?v=2"
+          src="assets/build/data.html?v=2"
           loading="lazy"
           width="100%"
           height="900"

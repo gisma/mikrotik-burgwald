@@ -1,25 +1,23 @@
-.Rproj.user
-.Rhistory
-.RData
-.Ruserdata
-/.quarto/
-_freeze/
-docs/_freeze/
-_freeze/
-docs/_freeze/
-# generated site/data artifacts
-docs/data/*.parquet
-docs/data/*_raw.ndjson
-Gemfile
-Gemfile.lock
-data/*.parquet
-data/*_raw.ndjson
-data/*.parquet
-data/*_raw.ndjson
-data/*.parquet
-data/*_raw.ndjson
-data/*.parquet
-data/*_raw.ndjson
-data/*.parquet
-data/*_raw.ndjson
+# Runtime/Build-Output (vom Script erzeugt)
+assets/build/
+assets/data.html
+assets/debug.html
+assets/devices_used.csv
+assets/devices_used.txt
+
+# Lokale Template-Overrides (werden vom Script bevorzugt, sollen aber nicht ins Repo)
+assets/templates/dashboard_template.local.html
+assets/dashboard_template.local.html
+
+# Lokale Daten (Runner spiegelt nach docs/data/, lokal nicht committen)
+data/
+!data/.keep
+
+# Python / Env
 .venv/
+__pycache__/
+*.pyc
+
+# OS
+.DS_Store
+Thumbs.db
