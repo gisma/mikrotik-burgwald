@@ -149,3 +149,6 @@ received_at,device_id,f_port,rssi,snr,payload_json
 2025-09-20 01:02:10.184797958+00:00,dds75-lb-14,2,-51,10.0,"{""Bat"": 3.286, ""Distance_mm"": 1214, ""Interrupt_flag"": 0, ""Node_type"": ""DDS75-LB"", ""Sensor_flag"": 1, ""TempC_DS18B20"": 32.76}"
 2025-09-20 01:22:09.966924983+00:00,dds75-lb-14,2,-47,9.25,"{""Bat"": 3.286, ""Distance_mm"": 1214, ""Interrupt_flag"": 0, ""Node_type"": ""DDS75-LB"", ""Sensor_flag"": 1, ""TempC_DS18B20"": 32.76}"
 2025-09-20 01:42:09.751866222+00:00,dds75-lb-14,2,-114,1.0,"{""Bat"": 3.286, ""Distance_mm"": 1214, ""Interrupt_flag"": 0, ""Node_type"": ""DDS75-LB"", ""Sensor_flag"": 1, ""TempC_DS18B20"": 32.76}"
+2025-09-20 02:02:09.528592519+00:00,dds75-lb-14,2,-119,-7.25,"{""Bat"": 3.286, ""Distance_mm"": 1214, ""Interrupt_flag"": 0, ""Node_type"": ""DDS75-LB"", ""Sensor_flag"": 1, ""TempC_DS18B20"": 32.76}"
+2025-09-20 02:22:09.243471083+00:00,dds75-lb-14,2,-110,0.2,"{""Bat"": 3.286, ""Distance_mm"": 1214, ""Interrupt_flag"": 0, ""Node_type"": ""DDS75-LB"", ""Sensor_flag"": 1, ""TempC_DS18B20"": 32.76}"
+2025-09-20 02:42:09.061415779+00:00,dds75-lb-14,2,-111,4.0,"{""Bat"": 3.286, ""Distance_mm"": 1215, ""Interrupt_flag"": 0, ""Node_type"": ""DDS75-LB"", ""Sensor_flag"": 1, ""TempC_DS18B20"": 32.76}"
