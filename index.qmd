@@ -37,6 +37,8 @@ Farben = **Sensortyp-Kombinationen** (z. B. Distanzmessung, Wasserstandsmessung,
 :::
 
 ::: {.callout-important appearance="minimal"}
-**Hinweis:** Diese Seite dokumentiert Technik & Inhalte fortlaufend.\
-Die Sensoren sind derzeit in der Validierungsphase Sobald die Qualitätssicherung abgeschlosen ist und die Sensoren ausgebracht sind erfolgt hier ein Update.
+**Work in Progress**  
+Die dargestellten Ergebnisse basieren derzeit auf **vorläufigen Test- und Validierungsdaten**.  
+Nach Abschluss der Validierung und Verfügbarkeit **qualitätsgesicherter Echtdaten** erfolgt an dieser Stelle eine entsprechende Kennzeichnung und Aktualisierung der Inhalte.
 :::
+
