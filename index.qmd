@@ -38,7 +38,7 @@ Farben = **Sensortyp-Kombinationen** (z. B. Distanzmessung, Wasserstandsmessung,
 
 ::: {.callout-important appearance="minimal"}
 **Work in Progress**  
-Die dargestellten Ergebnisse basieren derzeit auf **vorläufigen Test- und Validierungsdaten**.  
+Die [dargestellten](live_data.qmd) Ergebnisse basieren derzeit auf **vorläufigen Test- und Validierungsdaten**.  
 Nach Abschluss der Validierung und Verfügbarkeit **qualitätsgesicherter Echtdaten** erfolgt an dieser Stelle eine entsprechende Kennzeichnung und Aktualisierung der Inhalte.
 :::
 
