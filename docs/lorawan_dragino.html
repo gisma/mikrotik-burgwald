@@ -403,7 +403,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#wo-im-webinterface-die-minimal-sequenz-eingegeben-wird-ttntts" id="toc-wo-im-webinterface-die-minimal-sequenz-eingegeben-wird-ttntts" class="nav-link" data-scroll-target="#wo-im-webinterface-die-minimal-sequenz-eingegeben-wird-ttntts">Wo im Webinterface die Minimal-Sequenz eingegeben wird (TTN/TTS)</a></li>
   <li><a href="#batch-script-mit-per-gerät-intervall" id="toc-batch-script-mit-per-gerät-intervall" class="nav-link" data-scroll-target="#batch-script-mit-per-gerät-intervall">Batch-Script mit per-Gerät-Intervall</a>
   <ul class="collapse">
-  <li><a href="#script-set_dragino.sh" id="toc-script-set_dragino.sh" class="nav-link" data-scroll-target="#script-set_dragino.sh">Script: <code>set_dragino.sh</code></a></li>
+  <li><a href="#script-dragino_downlink.sh" id="toc-script-dragino_downlink.sh" class="nav-link" data-scroll-target="#script-dragino_downlink.sh">Script: <code>dragino_downlink.sh</code></a></li>
   <li><a href="#troubleshooting" id="toc-troubleshooting" class="nav-link" data-scroll-target="#troubleshooting">Troubleshooting</a></li>
   </ul></li>
   </ul></li>
@@ -520,8 +520,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <pre><code>ps-lb-01,15,0
 ps-lb-21,5,0
 ps-lb-42,20,0</code></pre>
-<section id="script-set_dragino.sh" class="level3">
-<h3 class="anchored" data-anchor-id="script-set_dragino.sh">Script: <code>set_dragino.sh</code></h3>
+<section id="script-dragino_downlink.sh" class="level3">
+<h3 class="anchored" data-anchor-id="script-dragino_downlink.sh">Script: <code>dragino_downlink.sh</code></h3>
 <ul>
 <li>Nimmt <strong>nur Hex</strong> als Kommandos, wandelt intern in Base64.</li>
 <li>Legt pro Gerät <strong>einen</strong> <code>down/replace</code> mit bis zu 4 Downlinks (FIFO) ab.</li>
