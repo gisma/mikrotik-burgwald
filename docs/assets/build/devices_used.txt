@@ -1,43 +1,43 @@
-dds75-lb-001             | 56574 rec | last: 2025-10-31 02:04:02Z | OK
+dds75-lb-001             | 56658 rec | last: 2025-10-31 03:50:00Z | OK
 dds75-lb-02              |  1094 rec | last: 2025-10-31 01:39:33Z | OK
-dds75-lb-03              |  1093 rec | last: 2025-10-30 22:56:13Z | STALE (3.2h)
+dds75-lb-03              |  1093 rec | last: 2025-10-30 22:56:13Z | STALE (5.0h)
 dds75-lb-04              |  1097 rec | last: 2025-10-31 01:18:19Z | OK
-dds75-lb-05              | 56305 rec | last: 2025-10-31 02:04:29Z | OK
-dds75-lb-06              |  1138 rec | last: 2025-10-31 01:42:32Z | OK
-dds75-lb-07              |  1044 rec | last: 2025-10-31 01:39:14Z | OK
-dds75-lb-08              |  1049 rec | last: 2025-10-31 00:19:27Z | OK
-dds75-lb-09              |  1069 rec | last: 2025-10-31 01:18:54Z | OK
-dds75-lb-10              | 56004 rec | last: 2025-10-31 02:05:28Z | OK
-dds75-lb-11              |  1067 rec | last: 2025-10-31 01:39:27Z | OK
-dds75-lb-12              |  1057 rec | last: 2025-10-30 23:17:49Z | OK
-dds75-lb-13              |  1095 rec | last: 2025-10-31 01:19:26Z | OK
-dds75-lb-14              |  1114 rec | last: 2025-10-31 01:35:37Z | OK
-dds75-lb-15              | 56827 rec | last: 2025-10-31 02:05:22Z | OK
-dds75-lb-16              |  1064 rec | last: 2025-10-31 00:15:10Z | OK
-dds75-lb-17              | 55552 rec | last: 2025-10-31 02:05:35Z | OK
-dds75-lb-18              |  1045 rec | last: 2025-10-31 01:56:05Z | OK
-dds75-lb-19              |  1035 rec | last: 2025-10-30 14:17:39Z | STALE (11.8h)
-dds75-lb-21              | 56340 rec | last: 2025-10-31 02:02:49Z | OK
-ps-lb-01                 |  1378 rec | last: 2025-10-31 01:55:22Z | OK
-ps-lb-02                 |  1469 rec | last: 2025-10-31 01:23:33Z | OK
-ps-lb-03                 |  1411 rec | last: 2025-10-31 01:29:00Z | OK
-ps-lb-04                 |  1368 rec | last: 2025-10-31 00:50:42Z | OK
-ps-lb-05                 |  1386 rec | last: 2025-10-31 00:45:32Z | OK
-ps-lb-06                 |  1377 rec | last: 2025-10-31 02:06:04Z | OK
-ps-lb-07                 |  1385 rec | last: 2025-10-31 00:46:28Z | OK
+dds75-lb-05              | 56375 rec | last: 2025-10-31 03:50:28Z | OK
+dds75-lb-06              |  1140 rec | last: 2025-10-31 03:42:30Z | OK
+dds75-lb-07              |  1046 rec | last: 2025-10-31 03:39:13Z | OK
+dds75-lb-08              |  1050 rec | last: 2025-10-31 02:19:25Z | OK
+dds75-lb-09              |  1070 rec | last: 2025-10-31 02:18:54Z | OK
+dds75-lb-10              | 56050 rec | last: 2025-10-31 03:50:27Z | OK
+dds75-lb-11              |  1068 rec | last: 2025-10-31 03:39:26Z | OK
+dds75-lb-12              |  1058 rec | last: 2025-10-31 03:17:46Z | OK
+dds75-lb-13              |  1096 rec | last: 2025-10-31 02:19:25Z | OK
+dds75-lb-14              |  1116 rec | last: 2025-10-31 03:35:35Z | OK
+dds75-lb-15              | 56920 rec | last: 2025-10-31 03:50:21Z | OK
+dds75-lb-16              |  1064 rec | last: 2025-10-31 00:15:10Z | STALE (3.6h)
+dds75-lb-17              | 55619 rec | last: 2025-10-31 03:50:34Z | OK
+dds75-lb-18              |  1046 rec | last: 2025-10-31 02:56:04Z | OK
+dds75-lb-19              |  1036 rec | last: 2025-10-31 02:17:30Z | OK
+dds75-lb-21              | 56405 rec | last: 2025-10-31 03:50:47Z | OK
+ps-lb-01                 |  1379 rec | last: 2025-10-31 02:55:22Z | OK
+ps-lb-02                 |  1471 rec | last: 2025-10-31 03:23:32Z | OK
+ps-lb-03                 |  1412 rec | last: 2025-10-31 03:28:58Z | OK
+ps-lb-04                 |  1370 rec | last: 2025-10-31 03:50:40Z | OK
+ps-lb-05                 |  1386 rec | last: 2025-10-31 00:45:32Z | STALE (3.1h)
+ps-lb-06                 |  1378 rec | last: 2025-10-31 03:06:03Z | OK
+ps-lb-07                 |  1385 rec | last: 2025-10-31 00:46:28Z | STALE (3.1h)
 ps-lb-08                 |  1366 rec | last: 2025-10-31 02:05:10Z | OK
-ps-lb-09                 |  1425 rec | last: 2025-10-31 00:25:04Z | OK
-ps-lb-10                 |  1464 rec | last: 2025-10-31 02:00:27Z | OK
-ps-lb-11                 |  1333 rec | last: 2025-10-31 01:05:02Z | OK
-ps-lb-12                 |  1371 rec | last: 2025-10-31 00:49:44Z | OK
-ps-lb-13                 |  3169 rec | last: 2025-10-30 08:24:08Z | STALE (17.7h)
+ps-lb-09                 |  1426 rec | last: 2025-10-31 02:25:02Z | OK
+ps-lb-10                 |  1465 rec | last: 2025-10-31 03:00:27Z | OK
+ps-lb-11                 |  1334 rec | last: 2025-10-31 03:05:01Z | OK
+ps-lb-12                 |  1371 rec | last: 2025-10-31 00:49:44Z | STALE (3.1h)
+ps-lb-13                 |  3172 rec | last: 2025-10-31 03:26:08Z | OK
 ps-lb-14                 |  1356 rec | last: 2025-10-31 02:06:51Z | OK
-ps-lb-15                 |  1412 rec | last: 2025-10-31 00:21:29Z | OK
-ps-lb-16                 |  1424 rec | last: 2025-10-31 01:29:34Z | OK
-ps-lb-17                 |  4374 rec | last: 2025-10-30 22:06:11Z | STALE (4.0h)
-ps-lb-18                 |  1290 rec | last: 2025-10-31 01:26:00Z | OK
+ps-lb-15                 |  1413 rec | last: 2025-10-31 03:21:27Z | OK
+ps-lb-16                 |  1426 rec | last: 2025-10-31 03:29:33Z | OK
+ps-lb-17                 |  4375 rec | last: 2025-10-31 03:06:07Z | OK
+ps-lb-18                 |  1291 rec | last: 2025-10-31 03:25:58Z | OK
 ps-lb-19                 |  1390 rec | last: 2025-10-31 02:06:39Z | OK
-ps-lb-20                 |  1454 rec | last: 2025-10-31 01:30:35Z | OK
-ps-lb-21                 |  1231 rec | last: 2025-10-31 00:30:15Z | OK
+ps-lb-20                 |  1455 rec | last: 2025-10-31 03:30:34Z | OK
+ps-lb-21                 |  1233 rec | last: 2025-10-31 03:30:13Z | OK
 sensecap-01              |     0 rec | last: –                    | NO DATA
 tracker-1                |     0 rec | last: –                    | NO DATA
